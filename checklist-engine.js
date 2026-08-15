@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.9";
+const APP_VERSION = "V1.1.10";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -647,6 +647,7 @@ const resetChecklistBtn = document.getElementById("resetChecklist");
 const mobileCategoryBar = document.getElementById("mobileCategoryBar");
 const mobileCategoryText = document.getElementById("mobileCategoryText");
 const mobileCategoryDot = document.getElementById("mobileCategoryDot");
+const mobileCategoryCount = document.getElementById("mobileCategoryCount");
 const rightPane = document.querySelector(".right-pane");
 const statVisibleEl = document.getElementById("statVisible");
 const statDoneEl = document.getElementById("statDone");
@@ -2582,6 +2583,7 @@ function updateMobileCategoryBar() {
 
   if (!candidates.length) {
     mobileCategoryText.textContent = t("noResults");
+    if (mobileCategoryCount) mobileCategoryCount.textContent = "0/0 ·";
     mobileCategoryDot.style.background = "#9aa0a6";
     mobileCategoryBar.style.borderLeftColor = "#9aa0a6";
     mobileCategoryIndex = 0;
@@ -2605,6 +2607,8 @@ function updateMobileCategoryBar() {
   const current = candidates[index];
   const cat = current.dataset.category || "";
   const color = categoryColors[cat] || "#9aa0a6";
+  const completion = cat ? categoryCompletion(cat) : { filled:0, total:0 };
+  if (mobileCategoryCount) mobileCategoryCount.textContent = `${completion.filled}/${completion.total} ·`;
   mobileCategoryText.textContent = cat ? localizedCategory(cat) : t("category");
   mobileCategoryDot.style.background = color;
   mobileCategoryBar.style.borderLeftColor = color;
