@@ -4147,7 +4147,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.0 compact mobile practices --- */
+/* --- V1.1.3 compact mobile practices --- */
 .practice.cell,
 .cell.practice {
   display:grid;
@@ -4264,7 +4264,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.0 mobile width reduction pass 2 --- */
+/* --- V1.1.3 mobile width reduction pass 2 --- */
 @media (max-width:650px) {
   :root {
     --left-template:132px !important;
@@ -4289,5 +4289,110 @@ body.first-use-open{overflow:hidden}
   }
   .level-badge {
     padding:0 3px !important;
+  }
+}
+
+
+/* --- V1.1.3 mobile column compaction pass --- */
+@media (max-width:650px) {
+  :root {
+    --left-template:120px !important;
+    --left-width:120px !important;
+    --right-template:170px 186px 186px 44px 44px 52px 62px 186px 186px !important;
+    --right-width:1116px !important;
+  }
+
+  .left-head .head-cell,
+  .head-cell {
+    padding:2px 4px !important;
+  }
+
+  .cell {
+    padding:2px 2px !important;
+  }
+
+  .cell.practice {
+    padding:2px 2px !important;
+  }
+
+  .practice,
+  .practice-label,
+  .practice-title {
+    font-size:8.8px !important;
+    line-height:1.02 !important;
+  }
+
+  .practice-meta {
+    gap:2px !important;
+  }
+
+  .section-left {
+    padding:2px 3px !important;
+  }
+
+  .section-right-cell,
+  .cell[data-col="wantSub"],
+  .cell[data-col="wantDom"],
+  .cell[data-col="afterSub"],
+  .cell[data-col="afterDom"] {
+    padding-left:2px !important;
+    padding-right:2px !important;
+  }
+
+  .score-wrap,
+  .section-right-score .score-wrap {
+    justify-content:flex-start !important;
+    gap:2px !important;
+  }
+
+  .section-right-cell.section-right-score {
+    justify-content:flex-start !important;
+  }
+
+  .score-btn.semantic-score-btn,
+  .category-score-btn.semantic-score-btn {
+    width:27px !important;
+    min-width:27px !important;
+    height:27px !important;
+    min-height:27px !important;
+    font-size:13px !important;
+    border-radius:7px !important;
+  }
+
+  .score-btn.semantic-score-btn[data-score="0"],
+  .category-score-btn.semantic-score-btn[data-score="0"] {
+    width:27px !important;
+    min-width:27px !important;
+  }
+
+  .score-btn.unknown-score {
+    width:23px !important;
+    min-width:23px !important;
+    height:27px !important;
+    min-height:27px !important;
+    font-size:12px !important;
+  }
+
+  .session-pin-btn {
+    width:17px !important;
+    height:17px !important;
+    min-width:17px !important;
+    min-height:17px !important;
+    font-size:9px !important;
+  }
+
+  .level-badge,
+  .risk-badge,
+  .compatibility-badge {
+    font-size:6.7px !important;
+  }
+}
+
+@media (orientation:landscape) and (max-height:430px) and (max-width:760px) {
+  :root {
+    --left-template:142px !important;
+    --left-width:142px !important;
+    --right-template:160px 178px 178px 42px 42px 48px 56px 178px 178px !important;
+    --right-width:1060px !important;
   }
 }
