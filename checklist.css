@@ -4148,7 +4148,7 @@ body.first-use-open{overflow:hidden}
 
 
 /* =========================================================
-   V1.1.7 — MOBILE CHECKLIST LAYOUT
+   V1.1.9 — MOBILE CHECKLIST LAYOUT
    Single clean override: compact practice, full preference row,
    narrow history columns. Desktop layout remains unchanged.
    ========================================================= */
@@ -4321,7 +4321,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.7 mobile category header fix --- */
+/* --- V1.1.9 mobile category header fix --- */
 @media (max-width:650px) {
   .section-left {
     padding:2px 2px !important;
@@ -4376,5 +4376,177 @@ body.first-use-open{overflow:hidden}
     line-height:1.03 !important;
     overflow-wrap:anywhere !important;
     align-self:center !important;
+  }
+}
+
+
+/* --- V1.1.9 mobile category/header finishing --- */
+@media (max-width:650px) {
+  /* Category header: one compact marker stack, then chevron and label. */
+  .section-left {
+    padding:2px 2px !important;
+  }
+  .category-toggle {
+    display:grid !important;
+    grid-template-columns:22px 9px minmax(0,1fr) !important;
+    grid-template-rows:1fr !important;
+    align-items:center !important;
+    column-gap:2px !important;
+    width:100% !important;
+    min-width:0 !important;
+    min-height:38px !important;
+    padding:1px 0 !important;
+  }
+  .category-marker {
+    grid-column:1 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:2px !important;
+    width:22px !important;
+    min-width:22px !important;
+    line-height:1 !important;
+  }
+  .category-progress {
+    display:block !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    color:#69737a !important;
+    font-size:6.5px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+    text-align:center !important;
+  }
+  .section-dot {
+    display:block !important;
+    width:9px !important;
+    height:9px !important;
+    margin:0 !important;
+    flex:0 0 9px !important;
+  }
+  .category-chevron {
+    grid-column:2 !important;
+    justify-self:center !important;
+    align-self:center !important;
+    width:9px !important;
+    margin:0 !important;
+    font-size:9px !important;
+    line-height:1 !important;
+  }
+  .category-toggle-name {
+    grid-column:3 !important;
+    min-width:0 !important;
+    align-self:center !important;
+    font-size:8.5px !important;
+    line-height:1.03 !important;
+    overflow-wrap:anywhere !important;
+  }
+
+  /* "Avant" only needs the checkbox, no extra lateral whitespace. */
+  .cell[data-col="priorSub"],
+  .cell[data-col="priorDom"],
+  .head-cell[data-col="priorSub"],
+  .head-cell[data-col="priorDom"] {
+    padding-left:1px !important;
+    padding-right:1px !important;
+  }
+  .done-cell {
+    padding:1px !important;
+  }
+  .done {
+    width:34px !important;
+    min-width:34px !important;
+    height:30px !important;
+    min-height:30px !important;
+  }
+}
+
+
+/* --- V1.1.9 mobile category inline counter --- */
+@media (max-width:650px) {
+  .section-left {
+    padding:2px 2px !important;
+  }
+  .category-toggle {
+    display:grid !important;
+    grid-template-columns:auto minmax(0,1fr) 10px !important;
+    grid-template-rows:1fr !important;
+    align-items:center !important;
+    column-gap:4px !important;
+    width:100% !important;
+    min-width:0 !important;
+    min-height:34px !important;
+    padding:1px 0 !important;
+  }
+  .category-marker {
+    grid-column:1 !important;
+    display:inline-flex !important;
+    flex-direction:row !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:3px !important;
+    width:auto !important;
+    min-width:0 !important;
+    line-height:1 !important;
+  }
+  .category-progress {
+    order:2 !important;
+    display:inline-block !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    color:#69737a !important;
+    font-size:7px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+    text-align:left !important;
+  }
+  .section-dot {
+    order:1 !important;
+    display:block !important;
+    width:9px !important;
+    height:9px !important;
+    margin:0 !important;
+    flex:0 0 9px !important;
+  }
+  .category-toggle-name {
+    grid-column:2 !important;
+    min-width:0 !important;
+    align-self:center !important;
+    font-size:8.5px !important;
+    line-height:1.04 !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+  .category-toggle-name::before {
+    content:'· ';
+    color:#8b949b;
+    font-weight:700;
+  }
+  .category-chevron {
+    grid-column:3 !important;
+    justify-self:center !important;
+    align-self:center !important;
+    width:10px !important;
+    margin:0 !important;
+    font-size:9px !important;
+    line-height:1 !important;
   }
 }

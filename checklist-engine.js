@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.7";
+const APP_VERSION = "V1.1.9";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2092,8 +2092,8 @@ function applyColumnGeometry() {
     explanation: isMobile ? "220px" : "320px",
     wantSub: isMobile ? "204px" : "480px",
     wantDom: isMobile ? "204px" : "480px",
-    priorSub: isMobile ? "44px" : "96px",
-    priorDom: isMobile ? "44px" : "96px",
+    priorSub: isMobile ? "40px" : "96px",
+    priorDom: isMobile ? "40px" : "96px",
     doneTogether: isMobile ? "52px" : "100px",
     afterSub: isMobile ? "204px" : "480px",
     afterDom: isMobile ? "204px" : "480px",
@@ -2512,10 +2512,12 @@ function render() {
 
     leftHtml += `<div class="section-left" data-sync="section-${syncIndex}" data-category="${esc(categoryName)}" style="border-left-color:${catColor}">
       <button class="category-toggle" data-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed ? "false" : "true"}">
-        <span class="section-dot" style="background:${catColor}"></span>
+        <span class="category-marker">
+          <span class="category-progress${progressClass}" title="${esc(progressTitle)}" aria-label="${esc(progressTitle)}">${completion.filled}/${completion.total}</span>
+          <span class="section-dot" style="background:${catColor}"></span>
+        </span>
         <span class="category-chevron">${collapsed ? "▸" : "▾"}</span>
         <span class="category-toggle-name">${esc(localizedCategory(categoryName))}</span>
-        <span class="category-progress${progressClass}" title="${esc(progressTitle)}" aria-label="${esc(progressTitle)}">${completion.filled}/${completion.total}</span>
       </button>
     </div>`;
     rightHtml += `<div class="section-right" data-sync="section-${syncIndex}">
