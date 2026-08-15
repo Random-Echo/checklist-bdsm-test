@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.6
+CHECKLISTS D/s — V1.1.7
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
