@@ -4147,7 +4147,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.4 compact mobile practices --- */
+/* --- V1.1.5 compact mobile practices --- */
 .practice.cell,
 .cell.practice {
   display:grid;
@@ -4264,7 +4264,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.4 mobile width reduction pass 2 --- */
+/* --- V1.1.5 mobile width reduction pass 2 --- */
 @media (max-width:650px) {
   :root {
     --left-template:132px !important;
@@ -4293,7 +4293,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.4 mobile column compaction pass --- */
+/* --- V1.1.5 mobile column compaction pass --- */
 @media (max-width:650px) {
   :root {
     --left-template:120px !important;
@@ -4398,7 +4398,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.4 mobile balance pass --- */
+/* --- V1.1.5 mobile balance pass --- */
 @media (max-width:650px) {
   .cell.practice {
     display:block !important;
@@ -4470,5 +4470,136 @@ body.first-use-open{overflow:hidden}
     min-width:25px !important;
     height:30px !important;
     min-height:30px !important;
+  }
+}
+
+
+/* --- V1.1.5 mobile layout refinement --- */
+.practice-bottom {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:4px;
+  width:100%;
+}
+.practice-meta-left {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:3px;
+  min-width:0;
+}
+.practice-meta-right {
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex:0 0 auto;
+}
+@media (max-width:650px) {
+  .cell.practice {
+    display:block !important;
+    padding:2px 2px !important;
+  }
+  .practice-title {
+    display:block !important;
+    margin-bottom:3px !important;
+    font-size:8.7px !important;
+    line-height:1.03 !important;
+  }
+  .practice-bottom {
+    display:flex !important;
+    align-items:flex-end !important;
+    justify-content:space-between !important;
+    gap:4px !important;
+    width:100% !important;
+  }
+  .practice-meta,
+  .practice-pin-wrap,
+  .practice-pin-inline {
+    display:none !important;
+  }
+  .practice-meta-left {
+    display:flex !important;
+    flex-wrap:wrap !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:3px !important;
+    min-width:0 !important;
+    flex:1 1 auto !important;
+  }
+  .practice-meta-right {
+    display:inline-flex !important;
+    align-items:flex-end !important;
+    justify-content:flex-end !important;
+    flex:0 0 auto !important;
+  }
+  .session-pin-btn {
+    width:17px !important;
+    height:17px !important;
+    min-width:17px !important;
+    min-height:17px !important;
+    font-size:9px !important;
+    margin:0 !important;
+  }
+  .level-badge {
+    padding:0 4px !important;
+    font-size:7px !important;
+    margin-left:0 !important;
+  }
+  .risk-badge,
+  .compatibility-badge {
+    font-size:7px !important;
+    margin-left:0 !important;
+  }
+  .cell[data-col="wantSub"],
+  .cell[data-col="wantDom"],
+  .cell[data-col="afterSub"],
+  .cell[data-col="afterDom"] {
+    padding-left:3px !important;
+    padding-right:3px !important;
+  }
+  .score-wrap,
+  .section-right-score .score-wrap {
+    gap:3px !important;
+    justify-content:flex-start !important;
+    flex-wrap:nowrap !important;
+  }
+  .score-btn.semantic-score-btn,
+  .category-score-btn.semantic-score-btn {
+    width:31px !important;
+    min-width:31px !important;
+    height:31px !important;
+    min-height:31px !important;
+    font-size:15px !important;
+  }
+  .score-btn.semantic-score-btn[data-score="0"],
+  .category-score-btn.semantic-score-btn[data-score="0"] {
+    width:31px !important;
+    min-width:31px !important;
+  }
+  .score-btn.unknown-score {
+    width:26px !important;
+    min-width:26px !important;
+    height:31px !important;
+    min-height:31px !important;
+    font-size:12px !important;
+  }
+  .done-cell {
+    justify-content:center !important;
+    padding:2px !important;
+  }
+  .done {
+    width:34px !important;
+    height:30px !important;
+    min-width:34px !important;
+    font-size:18px !important;
+    border-radius:9px !important;
+  }
+  .head-cell[data-col="wantSub"],
+  .head-cell[data-col="wantDom"],
+  .head-cell[data-col="afterSub"],
+  .head-cell[data-col="afterDom"] {
+    padding-left:6px !important;
+    padding-right:6px !important;
   }
 }
