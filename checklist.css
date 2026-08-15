@@ -981,8 +981,8 @@ body[data-readonly="true"] .session-person-note {
 
 @media (max-width:650px) {
   :root {
-    --left-template:132px;
-    --left-width:132px;
+    --left-template:150px;
+    --left-width:150px;
   }
 
   .mobile-category-bar {
@@ -3979,14 +3979,14 @@ body[data-checklist-id="maitre-soumise"] .table-shell {
   }
 
   .cell {
-    padding:2px 3px !important;
+    padding:3px 4px !important;
   }
   .practice {
-    font-size:9px !important;
-    line-height:1.04 !important;
+    font-size:9.5px !important;
+    line-height:1.08 !important;
   }
   .practice-label {
-    line-height:1.04 !important;
+    line-height:1.08 !important;
   }
   .level-badge,
   .risk-badge,
@@ -4147,459 +4147,175 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.5 compact mobile practices --- */
-.practice.cell,
-.cell.practice {
-  display:grid;
-  grid-template-columns:minmax(0,1fr) auto;
-  grid-template-rows:auto auto;
-  column-gap:4px;
-  row-gap:2px;
-  align-items:start;
-}
-.practice-title {
-  grid-column:1;
-  grid-row:1;
-  min-width:0;
-  font-weight:800;
-  line-height:1.12;
-}
-.practice-pin-wrap {
-  grid-column:2;
-  grid-row:1;
-  display:flex;
-  align-items:flex-start;
-  justify-content:flex-end;
-}
-.practice-meta {
-  grid-column:1 / -1;
-  grid-row:2;
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:4px;
-  min-width:0;
-}
-.practice-label {
-  display:block;
-}
-.session-pin-btn {
-  width:24px;
-  height:24px;
-  margin:0;
-}
-.score-btn.semantic-score-btn,
-.category-score-btn.semantic-score-btn {
-  width:36px !important;
-  min-width:36px !important;
-  height:34px !important;
-  min-height:34px !important;
-  padding:0 !important;
-  font-size:16px !important;
-  line-height:1 !important;
-  white-space:nowrap !important;
-  overflow:hidden !important;
-  text-overflow:clip !important;
-}
-.score-btn.semantic-score-btn[data-score="0"],
-.category-score-btn.semantic-score-btn[data-score="0"] {
-  width:34px !important;
-  min-width:34px !important;
-}
-.score-btn.unknown-score {
-  width:30px !important;
-  min-width:30px !important;
-  font-size:14px !important;
-}
+/* =========================================================
+   V1.1.6 — MOBILE CHECKLIST LAYOUT
+   Single clean override: compact practice, full preference row,
+   narrow history columns. Desktop layout remains unchanged.
+   ========================================================= */
 @media (max-width:650px) {
   .cell.practice {
-    column-gap:3px !important;
-    row-gap:1px !important;
-  }
-  .practice-title {
-    font-size:9.6px !important;
-    line-height:1.05 !important;
-  }
-  .practice-meta {
-    gap:3px !important;
-  }
-  .session-pin-btn {
-    width:20px !important;
-    height:20px !important;
-    font-size:11px !important;
-    transform:none !important;
-  }
-  .level-badge {
-    margin-left:0 !important;
-    padding:1px 4px !important;
-  }
-  .risk-badge,
-  .compatibility-badge {
-    margin-left:0 !important;
-  }
-  .score-wrap {
-    gap:2px !important;
-  }
-  .score-btn.semantic-score-btn,
-  .category-score-btn.semantic-score-btn {
-    width:28px !important;
-    min-width:28px !important;
-    height:28px !important;
-    min-height:28px !important;
-    font-size:14px !important;
-    border-radius:7px !important;
-  }
-  .score-btn.semantic-score-btn[data-score="0"],
-  .category-score-btn.semantic-score-btn[data-score="0"] {
-    width:28px !important;
-    min-width:28px !important;
-    font-size:14px !important;
-  }
-  .score-btn.unknown-score {
-    width:24px !important;
-    min-width:24px !important;
-    height:28px !important;
-    font-size:12px !important;
-  }
-}
-
-
-/* --- V1.1.5 mobile width reduction pass 2 --- */
-@media (max-width:650px) {
-  :root {
-    --left-template:132px !important;
-    --left-width:132px !important;
-  }
-  .practice-title {
-    font-size:8.7px !important;
-    line-height:1.02 !important;
-  }
-  .practice-meta {
-    gap:2px !important;
-  }
-  .session-pin-btn {
-    width:18px !important;
-    height:18px !important;
-    min-width:18px !important;
-    min-height:18px !important;
-    font-size:10px !important;
-  }
-  .cell.practice {
-    padding:2px 2px !important;
-  }
-  .level-badge {
-    padding:0 3px !important;
-  }
-}
-
-
-/* --- V1.1.5 mobile column compaction pass --- */
-@media (max-width:650px) {
-  :root {
-    --left-template:120px !important;
-    --left-width:120px !important;
-    --right-template:170px 186px 186px 44px 44px 52px 62px 186px 186px !important;
-    --right-width:1116px !important;
-  }
-
-  .left-head .head-cell,
-  .head-cell {
-    padding:2px 4px !important;
-  }
-
-  .cell {
-    padding:2px 2px !important;
-  }
-
-  .cell.practice {
-    padding:2px 2px !important;
-  }
-
-  .practice,
-  .practice-label,
-  .practice-title {
-    font-size:8.8px !important;
-    line-height:1.02 !important;
-  }
-
-  .practice-meta {
-    gap:2px !important;
-  }
-
-  .section-left {
-    padding:2px 3px !important;
-  }
-
-  .section-right-cell,
-  .cell[data-col="wantSub"],
-  .cell[data-col="wantDom"],
-  .cell[data-col="afterSub"],
-  .cell[data-col="afterDom"] {
-    padding-left:2px !important;
-    padding-right:2px !important;
-  }
-
-  .score-wrap,
-  .section-right-score .score-wrap {
-    justify-content:flex-start !important;
-    gap:2px !important;
-  }
-
-  .section-right-cell.section-right-score {
-    justify-content:flex-start !important;
-  }
-
-  .score-btn.semantic-score-btn,
-  .category-score-btn.semantic-score-btn {
-    width:27px !important;
-    min-width:27px !important;
-    height:27px !important;
-    min-height:27px !important;
-    font-size:13px !important;
-    border-radius:7px !important;
-  }
-
-  .score-btn.semantic-score-btn[data-score="0"],
-  .category-score-btn.semantic-score-btn[data-score="0"] {
-    width:27px !important;
-    min-width:27px !important;
-  }
-
-  .score-btn.unknown-score {
-    width:23px !important;
-    min-width:23px !important;
-    height:27px !important;
-    min-height:27px !important;
-    font-size:12px !important;
-  }
-
-  .session-pin-btn {
-    width:17px !important;
-    height:17px !important;
-    min-width:17px !important;
-    min-height:17px !important;
-    font-size:9px !important;
-  }
-
-  .level-badge,
-  .risk-badge,
-  .compatibility-badge {
-    font-size:6.7px !important;
-  }
-}
-
-@media (orientation:landscape) and (max-height:430px) and (max-width:760px) {
-  :root {
-    --left-template:142px !important;
-    --left-width:142px !important;
-    --right-template:160px 178px 178px 42px 42px 48px 56px 178px 178px !important;
-    --right-width:1060px !important;
-  }
-}
-
-
-/* --- V1.1.5 mobile balance pass --- */
-@media (max-width:650px) {
-  .cell.practice {
-    display:block !important;
-    padding:2px 2px !important;
-  }
-  .practice-title {
-    display:block !important;
-    font-size:8.6px !important;
-    line-height:1.01 !important;
-    margin-bottom:2px !important;
-  }
-  .practice-pin-wrap {
-    display:none !important;
-  }
-  .practice-meta {
     display:flex !important;
-    flex-wrap:wrap !important;
-    align-items:center !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-content:flex-start !important;
     gap:3px !important;
-    font-size:0 !important;
-  }
-  .practice-pin-inline {
-    display:inline-flex !important;
-    align-items:center !important;
-  }
-  .session-pin-btn {
-    width:18px !important;
-    height:18px !important;
-    min-width:18px !important;
-    min-height:18px !important;
-    font-size:10px !important;
-    margin:0 !important;
-  }
-  .level-badge {
-    margin-left:0 !important;
-    padding:0 4px !important;
-    font-size:7px !important;
-  }
-  .risk-badge,
-  .compatibility-badge {
-    margin-left:0 !important;
-    font-size:7px !important;
-  }
-  .done-cell {
-    padding:2px !important;
-  }
-  .done {
-    width:40px !important;
-    height:32px !important;
-    min-width:40px !important;
-    font-size:18px !important;
-    border-radius:9px !important;
-  }
-  .score-btn.semantic-score-btn,
-  .category-score-btn.semantic-score-btn {
-    width:30px !important;
-    min-width:30px !important;
-    height:30px !important;
-    min-height:30px !important;
-    font-size:15px !important;
-  }
-  .score-btn.semantic-score-btn[data-score="0"],
-  .category-score-btn.semantic-score-btn[data-score="0"] {
-    width:30px !important;
-    min-width:30px !important;
-  }
-  .score-btn.unknown-score {
-    width:25px !important;
-    min-width:25px !important;
-    height:30px !important;
-    min-height:30px !important;
-  }
-}
-
-
-/* --- V1.1.5 mobile layout refinement --- */
-.practice-bottom {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:4px;
-  width:100%;
-}
-.practice-meta-left {
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:3px;
-  min-width:0;
-}
-.practice-meta-right {
-  display:inline-flex;
-  align-items:center;
-  justify-content:flex-end;
-  flex:0 0 auto;
-}
-@media (max-width:650px) {
-  .cell.practice {
-    display:block !important;
-    padding:2px 2px !important;
+    padding:3px 3px 2px !important;
+    min-width:0 !important;
   }
   .practice-title {
     display:block !important;
-    margin-bottom:3px !important;
-    font-size:8.7px !important;
-    line-height:1.03 !important;
+    min-width:0 !important;
+    font-size:9px !important;
+    line-height:1.05 !important;
+    font-weight:850 !important;
+    overflow-wrap:anywhere !important;
   }
-  .practice-bottom {
+  .practice-footer {
     display:flex !important;
     align-items:flex-end !important;
     justify-content:space-between !important;
     gap:4px !important;
     width:100% !important;
-  }
-  .practice-meta,
-  .practice-pin-wrap,
-  .practice-pin-inline {
-    display:none !important;
+    min-width:0 !important;
+    margin-top:auto !important;
   }
   .practice-meta-left {
     display:flex !important;
-    flex-wrap:wrap !important;
+    flex:1 1 auto !important;
+    min-width:0 !important;
     align-items:center !important;
     justify-content:flex-start !important;
-    gap:3px !important;
-    min-width:0 !important;
-    flex:1 1 auto !important;
+    flex-wrap:wrap !important;
+    gap:2px !important;
   }
   .practice-meta-right {
-    display:inline-flex !important;
+    display:flex !important;
+    flex:0 0 auto !important;
     align-items:flex-end !important;
     justify-content:flex-end !important;
-    flex:0 0 auto !important;
-  }
-  .session-pin-btn {
-    width:17px !important;
-    height:17px !important;
-    min-width:17px !important;
-    min-height:17px !important;
-    font-size:9px !important;
-    margin:0 !important;
   }
   .level-badge {
+    margin-left:0 !important;
     padding:0 4px !important;
     font-size:7px !important;
-    margin-left:0 !important;
+    line-height:1.35 !important;
   }
   .risk-badge,
   .compatibility-badge {
-    font-size:7px !important;
     margin-left:0 !important;
+    font-size:7px !important;
   }
+  .session-pin-btn {
+    width:19px !important;
+    min-width:19px !important;
+    height:19px !important;
+    min-height:19px !important;
+    padding:0 !important;
+    margin:0 !important;
+    border-radius:6px !important;
+    font-size:10px !important;
+    transform:none !important;
+  }
+
+  /* Preference: seven compact controls fit on one row. */
   .cell[data-col="wantSub"],
   .cell[data-col="wantDom"],
   .cell[data-col="afterSub"],
-  .cell[data-col="afterDom"] {
-    padding-left:3px !important;
-    padding-right:3px !important;
+  .cell[data-col="afterDom"],
+  .section-right-cell.section-right-score {
+    padding-left:2px !important;
+    padding-right:2px !important;
   }
   .score-wrap,
-  .section-right-score .score-wrap {
-    gap:3px !important;
-    justify-content:flex-start !important;
+  .category-rating-buttons {
+    display:flex !important;
     flex-wrap:nowrap !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:2px !important;
   }
   .score-btn.semantic-score-btn,
   .category-score-btn.semantic-score-btn {
-    width:31px !important;
-    min-width:31px !important;
-    height:31px !important;
-    min-height:31px !important;
-    font-size:15px !important;
+    width:27px !important;
+    min-width:27px !important;
+    height:30px !important;
+    min-height:30px !important;
+    padding:0 !important;
+    border-radius:7px !important;
+    font-size:14px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
   }
   .score-btn.semantic-score-btn[data-score="0"],
   .category-score-btn.semantic-score-btn[data-score="0"] {
-    width:31px !important;
-    min-width:31px !important;
+    width:27px !important;
+    min-width:27px !important;
+    font-size:14px !important;
   }
-  .score-btn.unknown-score {
-    width:26px !important;
-    min-width:26px !important;
-    height:31px !important;
-    min-height:31px !important;
+  .score-btn.unknown-score,
+  .category-score-btn.unknown-score {
+    width:25px !important;
+    min-width:25px !important;
+    height:30px !important;
+    min-height:30px !important;
+    padding:0 !important;
     font-size:12px !important;
   }
+  .category-rating-label {
+    display:none !important;
+  }
+
+  /* Done-before: only the check control needs space. */
   .done-cell {
     justify-content:center !important;
     padding:2px !important;
   }
   .done {
     width:34px !important;
-    height:30px !important;
     min-width:34px !important;
+    height:30px !important;
+    min-height:30px !important;
+    padding:0 !important;
+    border-radius:8px !important;
     font-size:18px !important;
-    border-radius:9px !important;
   }
-  .head-cell[data-col="wantSub"],
-  .head-cell[data-col="wantDom"],
-  .head-cell[data-col="afterSub"],
-  .head-cell[data-col="afterDom"] {
-    padding-left:6px !important;
-    padding-right:6px !important;
+
+  /* Category rows must stay inside the same fixed practice width. */
+  .section-left {
+    padding:2px 3px !important;
+  }
+  .category-toggle {
+    display:grid !important;
+    grid-template-columns:7px 10px minmax(0,1fr) auto !important;
+    align-items:center !important;
+    column-gap:2px !important;
+    row-gap:1px !important;
+    min-width:0 !important;
+    padding:1px !important;
+  }
+  .section-dot {
+    width:7px !important;
+    height:7px !important;
+  }
+  .category-chevron {
+    width:10px !important;
+    font-size:9px !important;
+  }
+  .category-toggle-name {
+    min-width:0 !important;
+    font-size:8.5px !important;
+    line-height:1.05 !important;
+    overflow-wrap:anywhere !important;
+  }
+  .category-progress {
+    min-width:30px !important;
+    padding:1px 3px !important;
+    font-size:7px !important;
+    margin-left:0 !important;
+  }
+
+  .head-cell {
+    padding-left:3px !important;
+    padding-right:3px !important;
   }
 }

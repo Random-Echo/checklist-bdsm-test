@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.5";
+const APP_VERSION = "V1.1.6";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -1816,7 +1816,7 @@ function renderHeads() {
       else if (owners.includes("dom")) pairClass = " role-pair-head pair-dom";
     }
 
-    const label = t(group.labelKey);
+    const label = MOBILE_MQ.matches && cols.length ? columnShort(cols[0]) : t(group.labelKey);
     const plainLabel = label.replace(/<br\s*\/?>/gi, " ");
     let roleDetail = "";
     if (owners.includes("sub") && owners.includes("dom")) {
@@ -1858,7 +1858,7 @@ function renderLeftCell(item, key) {
     const selected = isInSession(item);
     const pin = `<button class="session-pin-btn${selected ? " selected" : ""}" data-action="sessionToggle" data-id="${item.id}" type="button" ${readOnly ? "disabled" : ""} title="${selected ? t("removeSession") : t("addSession")}">📌</button>`;
     const metaLeft = `<span class="level-badge level-${item.level || 3}" title="${experienceLabel(item.level === 1 ? "beginner" : item.level === 2 ? "confirmed" : "advanced")}">${levelShortLabel(item.level || 3)}</span>${riskBadge(item)}${compat}`;
-    return `<div class="cell practice" data-col="practice" style="${style}"><span class="practice-title">${esc(localizedPractice(item))}</span><span class="practice-bottom"><span class="practice-meta-left">${metaLeft}</span><span class="practice-meta-right">${pin}</span></span></div>`;
+    return `<div class="cell practice" data-col="practice" style="${style}"><span class="practice-title">${esc(localizedPractice(item))}</span><span class="practice-footer"><span class="practice-meta-left">${metaLeft}</span><span class="practice-meta-right">${pin}</span></span></div>`;
   }
   return "";
 }
@@ -2086,17 +2086,17 @@ function applyColumnGeometry() {
   const fixedDefs = {
     num: isMobile ? "0px" : "48px",
     category: isMobile ? "0px" : "180px",
-    practice: isMobile ? "126px" : "260px",
+    practice: isMobile ? "118px" : "260px",
   };
   const scrollDefs = {
     explanation: isMobile ? "220px" : "320px",
-    wantSub: isMobile ? "384px" : "480px",
-    wantDom: isMobile ? "384px" : "480px",
-    priorSub: isMobile ? "54px" : "96px",
-    priorDom: isMobile ? "54px" : "96px",
-    doneTogether: isMobile ? "60px" : "100px",
-    afterSub: isMobile ? "384px" : "480px",
-    afterDom: isMobile ? "384px" : "480px",
+    wantSub: isMobile ? "204px" : "480px",
+    wantDom: isMobile ? "204px" : "480px",
+    priorSub: isMobile ? "44px" : "96px",
+    priorDom: isMobile ? "44px" : "96px",
+    doneTogether: isMobile ? "52px" : "100px",
+    afterSub: isMobile ? "204px" : "480px",
+    afterDom: isMobile ? "204px" : "480px",
     notes: isMobile ? "240px" : "320px",
   };
   const visibleFixed = getVisibleFixedColumns();
