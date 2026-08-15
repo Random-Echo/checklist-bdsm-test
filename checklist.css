@@ -4145,3 +4145,120 @@ body.first-use-open{overflow:hidden}
   .merge-review-copy span{font-size:.72rem}
   .merge-review-actions button{min-height:28px;padding:3px 7px;font-size:.7rem}
 }
+
+
+/* --- V1.0 compact mobile practices --- */
+.practice.cell,
+.cell.practice {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:auto auto;
+  column-gap:4px;
+  row-gap:2px;
+  align-items:start;
+}
+.practice-title {
+  grid-column:1;
+  grid-row:1;
+  min-width:0;
+  font-weight:800;
+  line-height:1.12;
+}
+.practice-pin-wrap {
+  grid-column:2;
+  grid-row:1;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+}
+.practice-meta {
+  grid-column:1 / -1;
+  grid-row:2;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:4px;
+  min-width:0;
+}
+.practice-label {
+  display:block;
+}
+.session-pin-btn {
+  width:24px;
+  height:24px;
+  margin:0;
+}
+.score-btn.semantic-score-btn,
+.category-score-btn.semantic-score-btn {
+  width:36px !important;
+  min-width:36px !important;
+  height:34px !important;
+  min-height:34px !important;
+  padding:0 !important;
+  font-size:16px !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:clip !important;
+}
+.score-btn.semantic-score-btn[data-score="0"],
+.category-score-btn.semantic-score-btn[data-score="0"] {
+  width:34px !important;
+  min-width:34px !important;
+}
+.score-btn.unknown-score {
+  width:30px !important;
+  min-width:30px !important;
+  font-size:14px !important;
+}
+@media (max-width:650px) {
+  .cell.practice {
+    column-gap:3px !important;
+    row-gap:1px !important;
+  }
+  .practice-title {
+    font-size:9.6px !important;
+    line-height:1.05 !important;
+  }
+  .practice-meta {
+    gap:3px !important;
+  }
+  .session-pin-btn {
+    width:20px !important;
+    height:20px !important;
+    font-size:11px !important;
+    transform:none !important;
+  }
+  .level-badge {
+    margin-left:0 !important;
+    padding:1px 4px !important;
+  }
+  .risk-badge,
+  .compatibility-badge {
+    margin-left:0 !important;
+  }
+  .score-wrap {
+    gap:2px !important;
+  }
+  .score-btn.semantic-score-btn,
+  .category-score-btn.semantic-score-btn {
+    width:28px !important;
+    min-width:28px !important;
+    height:28px !important;
+    min-height:28px !important;
+    font-size:14px !important;
+    border-radius:7px !important;
+  }
+  .score-btn.semantic-score-btn[data-score="0"],
+  .category-score-btn.semantic-score-btn[data-score="0"] {
+    width:28px !important;
+    min-width:28px !important;
+    font-size:14px !important;
+  }
+  .score-btn.unknown-score {
+    width:24px !important;
+    min-width:24px !important;
+    height:28px !important;
+    font-size:12px !important;
+  }
+}

@@ -340,11 +340,14 @@ function scoreLabel(value, compact=false, role=null) {
 }
 function scoreButtonLabel(value, role=null) {
   const v = validScore(value);
-  if (v === null) return t("unknown");
-  if (v === FANTASY_SCORE) return currentLang === "fr" ? "💭<br>Fantasme" : "💭<br>Fantasy";
-  if (v === FAVORITE_SCORE) return `${favoriteSymbol(role)}<br>${t("favoriteWord")}`;
-  if (currentLang === "fr") return ["🚫", "Pas<br>maintenant", "Neutre", "🔥<br>Envie"][v];
-  return ["🚫", "Not<br>now", "Neutral", "🔥<br>Want"][v];
+  if (v === null) return "?";
+  if (v === FANTASY_SCORE) return "💭";
+  if (v === FAVORITE_SCORE) return favoriteSymbol(role);
+  if (v === 0) return "🚫";
+  if (v === 1) return "⏳";
+  if (v === 2) return "😐";
+  if (v === 3) return "🔥";
+  return "?";
 }
 function scoreDescription(value) {
   const v = validScore(value);
@@ -1854,7 +1857,8 @@ function renderLeftCell(item, key) {
         : "");
     const selected = isInSession(item);
     const pin = `<button class="session-pin-btn${selected ? " selected" : ""}" data-action="sessionToggle" data-id="${item.id}" type="button" ${readOnly ? "disabled" : ""} title="${selected ? t("removeSession") : t("addSession")}">📌</button>`;
-    return `<div class="cell practice" data-col="practice" style="${style}"><span class="practice-label">${esc(localizedPractice(item))}<span class="level-badge level-${item.level || 3}" title="${experienceLabel(item.level === 1 ? "beginner" : item.level === 2 ? "confirmed" : "advanced")}">${levelShortLabel(item.level || 3)}</span>${riskBadge(item)}${compat}</span>${pin}</div>`;
+    const meta = `<span class="level-badge level-${item.level || 3}" title="${experienceLabel(item.level === 1 ? "beginner" : item.level === 2 ? "confirmed" : "advanced")}">${levelShortLabel(item.level || 3)}</span>${riskBadge(item)}${compat}`;
+    return `<div class="cell practice" data-col="practice" style="${style}"><span class="practice-title">${esc(localizedPractice(item))}</span><span class="practice-pin-wrap">${pin}</span><span class="practice-meta">${meta}</span></div>`;
   }
   return "";
 }
