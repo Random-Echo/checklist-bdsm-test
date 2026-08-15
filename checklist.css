@@ -981,8 +981,8 @@ body[data-readonly="true"] .session-person-note {
 
 @media (max-width:650px) {
   :root {
-    --left-template:150px;
-    --left-width:150px;
+    --left-template:132px;
+    --left-width:132px;
   }
 
   .mobile-category-bar {
@@ -3979,14 +3979,14 @@ body[data-checklist-id="maitre-soumise"] .table-shell {
   }
 
   .cell {
-    padding:3px 4px !important;
+    padding:2px 3px !important;
   }
   .practice {
-    font-size:9.5px !important;
-    line-height:1.08 !important;
+    font-size:9px !important;
+    line-height:1.04 !important;
   }
   .practice-label {
-    line-height:1.08 !important;
+    line-height:1.04 !important;
   }
   .level-badge,
   .risk-badge,
@@ -4260,5 +4260,34 @@ body.first-use-open{overflow:hidden}
     min-width:24px !important;
     height:28px !important;
     font-size:12px !important;
+  }
+}
+
+
+/* --- V1.0 mobile width reduction pass 2 --- */
+@media (max-width:650px) {
+  :root {
+    --left-template:132px !important;
+    --left-width:132px !important;
+  }
+  .practice-title {
+    font-size:8.7px !important;
+    line-height:1.02 !important;
+  }
+  .practice-meta {
+    gap:2px !important;
+  }
+  .session-pin-btn {
+    width:18px !important;
+    height:18px !important;
+    min-width:18px !important;
+    min-height:18px !important;
+    font-size:10px !important;
+  }
+  .cell.practice {
+    padding:2px 2px !important;
+  }
+  .level-badge {
+    padding:0 3px !important;
   }
 }
