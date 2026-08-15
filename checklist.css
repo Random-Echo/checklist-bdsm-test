@@ -4148,7 +4148,7 @@ body.first-use-open{overflow:hidden}
 
 
 /* =========================================================
-   V1.1.10 — MOBILE CHECKLIST LAYOUT
+   V1.1.11 — MOBILE CHECKLIST LAYOUT
    Single clean override: compact practice, full preference row,
    narrow history columns. Desktop layout remains unchanged.
    ========================================================= */
@@ -4321,7 +4321,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.10 mobile category header fix --- */
+/* --- V1.1.11 mobile category header fix --- */
 @media (max-width:650px) {
   .section-left {
     padding:2px 2px !important;
@@ -4380,7 +4380,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.10 mobile category/header finishing --- */
+/* --- V1.1.11 mobile category/header finishing --- */
 @media (max-width:650px) {
   /* Category header: one compact marker stack, then chevron and label. */
   .section-left {
@@ -4471,7 +4471,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.10 mobile sticky category count --- */
+/* --- V1.1.11 mobile sticky category count --- */
 @media (max-width:650px) {
   .mobile-category-bar {
     gap:5px;
@@ -4487,5 +4487,22 @@ body.first-use-open{overflow:hidden}
   .mobile-category-bar strong {
     flex:1 1 auto;
     min-width:0;
+  }
+}
+
+
+/* --- V1.1.11 mobile category duplicate counter fix --- */
+@media (max-width:650px) {
+  .category-progress {
+    display:none !important;
+  }
+  .category-marker {
+    width:11px !important;
+    min-width:11px !important;
+    gap:0 !important;
+  }
+  .category-toggle {
+    grid-template-columns:11px 9px minmax(0,1fr) !important;
+    column-gap:3px !important;
   }
 }
