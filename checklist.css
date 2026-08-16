@@ -5535,9 +5535,9 @@ body.first-use-open{overflow:hidden}
   }
   .mobile-state-check,
   .mobile-response-grid.has-other .mobile-state-check {
-    width:52px !important;
-    min-width:52px !important;
-    max-width:52px !important;
+    width:62px !important;
+    min-width:62px !important;
+    max-width:62px !important;
   }
 }
 
@@ -5803,7 +5803,7 @@ body.first-use-open{overflow:hidden}
 
   /* Other role visible: preserve the compact two-column composition. */
   .mobile-response-grid.has-other {
-    grid-template-columns:minmax(0,1fr) 70px !important;
+    grid-template-columns:minmax(0,1fr) 66px !important;
     gap:4px !important;
   }
   .mobile-response-grid.has-other .mobile-rating-row {
@@ -5905,9 +5905,9 @@ body.first-use-open{overflow:hidden}
     max-width:27px !important;
   }
   .mobile-response-grid.is-solo .mobile-state-check {
-    width:56px !important;
-    min-width:56px !important;
-    max-width:56px !important;
+    width:64px !important;
+    min-width:64px !important;
+    max-width:64px !important;
     padding-left:3px !important;
     padding-right:3px !important;
     font-size:7px !important;
@@ -6101,14 +6101,18 @@ body.first-use-open{overflow:hidden}
    Desktop and reading mode are unchanged.
    ========================================================= */
 @media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body:not([data-readonly="true"]) .mobile-category-bar {
+    display:none !important;
+  }
+
   body:not([data-readonly="true"]) .mobile-response-grid.has-other {
-    grid-template-columns:minmax(0,1fr) 70px !important;
+    grid-template-columns:minmax(0,1fr) 66px !important;
     gap:4px !important;
     align-items:stretch !important;
   }
 
   body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-rating-row {
-    grid-template-columns:28px minmax(0,1fr) 56px !important;
+    grid-template-columns:25px minmax(0,1fr) 64px !important;
     gap:3px !important;
     padding-left:5px !important;
     padding-right:5px !important;
@@ -6130,9 +6134,9 @@ body.first-use-open{overflow:hidden}
   }
 
   body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-state-check {
-    width:56px !important;
-    min-width:56px !important;
-    max-width:56px !important;
+    width:64px !important;
+    min-width:64px !important;
+    max-width:64px !important;
     gap:2px !important;
     padding:2px 4px !important;
     font-size:7.2px !important;
@@ -6155,9 +6159,9 @@ body.first-use-open{overflow:hidden}
   }
 
   body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-other-summary {
-    width:70px !important;
-    min-width:70px !important;
-    max-width:70px !important;
+    width:66px !important;
+    min-width:66px !important;
+    max-width:66px !important;
     border-radius:9px !important;
     overflow:hidden !important;
   }
@@ -6202,30 +6206,30 @@ body.first-use-open{overflow:hidden}
 
 @media (max-width:380px) {
   body:not([data-readonly="true"]) .mobile-response-grid.has-other {
-    grid-template-columns:minmax(0,1fr) 66px !important;
+    grid-template-columns:minmax(0,1fr) 62px !important;
     gap:3px !important;
   }
 
   body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-rating-row {
-    grid-template-columns:25px minmax(0,1fr) 52px !important;
+    grid-template-columns:23px minmax(0,1fr) 60px !important;
     gap:2px !important;
     padding-left:3px !important;
     padding-right:3px !important;
   }
 
   body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-state-check {
-    width:52px !important;
-    min-width:52px !important;
-    max-width:52px !important;
+    width:60px !important;
+    min-width:60px !important;
+    max-width:60px !important;
     padding-left:2px !important;
     padding-right:2px !important;
     font-size:6.9px !important;
   }
 
   body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-other-summary {
-    width:60px !important;
-    min-width:60px !important;
-    max-width:60px !important;
+    width:62px !important;
+    min-width:62px !important;
+    max-width:62px !important;
   }
 }
 
@@ -6287,10 +6291,10 @@ body.first-use-open{overflow:hidden}
 @media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
   body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct {
     display:grid !important;
-    grid-template-columns:86px minmax(0,1fr) !important;
+    grid-template-columns:62px minmax(0,1fr) !important;
     align-items:start !important;
-    gap:6px !important;
-    padding:6px 8px 7px !important;
+    gap:4px !important;
+    padding:4px 7px 5px !important;
     border-top:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 38%, rgba(70,61,67,.14)) !important;
     background:rgba(255,255,255,.34) !important;
   }
@@ -6299,8 +6303,8 @@ body.first-use-open{overflow:hidden}
     display:flex !important;
     align-items:center !important;
     gap:3px !important;
-    min-height:30px !important;
-    padding-top:6px !important;
+    min-height:28px !important;
+    padding-top:4px !important;
     color:#5e575c !important;
     font-size:8px !important;
     font-weight:850 !important;
@@ -6321,13 +6325,13 @@ body.first-use-open{overflow:hidden}
 
   body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-editor {
     display:grid !important;
-    gap:4px !important;
+    gap:3px !important;
     min-width:0 !important;
   }
 
   body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-row {
-    grid-template-columns:16px minmax(0,1fr) !important;
-    gap:4px !important;
+    grid-template-columns:14px minmax(0,1fr) !important;
+    gap:3px !important;
     align-items:center !important;
     min-width:0 !important;
   }
@@ -6343,11 +6347,11 @@ body.first-use-open{overflow:hidden}
   body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .person-note-input {
     width:100% !important;
     min-width:0 !important;
-    min-height:34px !important;
-    height:34px !important;
-    max-height:82px !important;
+    min-height:29px !important;
+    height:29px !important;
+    max-height:72px !important;
     resize:vertical !important;
-    padding:5px 6px !important;
+    padding:4px 6px !important;
     border-radius:7px !important;
     font-size:9px !important;
     line-height:1.2 !important;
@@ -6355,8 +6359,8 @@ body.first-use-open{overflow:hidden}
   }
 
   body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-row.is-active-person .person-note-input:focus {
-    min-height:42px !important;
-    height:42px !important;
+    min-height:34px !important;
+    height:34px !important;
   }
 
   body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-row.is-other-person .person-note-input {

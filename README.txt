@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.53
+CHECKLISTS D/s — V1.1.54
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -82,4 +82,4 @@ V1.1.41 : alignement précis du repère de lecture mobile avec les trois colonne
 
 V1.1.50 : réalignement propre du mode lecture mobile sur une grille unique partagée entre le repère sticky et les cartes : colonnes des trois résultats recalées, symboles recentrés, largeur commune harmonisée et espacement stabilisé. Desktop inchangé.
 V1.1.51 : refactorisation complète du mode lecture mobile : suppression des anciennes couches CSS contradictoires des V1.1.23 à V1.1.50 pour cette zone, remplacées par une seule grille de référence partagée entre le bandeau sticky et les trois résultats des cartes. Alignement, centrage, tailles et espacements sont désormais définis à un seul endroit. Le mode édition mobile et le desktop restent séparés et inchangés.
-V1.1.53 : grosse refactorisation/optimisation interne sans changement fonctionnel voulu : rendu mobile séparé en composants lecture/édition, contexte de rendu calculé une seule fois par rendu complet, suppression de calculs et composants mobiles obsolètes (ancienne fiche d’explication et anciennes notes repliables), mise à jour d’une carte mobile sans recherche DOM globale, progression de catégorie mobile mise à jour en place sans rerendu complet, gestion des notes factorisée, allocations roleFields supprimées et CSS mort nettoyé. Données, sauvegardes, desktop et catalogue inchangés.
+V1.1.54 : en mode édition mobile, la barre sticky de catégorie/résultats réservée au mode lecture est masquée ; la zone Notes est compactée ; les boutons Avant / Ensemble gagnent de la largeur pour éviter la troncature, avec un léger rééquilibrage du panneau partenaire. Desktop et mode lecture inchangés.
