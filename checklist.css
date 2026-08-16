@@ -4148,7 +4148,7 @@ body.first-use-open{overflow:hidden}
 
 
 /* =========================================================
-   V1.1.11 — MOBILE CHECKLIST LAYOUT
+   V1.2.0 — MOBILE CHECKLIST LAYOUT
    Single clean override: compact practice, full preference row,
    narrow history columns. Desktop layout remains unchanged.
    ========================================================= */
@@ -4321,7 +4321,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.11 mobile category header fix --- */
+/* --- V1.2.0 mobile category header fix --- */
 @media (max-width:650px) {
   .section-left {
     padding:2px 2px !important;
@@ -4380,7 +4380,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.11 mobile category/header finishing --- */
+/* --- V1.2.0 mobile category/header finishing --- */
 @media (max-width:650px) {
   /* Category header: one compact marker stack, then chevron and label. */
   .section-left {
@@ -4471,7 +4471,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.11 mobile sticky category count --- */
+/* --- V1.2.0 mobile sticky category count --- */
 @media (max-width:650px) {
   .mobile-category-bar {
     gap:5px;
@@ -4491,7 +4491,7 @@ body.first-use-open{overflow:hidden}
 }
 
 
-/* --- V1.1.11 mobile category duplicate counter fix --- */
+/* --- V1.2.0 mobile category duplicate counter fix --- */
 @media (max-width:650px) {
   .category-progress {
     display:none !important;
@@ -4506,3 +4506,434 @@ body.first-use-open{overflow:hidden}
     column-gap:3px !important;
   }
 }
+
+
+/* =========================================================
+   V1.2.0 — MOBILE CARD VIEW
+   Dedicated mobile rendering. Desktop table is untouched.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  .table-header,
+  .right-pane,
+  .bottom-scroll-row {
+    display:none !important;
+  }
+  .rows-wrap,
+  .left-pane,
+  .left-table {
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:none !important;
+  }
+  .left-pane {
+    flex:1 1 auto !important;
+  }
+  .table-body {
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    padding:0 !important;
+    background:#f4f5f6 !important;
+  }
+  .mobile-category-bar {
+    display:flex !important;
+  }
+
+  .mobile-section-header {
+    width:100%;
+    border-top:1px solid #d5d9dd;
+    border-bottom:1px solid #d5d9dd;
+    border-left:5px solid var(--category-color,#9aa0a6);
+    background:#eef0f2;
+  }
+  .mobile-category-toggle {
+    display:grid;
+    grid-template-columns:10px auto auto minmax(0,1fr) 18px;
+    align-items:center;
+    gap:4px;
+    width:100%;
+    min-height:34px;
+    padding:5px 7px;
+    border:0;
+    background:transparent;
+    color:#263238;
+    text-align:left;
+    cursor:pointer;
+  }
+  .mobile-section-dot {
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    border:1px solid rgba(0,0,0,.15);
+  }
+  .mobile-section-progress {
+    color:#657078;
+    font-size:8px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+  .mobile-section-separator {
+    color:#8a9298;
+    font-size:9px;
+  }
+  .mobile-section-name {
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:10px;
+    font-weight:900;
+  }
+  .mobile-section-chevron {
+    justify-self:end;
+    font-size:11px;
+    font-weight:900;
+  }
+
+  .mobile-practice-card {
+    margin:5px 5px 0;
+    border:1px solid #d4d8dc;
+    border-radius:9px;
+    background:#fff;
+    overflow:hidden;
+    box-shadow:0 1px 2px rgba(0,0,0,.045);
+  }
+  .mobile-practice-heading {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 28px;
+    align-items:start;
+    gap:5px;
+    padding:7px 7px 2px;
+  }
+  .mobile-practice-name {
+    min-width:0;
+    font-size:11px;
+    line-height:1.18;
+    color:#252b30;
+  }
+  .mobile-info-btn {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:25px;
+    height:25px;
+    justify-self:end;
+    border:1px solid #c7ccd0;
+    border-radius:50%;
+    background:#f7f8f9;
+    color:#4f5960;
+    font-size:15px;
+    font-weight:900;
+    padding:0;
+  }
+  .mobile-practice-meta {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+    min-height:23px;
+    padding:0 7px 4px;
+  }
+  .mobile-practice-meta-left {
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:3px;
+    min-width:0;
+  }
+  .mobile-practice-meta-right {
+    flex:0 0 auto;
+  }
+  .mobile-practice-meta .level-badge,
+  .mobile-practice-meta .risk-badge,
+  .mobile-practice-meta .compatibility-badge {
+    margin-left:0 !important;
+  }
+  .mobile-practice-meta .session-pin-btn {
+    width:21px !important;
+    min-width:21px !important;
+    height:21px !important;
+    min-height:21px !important;
+    transform:none !important;
+  }
+
+  .mobile-rating-stack {
+    border-top:1px solid #e0e3e5;
+  }
+  .mobile-rating-row {
+    display:grid;
+    grid-template-columns:58px minmax(0,1fr) 68px;
+    align-items:center;
+    gap:4px;
+    padding:3px 6px;
+    transition:min-height .15s ease, background .15s ease;
+  }
+  .mobile-rating-row + .mobile-rating-row {
+    border-top:1px solid #e4e7e9;
+  }
+  .mobile-rating-row.is-primary {
+    min-height:47px;
+    background:#fff;
+  }
+  .mobile-rating-row.is-secondary {
+    min-height:28px;
+    background:#f7f8f9;
+  }
+  .mobile-rating-row.is-disabled {
+    color:#899198;
+    background:#f0f1f2;
+  }
+  .mobile-rating-label {
+    font-size:9px;
+    font-weight:900;
+    line-height:1.05;
+  }
+  .mobile-score-wrap {
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:2px;
+    min-width:0;
+  }
+  .mobile-rating-row.is-primary .score-btn.semantic-score-btn {
+    width:29px !important;
+    min-width:29px !important;
+    height:31px !important;
+    min-height:31px !important;
+    padding:0 !important;
+    font-size:14px !important;
+    border-radius:7px !important;
+  }
+  .mobile-rating-row.is-primary .score-btn.unknown-score {
+    width:24px !important;
+    min-width:24px !important;
+  }
+  .mobile-rating-row.is-secondary .score-btn.semantic-score-btn {
+    width:22px !important;
+    min-width:22px !important;
+    height:22px !important;
+    min-height:22px !important;
+    padding:0 !important;
+    font-size:11px !important;
+    border-radius:6px !important;
+  }
+  .mobile-rating-row.is-secondary .score-btn.unknown-score {
+    width:19px !important;
+    min-width:19px !important;
+    height:22px !important;
+    min-height:22px !important;
+    font-size:10px !important;
+  }
+  .mobile-after-placeholder {
+    color:#9aa1a6;
+    font-size:13px;
+    font-weight:800;
+  }
+  .mobile-state-check {
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:3px;
+    min-width:0;
+    min-height:25px;
+    padding:2px 4px;
+    border:1px solid #c8cdd1;
+    border-radius:7px;
+    background:#fff;
+    color:#4d565d;
+    font-size:7.5px;
+    font-weight:850;
+    line-height:1;
+    white-space:nowrap;
+  }
+  .mobile-state-check.checked {
+    background:var(--s5);
+    border-color:#6f995d;
+    color:#2d521f;
+  }
+  .mobile-state-check:disabled {
+    opacity:.55;
+  }
+  .mobile-check-box {
+    font-size:14px;
+    line-height:1;
+  }
+  .mobile-rating-row.is-secondary .mobile-state-check {
+    min-height:22px;
+    padding-top:1px;
+    padding-bottom:1px;
+  }
+
+  .mobile-practice-card.row-random-picked {
+    outline:3px solid #263238;
+    outline-offset:-3px;
+  }
+
+  .empty {
+    margin:12px 8px;
+  }
+}
+
+@media (max-width:380px) {
+  .mobile-rating-row {
+    grid-template-columns:50px minmax(0,1fr) 62px;
+    gap:3px;
+    padding-left:4px;
+    padding-right:4px;
+  }
+  .mobile-rating-row.is-primary .score-btn.semantic-score-btn {
+    width:27px !important;
+    min-width:27px !important;
+  }
+  .mobile-rating-row.is-primary .score-btn.unknown-score {
+    width:22px !important;
+    min-width:22px !important;
+  }
+  .mobile-rating-label { font-size:8px; }
+  .mobile-state-check { font-size:7px; padding-left:3px; padding-right:3px; }
+}
+
+/* =========================================================
+   V1.2.1 · MOBILE STEP 2 — EXPLICATION + NOTES REPLIABLES
+   Desktop inchangé : tout est limité à <= 650 px.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  .mobile-notes-block {
+    border-top:1px solid #e2e5e7;
+    background:#fafbfb;
+  }
+  .mobile-notes-toggle {
+    width:100%;
+    min-height:31px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:4px 8px;
+    border:0;
+    background:transparent;
+    color:#4c555c;
+    text-align:left;
+    cursor:pointer;
+  }
+  .mobile-notes-label {
+    display:flex;
+    align-items:center;
+    gap:5px;
+    min-width:0;
+    font-size:8.5px;
+    font-weight:850;
+  }
+  .mobile-notes-icon { font-size:11px; }
+  .mobile-notes-indicator {
+    width:6px;
+    height:6px;
+    flex:0 0 6px;
+    border-radius:50%;
+    background:var(--variant-bg);
+    box-shadow:0 0 0 2px rgba(255,255,255,.9);
+  }
+  .mobile-notes-chevron {
+    flex:0 0 auto;
+    color:#68727a;
+    font-size:10px;
+    font-weight:900;
+  }
+  .mobile-notes-block.is-open { background:#fff; }
+  .mobile-notes-editor {
+    padding:2px 7px 7px;
+  }
+  .mobile-notes-editor[hidden] { display:none !important; }
+  .mobile-notes-editor .shared-note-editor { gap:4px; }
+  .mobile-notes-editor .shared-note-row {
+    grid-template-columns:18px minmax(0,1fr);
+    gap:4px;
+    align-items:start;
+  }
+  .mobile-notes-editor .shared-note-person {
+    padding-top:7px;
+    font-size:9px;
+  }
+  .mobile-notes-editor .person-note-input {
+    min-height:42px;
+    height:42px;
+    max-height:92px;
+    resize:vertical;
+    padding:6px 7px;
+    border-radius:7px;
+    font-size:10px;
+    line-height:1.25;
+  }
+
+  body.mobile-practice-info-open { overflow:hidden; }
+  .mobile-practice-info-modal {
+    position:fixed;
+    inset:0;
+    z-index:10050;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .mobile-practice-info-modal[hidden] { display:none !important; }
+  .mobile-practice-info-backdrop {
+    position:absolute;
+    inset:0;
+    background:rgba(20,24,27,.46);
+    backdrop-filter:blur(1.5px);
+  }
+  .mobile-practice-info-sheet {
+    position:relative;
+    z-index:1;
+    width:min(100%, 560px);
+    max-height:min(60vh, 430px);
+    overflow:auto;
+    padding:7px 13px calc(15px + env(safe-area-inset-bottom));
+    border-radius:16px 16px 0 0;
+    background:#fff;
+    box-shadow:0 -8px 28px rgba(0,0,0,.18);
+  }
+  .mobile-practice-info-handle {
+    width:38px;
+    height:4px;
+    margin:0 auto 7px;
+    border-radius:99px;
+    background:#c9ced2;
+  }
+  .mobile-practice-info-head {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 30px;
+    gap:8px;
+    align-items:start;
+  }
+  .mobile-practice-info-head strong {
+    padding-top:3px;
+    font-size:13px;
+    line-height:1.2;
+    color:#23292e;
+  }
+  .mobile-practice-info-close {
+    width:28px;
+    height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #cbd0d4;
+    border-radius:50%;
+    background:#f6f7f8;
+    color:#4d565d;
+    font-size:20px;
+    line-height:1;
+  }
+  .mobile-practice-info-copy {
+    margin-top:8px;
+    padding:9px 10px;
+    border-left:3px solid var(--variant-bg);
+    border-radius:0 8px 8px 0;
+    background:#f7f8f9;
+    color:#3e474d;
+    font-size:11px;
+    line-height:1.45;
+    white-space:pre-wrap;
+  }
+}
+\n\n/* =========================================================\n   V1.1.12 — MOBILE CARD FINALISATION / AUDIT\n   Même breakpoint que MOBILE_MQ ; desktop strictement inchangé.\n   ========================================================= */\n@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {\n  /* Empêche tout débordement horizontal des cartes et contrôles. */\n  .mobile-practice-card,\n  .mobile-practice-card * {\n    box-sizing:border-box;\n  }\n  .mobile-practice-card {\n    max-width:calc(100% - 10px);\n  }\n  .mobile-score-wrap {\n    overflow:hidden;\n  }\n  .mobile-rating-row {\n    min-width:0;\n  }\n  .mobile-rating-label,\n  .mobile-state-check {\n    min-width:0;\n  }\n  .mobile-state-check span:last-child {\n    overflow:hidden;\n    text-overflow:ellipsis;\n  }\n  .mobile-info-btn,\n  .mobile-notes-toggle,\n  .mobile-state-check,\n  .mobile-practice-meta .session-pin-btn {\n    touch-action:manipulation;\n    -webkit-tap-highlight-color:transparent;\n  }\n  .mobile-practice-card button:focus-visible,\n  .mobile-practice-info-sheet button:focus-visible,\n  .mobile-notes-editor textarea:focus-visible {\n    outline:2px solid #263238;\n    outline-offset:2px;\n  }\n  .mobile-rating-row.is-disabled .mobile-score-wrap {\n    opacity:.55;\n  }\n  .mobile-rating-row.is-disabled .mobile-state-check {\n    opacity:1;\n  }\n}\n\n@media (orientation:landscape) and (max-height:520px) and (max-width:1100px) and (min-width:651px) {\n  .mobile-practice-info-sheet {\n    width:min(86vw,680px);\n    max-height:82vh;\n    border-radius:14px 14px 0 0;\n  }\n  .mobile-practice-card {\n    margin-top:4px;\n  }\n  .mobile-notes-editor .person-note-input {\n    min-height:36px;\n    height:36px;\n  }\n}\n

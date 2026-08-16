@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.11";
+const APP_VERSION = "V1.1.12";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -429,6 +429,9 @@ let searchNotesById = new Map();
 // Caches du DOM courant : reconstruits uniquement après un render complet.
 let leftRowById = new Map();
 let rightRowById = new Map();
+let mobileCardById = new Map();
+const mobileOpenNotes = new Set();
+let mobilePracticeInfoReturnFocus = null;
 let categorySectionByName = new Map();
 let syncLeftRows = [];
 let syncRightRows = [];
@@ -1705,6 +1708,21 @@ function syncSingleRowHeight(id) {
 }
 
 function refreshItemRow(item) {
+  // La vue mobile utilise une carte autonome : on ne touche jamais au rendu desktop.
+  if (MOBILE_MQ.matches) {
+    const card = mobileCardById.get(Number(item.id));
+    if (!card || hasActiveFiltering()) {
+      render();
+      return;
+    }
+    card.outerHTML = renderMobilePracticeCard(item);
+    const fresh = leftTable.querySelector(`.mobile-practice-card[data-row-id="${item.id}"]`);
+    if (fresh) mobileCardById.set(Number(item.id), fresh);
+    updateStats();
+    updateMobileCategoryBar();
+    return;
+  }
+
   // Si un filtre actif peut faire entrer/sortir la ligne, on garde le render complet.
   if (hasActiveFiltering()) {
     render();
@@ -2178,6 +2196,10 @@ function categoryProgressTitle(categoryName, completion) {
 }
 
 function refreshCategoryProgress(categoryName) {
+  if (MOBILE_MQ.matches) {
+    render();
+    return;
+  }
   const completion = categoryCompletion(categoryName);
   const title = categoryProgressTitle(categoryName, completion);
   const section = categorySectionByName.get(categoryName);
@@ -2479,13 +2501,190 @@ async function applyCategoryScore(categoryName, rawScore) {
 }
 
 
-function render() {
-  renderHeads();
-  applyColumnGeometry();
+function mobileHasNotes(item) {
+  return !!((item.noteFemale || "").trim() || (item.noteMale || "").trim());
+}
 
+function ensureMobilePracticeInfoModal() {
+  let modal = document.getElementById("mobilePracticeInfoModal");
+  if (modal) return modal;
+  modal = document.createElement("div");
+  modal.id = "mobilePracticeInfoModal";
+  modal.className = "mobile-practice-info-modal";
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  modal.innerHTML = `<div class="mobile-practice-info-backdrop" data-mobile-info-close="true"></div>
+    <section class="mobile-practice-info-sheet" role="dialog" aria-modal="true" aria-labelledby="mobilePracticeInfoTitle">
+      <div class="mobile-practice-info-handle" aria-hidden="true"></div>
+      <div class="mobile-practice-info-head">
+        <strong id="mobilePracticeInfoTitle"></strong>
+        <button type="button" class="mobile-practice-info-close" data-mobile-info-close="true" aria-label="${currentLang === "fr" ? "Fermer" : "Close"}">×</button>
+      </div>
+      <div class="mobile-practice-info-copy" id="mobilePracticeInfoCopy"></div>
+    </section>`;
+  document.body.appendChild(modal);
+  modal.addEventListener("click", e => {
+    if (e.target.closest('[data-mobile-info-close="true"]')) closeMobilePracticeInfo();
+  });
+  return modal;
+}
+
+function openMobilePracticeInfo(item, sourceButton) {
+  if (!item) return;
+  const modal = ensureMobilePracticeInfoModal();
+  mobilePracticeInfoReturnFocus = sourceButton || null;
+  const title = modal.querySelector("#mobilePracticeInfoTitle");
+  const copy = modal.querySelector("#mobilePracticeInfoCopy");
+  if (title) title.textContent = localizedPractice(item);
+  if (copy) copy.textContent = localizedExplanation(item) || (currentLang === "fr" ? "Aucune explication disponible." : "No explanation available.");
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("mobile-practice-info-open");
+  requestAnimationFrame(() => modal.querySelector(".mobile-practice-info-close")?.focus());
+}
+
+function closeMobilePracticeInfo() {
+  const modal = document.getElementById("mobilePracticeInfoModal");
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("mobile-practice-info-open");
+  const focusTarget = mobilePracticeInfoReturnFocus;
+  mobilePracticeInfoReturnFocus = null;
+  if (focusTarget && document.contains(focusTarget)) focusTarget.focus();
+}
+
+function renderMobilePracticeCard(item) {
+  const fields = roleFields(currentRole);
+  const experienced = hasRoleExperience(item, currentRole);
+  const editableRole = canEditRole(currentRole);
+  const sharedEditable = canEditShared();
+  const roleFavorite = favoriteSymbol(currentRole);
+  const selected = isInSession(item);
+  const risk = riskBadge(item);
+  const s = effectiveRoleScore(item, "sub");
+  const d = effectiveRoleScore(item, "dom");
+  const bothRated = Number.isInteger(s) && Number.isInteger(d);
+  const fantasyBlocked = bothRated && s !== 0 && d !== 0 && (s === FANTASY_SCORE || d === FANTASY_SCORE);
+  const compatValue = bothRated && !fantasyBlocked ? Math.min(s,d) : null;
+  const compat = fantasyBlocked
+    ? `<span class="compatibility-badge fantasy-compat" title="${esc(currentLang === "fr" ? "Fantasme uniquement" : "Fantasy only")}">💭</span>`
+    : (compatValue !== null ? `<span class="compatibility-badge" title="${esc(currentLang === "fr" ? "Compatibilité" : "Compatibility")}">${scoreLabel(compatValue,true)}</span>` : "");
+  const pin = `<button class="session-pin-btn${selected ? " selected" : ""}" data-action="sessionToggle" data-id="${item.id}" type="button" ${readOnly ? "disabled" : ""} title="${selected ? t("removeSession") : t("addSession")}">📌</button>`;
+  const level = `<span class="level-badge level-${item.level || 3}" title="${experienceLabel(item.level === 1 ? "beginner" : item.level === 2 ? "confirmed" : "advanced")}">${levelShortLabel(item.level || 3)}</span>`;
+  const priorChecked = !!item[fields.prior];
+  const beforeLabel = currentLang === "fr" ? "Avant" : "Before";
+  const togetherLabel = currentLang === "fr" ? "Ensemble" : "Together";
+  const wantLabel = currentLang === "fr" ? "Envie" : "Want";
+  const afterLabel = currentLang === "fr" ? "Après essai" : "After";
+  const infoLabel = currentLang === "fr" ? "Voir l’explication" : "View explanation";
+  const notesOpen = mobileOpenNotes.has(Number(item.id));
+  const hasNotes = mobileHasNotes(item);
+  const notesLabel = currentLang === "fr" ? (hasNotes ? "Notes" : "Ajouter une note") : (hasNotes ? "Notes" : "Add a note");
+  const notesAria = currentLang === "fr" ? (notesOpen ? "Replier les notes" : "Déplier les notes") : (notesOpen ? "Collapse notes" : "Expand notes");
+
+  const wantRowClass = experienced ? "is-secondary" : "is-primary";
+  const afterRowClass = experienced ? "is-primary" : "is-secondary is-disabled";
+
+  return `<article class="mobile-practice-card${item._randomPicked ? ' row-random-picked' : ''}" data-row-id="${item.id}" data-category="${esc(item.category)}">
+    <div class="mobile-practice-heading">
+      <strong class="mobile-practice-name">${esc(localizedPractice(item))}</strong>
+      <button class="mobile-info-btn" type="button" aria-label="${esc(infoLabel)}" title="${esc(localizedExplanation(item))}" data-mobile-info="${item.id}">ⓘ</button>
+    </div>
+    <div class="mobile-practice-meta">
+      <span class="mobile-practice-meta-left">${level}${risk}${compat}</span>
+      <span class="mobile-practice-meta-right">${pin}</span>
+    </div>
+    <div class="mobile-rating-stack${experienced ? ' is-experienced' : ' is-new'}">
+      <div class="mobile-rating-row mobile-want-row ${wantRowClass}">
+        <span class="mobile-rating-label">${wantLabel}</span>
+        <div class="mobile-score-wrap">${scoreButtons(item,fields.want,true,currentRole)}</div>
+        <button class="mobile-state-check${priorChecked ? ' checked' : ''}" data-action="${fields.prior}" data-id="${item.id}" type="button" ${editableRole ? '' : 'disabled'} aria-pressed="${priorChecked ? 'true' : 'false'}"><span class="mobile-check-box">${priorChecked ? '✓' : '□'}</span><span>${beforeLabel}</span></button>
+      </div>
+      <div class="mobile-rating-row mobile-after-row ${afterRowClass}">
+        <span class="mobile-rating-label">${afterLabel}</span>
+        <div class="mobile-score-wrap">${experienced ? scoreButtons(item,fields.after,true,currentRole) : '<span class="mobile-after-placeholder">—</span>'}</div>
+        <button class="mobile-state-check${item.doneTogether ? ' checked' : ''}" data-action="doneTogether" data-id="${item.id}" type="button" ${sharedEditable ? '' : 'disabled'} aria-pressed="${item.doneTogether ? 'true' : 'false'}"><span class="mobile-check-box">${item.doneTogether ? '✓' : '□'}</span><span>${togetherLabel}</span></button>
+      </div>
+    </div>
+    <div class="mobile-notes-block${notesOpen ? ' is-open' : ''}${hasNotes ? ' has-notes' : ''}">
+      <button class="mobile-notes-toggle" type="button" data-mobile-notes-toggle="${item.id}" aria-expanded="${notesOpen ? 'true' : 'false'}" aria-label="${esc(notesAria)}">
+        <span class="mobile-notes-label"><span class="mobile-notes-icon">💬</span><span>${esc(notesLabel)}</span>${hasNotes ? '<span class="mobile-notes-indicator" aria-hidden="true"></span>' : ''}</span>
+        <span class="mobile-notes-chevron" aria-hidden="true">${notesOpen ? '▴' : '▾'}</span>
+      </button>
+      <div class="mobile-notes-editor" ${notesOpen ? '' : 'hidden'}>${sharedNoteEditorHtml(item, false)}</div>
+    </div>
+  </article>`;
+}
+
+function renderMobileCategoryHeader(categoryName, collapsed, completion, catColor) {
+  const progressTitle = categoryProgressTitle(categoryName, completion);
+  return `<div class="mobile-section-header" data-category="${esc(categoryName)}" style="--category-color:${catColor}">
+    <button class="mobile-category-toggle" data-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed ? "false" : "true"}">
+      <span class="mobile-section-dot" style="background:${catColor}"></span>
+      <span class="mobile-section-progress" title="${esc(progressTitle)}">${completion.filled}/${completion.total}</span>
+      <span class="mobile-section-separator">·</span>
+      <span class="mobile-section-name">${esc(localizedCategory(categoryName))}</span>
+      <span class="mobile-section-chevron">${collapsed ? "▸" : "▾"}</span>
+    </button>
+  </div>`;
+}
+
+function renderMobileChecklist(filterState, explicitFilters) {
+  let html = "";
+  let visibleCount = 0;
+  mobileCardById = new Map();
+  categorySectionByName = new Map();
+
+  for (const categoryName of allCatalogCategories) {
+    const sourceItems = itemsByCategory.get(categoryName) || [];
+    const categoryItems = [];
+    for (const item of sourceItems) {
+      if (matches(item, filterState)) categoryItems.push(item);
+    }
+    if (!categoryItems.length) continue;
+    visibleCount += categoryItems.length;
+    const catColor = categoryColors[categoryName] || "#E7E7E7";
+    const collapsed = explicitFilters ? false : collapsedCategories.has(categoryName);
+    const completion = categoryCompletion(categoryName);
+    html += renderMobileCategoryHeader(categoryName, collapsed, completion, catColor);
+    if (!collapsed) html += categoryItems.map(renderMobilePracticeCard).join("");
+  }
+
+  leftTable.innerHTML = html;
+  rightTable.innerHTML = "";
+  leftRowById = new Map();
+  rightRowById = new Map();
+  syncLeftRows = [];
+  syncRightRows = [];
+  leftTable.querySelectorAll('.mobile-practice-card[data-row-id]').forEach(card => {
+    mobileCardById.set(Number(card.dataset.rowId), card);
+  });
+  leftTable.querySelectorAll('.mobile-section-header[data-category]').forEach(section => {
+    categorySectionByName.set(section.dataset.category, section);
+  });
+  mobileCategoryCandidates = Array.from(leftTable.querySelectorAll('.mobile-section-header[data-category], .mobile-practice-card[data-category]'));
+  mobileCategoryHasRows = mobileCardById.size > 0;
+  mobileCategoryIndex = 0;
+  empty.classList.toggle("hidden", visibleCount !== 0);
+  updateStats();
+  requestAnimationFrame(updateMobileCategoryBar);
+  return visibleCount;
+}
+
+function render() {
   const filterQuery = search.value.trim().toLowerCase();
   const filterState = currentFilterState(filterQuery);
   const explicitFilters = !!(filterQuery || filterState.category || filterState.status || filterState.minScore !== null || filterState.risk || filterState.quick);
+
+  if (MOBILE_MQ.matches) {
+    renderMobileChecklist(filterState, explicitFilters);
+    return;
+  }
+
+  renderHeads();
+  applyColumnGeometry();
+
   const visibleFixed = getVisibleFixedColumns();
   const visibleScroll = getVisibleScrollColumns();
   let visibleCount = 0;
@@ -3044,6 +3243,30 @@ function handleTableClick(e) {
     return;
   }
 
+  const mobileInfo = e.target.closest("button[data-mobile-info]");
+  if (mobileInfo) {
+    const item = itemsById.get(Number(mobileInfo.dataset.mobileInfo));
+    if (item) openMobilePracticeInfo(item, mobileInfo);
+    return;
+  }
+
+  const mobileNotesToggle = e.target.closest("button[data-mobile-notes-toggle]");
+  if (mobileNotesToggle) {
+    const id = Number(mobileNotesToggle.dataset.mobileNotesToggle);
+    const card = mobileNotesToggle.closest(".mobile-practice-card");
+    const editor = card?.querySelector(".mobile-notes-editor");
+    const block = card?.querySelector(".mobile-notes-block");
+    const opening = !mobileOpenNotes.has(id);
+    if (opening) mobileOpenNotes.add(id);
+    else mobileOpenNotes.delete(id);
+    mobileNotesToggle.setAttribute("aria-expanded", opening ? "true" : "false");
+    if (editor) editor.hidden = !opening;
+    if (block) block.classList.toggle("is-open", opening);
+    const chevron = mobileNotesToggle.querySelector(".mobile-notes-chevron");
+    if (chevron) chevron.textContent = opening ? "▴" : "▾";
+    return;
+  }
+
   if (readOnly) return;
   const btn = e.target.closest("button[data-action]");
   if (!btn || btn.disabled) return;
@@ -3132,6 +3355,35 @@ search.addEventListener("input", () => {
   searchRenderTimer = setTimeout(render, 100);
 });
 [category, status, minFilterScore, riskFilter].forEach(el => el.addEventListener("input", render));
+
+leftTable.addEventListener("input", (e) => {
+  if (readOnly) return;
+  const input = e.target.closest('textarea[data-person-note]');
+  if (!input) return;
+  const person = input.dataset.notePerson;
+  if (person !== currentPerson()) return;
+  const item = itemsById.get(Number(input.dataset.personNote));
+  if (!item) return;
+  item[noteFieldForPerson(person)] = input.value;
+  searchNotesById.set(Number(item.id), `${item.noteFemale || ""} ${item.noteMale || ""}`.toLowerCase());
+  const block = input.closest(".mobile-notes-block");
+  if (block) {
+    const hasNotes = mobileHasNotes(item);
+    block.classList.toggle("has-notes", hasNotes);
+    const label = block.querySelector(".mobile-notes-label > span:nth-child(2)");
+    if (label) label.textContent = currentLang === "fr" ? (hasNotes ? "Notes" : "Ajouter une note") : (hasNotes ? "Notes" : "Add a note");
+    let indicator = block.querySelector(".mobile-notes-indicator");
+    if (hasNotes && !indicator) {
+      indicator = document.createElement("span");
+      indicator.className = "mobile-notes-indicator";
+      indicator.setAttribute("aria-hidden", "true");
+      block.querySelector(".mobile-notes-label")?.appendChild(indicator);
+    } else if (!hasNotes && indicator) {
+      indicator.remove();
+    }
+  }
+  scheduleSave(["common", currentRole]);
+});
 
 rightTable.addEventListener("input", (e) => {
   if (readOnly) return;
@@ -3931,3 +4183,9 @@ renderQuickFilters();
 render();
 renderMergeReviewBanner();
 requestAnimationFrame(showFirstUseGuideIfNeeded);
+
+
+// V1.1.12 · Fermeture clavier de la fiche d’explication mobile.
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeMobilePracticeInfo();
+});

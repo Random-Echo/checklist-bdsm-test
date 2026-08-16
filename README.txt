@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.11
+CHECKLISTS D/s — V1.1.12
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -59,3 +59,6 @@ Responsive / performances
 - Les filtres sont compilés une fois par rendu au lieu de relire les contrôles pour chaque pratique.
 - Les panneaux séance, compatibilité, statistiques et filtres rapides évitent les réécritures DOM quand leur contenu n’a pas changé.
 - Le tirage aléatoire retire l’ancien surlignage en O(1) au lieu de parcourir tout le catalogue.
+
+
+V1.1.12 : finalisation de la nouvelle vue mobile en cartes, explications via info, notes repliables, contrôles Envie/Après dynamiques et audit responsive. La vue desktop reste inchangée.
