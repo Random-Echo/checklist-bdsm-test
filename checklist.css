@@ -7235,3 +7235,87 @@ body.first-use-open{overflow:hidden}
     font-size:10px !important;
   }
 }
+
+/* =========================================================
+   V1.1.31 — MOBILE: TAP INFO BUBBLE FOR RISK BADGES
+   The caution/high-risk symbols are buttons on mobile. A tap opens a
+   compact anchored explanation bubble; tapping outside, scrolling,
+   resizing or Escape closes it. Desktop remains unchanged.
+   ========================================================= */
+.mobile-risk-tooltip {
+  position:fixed;
+  z-index:10050;
+  width:min(270px, calc(100vw - 20px));
+  padding:9px 10px 10px;
+  border:1px solid rgba(52,44,49,.22);
+  border-radius:10px;
+  background:#fffdfb;
+  color:#332d31;
+  box-shadow:0 8px 24px rgba(33,26,30,.20), 0 2px 6px rgba(33,26,30,.10);
+  box-sizing:border-box;
+}
+.mobile-risk-tooltip[hidden] { display:none !important; }
+.mobile-risk-tooltip-title {
+  font-size:11px;
+  font-weight:900;
+  line-height:1.15;
+  margin:0 0 4px;
+}
+.mobile-risk-tooltip-copy {
+  font-size:10px;
+  font-weight:560;
+  line-height:1.32;
+  color:#5a5157;
+}
+.mobile-risk-tooltip-arrow {
+  position:absolute;
+  left:var(--risk-arrow-left, 20px);
+  top:-5px;
+  width:9px;
+  height:9px;
+  transform:translateX(-50%) rotate(45deg);
+  background:#fffdfb;
+  border-left:1px solid rgba(52,44,49,.22);
+  border-top:1px solid rgba(52,44,49,.22);
+}
+.mobile-risk-tooltip.is-above .mobile-risk-tooltip-arrow {
+  top:auto;
+  bottom:-5px;
+  transform:translateX(-50%) rotate(225deg);
+}
+
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  .mobile-risk-info-btn {
+    appearance:none !important;
+    -webkit-appearance:none !important;
+    cursor:pointer !important;
+    font-family:inherit !important;
+  }
+
+  .mobile-risk-info-btn:focus-visible {
+    outline:2px solid rgba(55,109,146,.72) !important;
+    outline-offset:2px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-side-risk .mobile-risk-info-btn {
+    margin:0 !important;
+    width:17px !important;
+    min-width:17px !important;
+    height:17px !important;
+    min-height:17px !important;
+    padding:0 !important;
+    border-radius:999px !important;
+    font-size:9px !important;
+    line-height:1 !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] .mobile-readonly-side-risk .mobile-risk-info-btn {
+    width:16px !important;
+    min-width:16px !important;
+    height:16px !important;
+    min-height:16px !important;
+    font-size:8px !important;
+  }
+}

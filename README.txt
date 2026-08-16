@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.30
+CHECKLISTS D/s — V1.1.31
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -73,4 +73,4 @@ V1.1.24 : finition visuelle du mode lecture mobile : réponses rendues sous form
 V1.1.26 : mode lecture mobile réorganisé : les trois résultats restent alignés à droite du titre/explication, les états « Avant » H/F et « Ensemble » sont toujours visibles (oui/non), et les notes existantes sont affichées directement en bas sans volet dépliable. Coloration par résultat commun conservée. Desktop inchangé.
 V1.1.25 : mode lecture mobile enrichi et compact : titre puis explication, ligne de réponses H/F + résultat commun, indicateurs positifs « Avant » par personne et « Ensemble » commun, coloration exacte selon le résultat commun et notes repliables en lecture seule comme en mode édition. Desktop inchangé.
 
-V1.1.30 : lecture mobile corrigée : le bouton épingle reste bien présent et redevient fonctionnel même en mode lecture ; le bouton Masquer/Afficher l’autre rôle est caché dans ce mode puisque les résultats des deux partenaires y sont toujours visibles. Le niveau reste retiré, et le risque n’apparaît plus que pour les pratiques à surveiller sous forme d’un pictogramme sous l’épingle. Desktop inchangé.
+V1.1.31 : les pictogrammes de risque mobile (! / ⚠) ouvrent désormais au toucher une vraie info-bulle compacte avec l’explication du niveau de risque ; la bulle se ferme au toucher extérieur, au défilement, au redimensionnement ou avec Échap. Le bouton épingle reste fonctionnel en lecture et le desktop est inchangé.

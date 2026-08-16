@@ -375,6 +375,15 @@ function riskBadge(item) {
   return "";
 }
 
+function mobileRiskButton(item) {
+  if (!item || !["caution", "high"].includes(item.risk)) return "";
+  const high = item.risk === "high";
+  const icon = high ? "⚠" : "!";
+  const info = high ? t("riskHighTitle") : t("riskCautionTitle");
+  const label = `${currentLang === "fr" ? "Risque" : "Risk"} : ${riskLabel(item.risk)}`;
+  return `<button type="button" class="risk-badge risk-${item.risk} mobile-risk-info-btn" data-mobile-risk-info="${item.id}" aria-expanded="false" aria-label="${esc(`${label}. ${info}`)}">${icon}</button>`;
+}
+
 function hasLimit(item) {
   return effectiveRoleScore(item, "sub") === 0 || effectiveRoleScore(item, "dom") === 0;
 }
@@ -1333,6 +1342,7 @@ if (infoModal) {
 }
 
 document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeMobileRiskTooltip();
   if (onboardingModal && !onboardingModal.hidden) {
     if (e.key === "Escape") { e.preventDefault(); closeFirstUseGuide(true); return; }
     focusTrapIn(onboardingDialog, e);
@@ -2592,6 +2602,85 @@ function closeMobilePracticeInfo() {
   if (focusTarget && document.contains(focusTarget)) focusTarget.focus();
 }
 
+let mobileRiskTooltipButton = null;
+
+function ensureMobileRiskTooltip() {
+  let tooltip = document.getElementById("mobileRiskTooltip");
+  if (tooltip) return tooltip;
+  tooltip = document.createElement("div");
+  tooltip.id = "mobileRiskTooltip";
+  tooltip.className = "mobile-risk-tooltip";
+  tooltip.hidden = true;
+  tooltip.setAttribute("role", "tooltip");
+  tooltip.innerHTML = `<div class="mobile-risk-tooltip-title"></div><div class="mobile-risk-tooltip-copy"></div><span class="mobile-risk-tooltip-arrow" aria-hidden="true"></span>`;
+  document.body.appendChild(tooltip);
+  return tooltip;
+}
+
+function closeMobileRiskTooltip() {
+  const tooltip = document.getElementById("mobileRiskTooltip");
+  if (tooltip) tooltip.hidden = true;
+  if (mobileRiskTooltipButton && document.contains(mobileRiskTooltipButton)) {
+    mobileRiskTooltipButton.setAttribute("aria-expanded", "false");
+  }
+  mobileRiskTooltipButton = null;
+}
+
+function positionMobileRiskTooltip(button, tooltip) {
+  if (!button || !tooltip || tooltip.hidden) return;
+  const rect = button.getBoundingClientRect();
+  const margin = 10;
+  const gap = 8;
+  tooltip.style.left = "0px";
+  tooltip.style.top = "0px";
+  tooltip.style.setProperty("--risk-arrow-left", "20px");
+  tooltip.classList.remove("is-above");
+  const box = tooltip.getBoundingClientRect();
+  const left = Math.max(margin, Math.min(window.innerWidth - box.width - margin, rect.left + rect.width / 2 - box.width / 2));
+  let top = rect.bottom + gap;
+  let above = false;
+  if (top + box.height > window.innerHeight - margin && rect.top - box.height - gap >= margin) {
+    top = rect.top - box.height - gap;
+    above = true;
+  }
+  const arrowLeft = Math.max(12, Math.min(box.width - 12, rect.left + rect.width / 2 - left));
+  tooltip.style.left = `${Math.round(left)}px`;
+  tooltip.style.top = `${Math.round(top)}px`;
+  tooltip.style.setProperty("--risk-arrow-left", `${Math.round(arrowLeft)}px`);
+  tooltip.classList.toggle("is-above", above);
+}
+
+function openMobileRiskTooltip(item, button) {
+  if (!item || !button || !["caution", "high"].includes(item.risk)) return;
+  const tooltip = ensureMobileRiskTooltip();
+  if (mobileRiskTooltipButton === button && !tooltip.hidden) {
+    closeMobileRiskTooltip();
+    return;
+  }
+  if (mobileRiskTooltipButton && mobileRiskTooltipButton !== button) {
+    mobileRiskTooltipButton.setAttribute("aria-expanded", "false");
+  }
+  mobileRiskTooltipButton = button;
+  button.setAttribute("aria-expanded", "true");
+  const title = tooltip.querySelector(".mobile-risk-tooltip-title");
+  const copy = tooltip.querySelector(".mobile-risk-tooltip-copy");
+  const high = item.risk === "high";
+  if (title) title.textContent = `${high ? "⚠" : "!"} ${currentLang === "fr" ? "Risque" : "Risk"} : ${riskLabel(item.risk)}`;
+  if (copy) copy.textContent = high ? t("riskHighTitle") : t("riskCautionTitle");
+  tooltip.hidden = false;
+  requestAnimationFrame(() => positionMobileRiskTooltip(button, tooltip));
+}
+
+document.addEventListener("click", e => {
+  const tooltip = document.getElementById("mobileRiskTooltip");
+  if (!tooltip || tooltip.hidden) return;
+  if (e.target.closest("button[data-mobile-risk-info]") || e.target.closest("#mobileRiskTooltip")) return;
+  closeMobileRiskTooltip();
+});
+
+window.addEventListener("resize", closeMobileRiskTooltip, { passive:true });
+window.addEventListener("scroll", closeMobileRiskTooltip, { passive:true, capture:true });
+
 function renderMobilePracticeCard(item) {
   const fields = roleFields(currentRole);
   const experienced = hasRoleExperience(item, currentRole);
@@ -2599,7 +2688,7 @@ function renderMobilePracticeCard(item) {
   const sharedEditable = canEditShared();
   const roleFavorite = favoriteSymbol(currentRole);
   const selected = isInSession(item);
-  const risk = riskBadge(item);
+  const risk = mobileRiskButton(item);
   const s = effectiveRoleScore(item, "sub");
   const d = effectiveRoleScore(item, "dom");
   const bothRated = Number.isInteger(s) && Number.isInteger(d);
@@ -2697,7 +2786,7 @@ function renderMobilePracticeCard(item) {
     const riskState = ["normal", "caution", "high"].includes(item.risk) ? item.risk : "normal";
     const readonlyRisk = riskState === "normal"
       ? ""
-      : `<span class="mobile-readonly-side-risk" title="${esc(`${currentLang === "fr" ? "Risque" : "Risk"} : ${riskLabel(riskState)}`)}" aria-label="${esc(`${currentLang === "fr" ? "Risque" : "Risk"} : ${riskLabel(riskState)}`)}">${riskBadge(item)}</span>`;
+      : `<span class="mobile-readonly-side-risk">${mobileRiskButton(item)}</span>`;
     const pinTitle = selected ? t("removeSession") : t("addSession");
     const readonlyPin = `<button class="session-pin-btn mobile-readonly-pin-btn${selected ? ' selected' : ''}" data-action="sessionToggle" data-id="${item.id}" type="button" title="${esc(pinTitle)}" aria-label="${esc(pinTitle)}">📌</button>`;
     return `<article class="mobile-practice-card mobile-readonly-card${item._randomPicked ? ' row-random-picked' : ''}${commonVisualClass}"${commonVisualStyle} data-row-id="${item.id}" data-category="${esc(item.category)}">
@@ -3402,6 +3491,13 @@ function handleTableClick(e) {
   if (categoryScore) {
     if (categoryScore.disabled) return;
     applyCategoryScore(categoryScore.dataset.category, categoryScore.dataset.categoryScore);
+    return;
+  }
+
+  const mobileRiskInfo = e.target.closest("button[data-mobile-risk-info]");
+  if (mobileRiskInfo) {
+    const item = itemsById.get(Number(mobileRiskInfo.dataset.mobileRiskInfo));
+    if (item) openMobileRiskTooltip(item, mobileRiskInfo);
     return;
   }
 
