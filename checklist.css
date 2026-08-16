@@ -5180,7 +5180,7 @@ body.first-use-open{overflow:hidden}
 }
 
 /* =========================================================
-   V1.1.16 — MOBILE PREMIUM VISUAL DIRECTION
+   V1.1.17 — MOBILE PREMIUM VISUAL DIRECTION
    Layered neutral surfaces, restrained role accents, clearer hierarchy.
    Desktop remains unchanged.
    ========================================================= */
@@ -5345,7 +5345,7 @@ body.first-use-open{overflow:hidden}
 }
 
 /* =========================================================
-   V1.1.16 — MOBILE HIERARCHY / OTHER-ROLE FIT / COMMON COLOR
+   V1.1.17 — MOBILE HIERARCHY / OTHER-ROLE FIT / COMMON COLOR
    Mobile only. Desktop remains strictly unchanged.
    ========================================================= */
 @media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
@@ -5527,3 +5527,4 @@ body.first-use-open{overflow:hidden}
   .mobile-practice-name { font-size:13px !important; }
   .mobile-practice-explanation { font-size:7.4px !important; }
 }
+\n\n/* =========================================================\n   V1.1.17 — MOBILE COMMON RESULT COLOR + MODE LABELS\n   Desktop untouched.\n   ========================================================= */\n@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {\n  /* The practice card now uses the same common-result palette as the former\n     Practice column: red / orange / fantasy blue / yellow / green / favorite. */\n  .mobile-practice-card.has-common-result {\n    background:var(--mobile-common-color) !important;\n    border-color:color-mix(in srgb, var(--mobile-common-color) 72%, #596066) !important;\n    box-shadow:0 4px 12px rgba(45,31,40,.10), 0 1px 2px rgba(45,31,40,.06) !important;\n  }\n  .mobile-practice-card.has-common-result .mobile-practice-head {\n    background:var(--mobile-common-color) !important;\n    border-bottom-color:color-mix(in srgb, var(--mobile-common-color) 68%, #8c9297) !important;\n  }\n  .mobile-practice-card.has-common-result .mobile-response-grid,\n  .mobile-practice-card.has-common-result .mobile-notes-block {\n    background:color-mix(in srgb, var(--mobile-common-color) 34%, rgba(255,255,255,.90)) !important;\n  }\n  .mobile-practice-card.has-common-result .mobile-rating-stack,\n  .mobile-practice-card.has-common-result .mobile-response-grid.has-other .mobile-rating-stack {\n    background:color-mix(in srgb, var(--mobile-common-color) 24%, rgba(255,255,255,.92)) !important;\n    border-color:color-mix(in srgb, var(--mobile-common-color) 60%, #a1a6aa) !important;\n  }\n  .mobile-practice-card.has-common-result .mobile-other-summary {\n    background:color-mix(in srgb, var(--mobile-common-color) 12%, var(--mobile-other-surface, #fff)) !important;\n  }\n}\n

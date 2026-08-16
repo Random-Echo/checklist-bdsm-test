@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.16";
+const APP_VERSION = "V1.1.17";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -1261,12 +1261,21 @@ function renderRoleUI() {
   toggleOtherRole.classList.toggle("active", !showOtherRoleColumns);
   toggleOtherRole.setAttribute("aria-pressed", showOtherRoleColumns ? "false" : "true");
 
-  const readOnlyText = `🔒 ${t("readOnly")} : ${readOnly ? "ON" : "OFF"}`;
+  const readOnlyText = currentLang === "fr"
+    ? (readOnly ? "👁 Mode lecture" : "✏️ Mode édition")
+    : (readOnly ? "👁 Reading mode" : "✏️ Edit mode");
+  const readOnlyTitle = currentLang === "fr"
+    ? (readOnly ? "Passer en mode édition" : "Passer en mode lecture")
+    : (readOnly ? "Switch to edit mode" : "Switch to reading mode");
   toggleReadOnly.textContent = readOnlyText;
+  toggleReadOnly.title = readOnlyTitle;
+  toggleReadOnly.setAttribute("aria-label", readOnlyTitle);
   toggleReadOnly.classList.toggle("active", readOnly);
   toggleReadOnly.setAttribute("aria-pressed", readOnly ? "true" : "false");
   if (sessionToggleReadOnly) {
     sessionToggleReadOnly.textContent = readOnlyText;
+    sessionToggleReadOnly.title = readOnlyTitle;
+    sessionToggleReadOnly.setAttribute("aria-label", readOnlyTitle);
     sessionToggleReadOnly.classList.toggle("active", readOnly);
     sessionToggleReadOnly.setAttribute("aria-pressed", readOnly ? "true" : "false");
   }
@@ -2598,9 +2607,10 @@ function renderMobilePracticeCard(item) {
   // Keep the mobile practice visually tied to the couple/common result,
   // using the exact same priority rules as the desktop Practice column.
   const fantasyVisual = s !== 0 && d !== 0 && (s === FANTASY_SCORE || d === FANTASY_SCORE);
+  const commonVisualScore = compatibilityFromScores(s, d);
   const commonVisualColor = fantasyVisual
     ? scoreColors[FANTASY_SCORE]
-    : (compatValue !== null ? scoreColors[compatValue] : "");
+    : (commonVisualScore !== null ? scoreColors[commonVisualScore] : "");
   const commonVisualClass = commonVisualColor ? " has-common-result" : "";
   const commonVisualStyle = commonVisualColor ? ` style="--mobile-common-color:${commonVisualColor}"` : "";
 
