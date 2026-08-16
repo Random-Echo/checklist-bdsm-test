@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.48
+CHECKLISTS D/s — V1.1.49
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -80,4 +80,4 @@ V1.1.34 : correction du bloc de statistiques : une pastille de statistique encor
 
 V1.1.41 : alignement précis du repère de lecture mobile avec les trois colonnes de résultats : icônes Homme/Femme/Ensemble redimensionnées comme les cartes, libellés Avant/Avant/Ensemble centrés dessous, colonne commune légèrement plus large et barre de catégorie conservée en tête de zone. Le changement de langue FR/EN reste propre. Desktop inchangé.
 
-V1.1.48 : réalignement du repère sticky et des colonnes de résultats en mode lecture mobile ; symboles du haut recentrés dans leurs cases, colonnes du haut et du bas recalées sur une même grille, et meilleure homogénéité visuelle des coches dessous. Desktop inchangé.
+V1.1.49 : en mode édition mobile, la zone de note est désormais directement ouverte et utilisable sans clic supplémentaire ; si l’autre rôle est masqué, sa note est également masquée, tandis qu’elle reste visible en lecture seule/grisée lorsque l’autre rôle est affiché. Desktop et mode lecture inchangés.

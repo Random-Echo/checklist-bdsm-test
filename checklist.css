@@ -8643,3 +8643,86 @@ body[data-readonly="true"] #toggleOtherRole[hidden] {
     font-size:6.2px !important;
   }
 }
+
+/* =========================================================
+   V1.1.49 — MOBILE EDIT MODE: NOTES DIRECTLY EDITABLE
+   - Notes are always open in mobile edit mode: no extra tap required.
+   - If the other role is hidden, its note is not rendered either.
+   - If the other role is visible, its note stays visible but read-only/greyed.
+   Desktop and mobile reading mode remain unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct {
+    display:grid !important;
+    grid-template-columns:auto minmax(0,1fr) !important;
+    align-items:start !important;
+    gap:5px !important;
+    padding:5px 7px 6px !important;
+    border-top:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 38%, rgba(70,61,67,.14)) !important;
+    background:rgba(255,255,255,.34) !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-direct-label {
+    display:flex !important;
+    align-items:center !important;
+    gap:3px !important;
+    min-height:30px !important;
+    padding-top:6px !important;
+    color:#5e575c !important;
+    font-size:8px !important;
+    font-weight:850 !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-direct-label .mobile-notes-icon {
+    font-size:10px !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .mobile-notes-editor {
+    display:block !important;
+    padding:0 !important;
+    min-width:0 !important;
+    background:transparent !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-editor {
+    display:grid !important;
+    gap:4px !important;
+    min-width:0 !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-row {
+    grid-template-columns:16px minmax(0,1fr) !important;
+    gap:4px !important;
+    align-items:center !important;
+    min-width:0 !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-person {
+    padding:0 !important;
+    font-size:8px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    text-align:center !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .person-note-input {
+    width:100% !important;
+    min-width:0 !important;
+    min-height:34px !important;
+    height:34px !important;
+    max-height:82px !important;
+    resize:vertical !important;
+    padding:5px 6px !important;
+    border-radius:7px !important;
+    font-size:9px !important;
+    line-height:1.2 !important;
+    box-sizing:border-box !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-row.is-active-person .person-note-input:focus {
+    min-height:42px !important;
+    height:42px !important;
+  }
+}

@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.48";
+const APP_VERSION = "V1.1.49";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -1049,12 +1049,13 @@ function personShortLabel(person) {
   return person === "male" ? "M" : "F";
 }
 
-function sharedNoteEditorHtml(item, sessionModeEditor = false) {
+function sharedNoteEditorHtml(item, sessionModeEditor = false, includeOtherPerson = true) {
   const activePerson = currentPerson();
   const baseClass = sessionModeEditor ? "session-person-note" : "person-note-input";
   const idAttr = sessionModeEditor ? "data-session-person-note" : "data-person-note";
+  const people = includeOtherPerson ? ["female","male"] : [activePerson];
   return `<div class="shared-note-editor${sessionModeEditor ? " session-shared-note-editor" : ""}">
-    ${["female","male"].map(person => {
+    ${people.map(person => {
       const field = noteFieldForPerson(person);
       const editable = !readOnly && activePerson === person;
       return `<label class="shared-note-row person-${person}${editable ? " is-active-person" : " is-other-person"}"><span class="shared-note-person">${personShortLabel(person)}:</span><textarea class="${baseClass}" ${idAttr}="${item.id}" data-note-person="${person}" ${editable ? "" : "readonly"} placeholder="${esc(t("commonNotePlaceholder"))}">${esc(item[field] || "")}</textarea></label>`;
@@ -2875,12 +2876,9 @@ function renderMobilePracticeCard(item) {
       </div>
       ${otherSummary}
     </div>
-    <div class="mobile-notes-block${notesOpen ? ' is-open' : ''}${hasNotes ? ' has-notes' : ''}">
-      <button class="mobile-notes-toggle" type="button" data-mobile-notes-toggle="${item.id}" aria-expanded="${notesOpen ? 'true' : 'false'}" aria-label="${esc(notesAria)}">
-        <span class="mobile-notes-label"><span class="mobile-notes-icon">💬</span><span>${esc(notesLabel)}</span>${hasNotes ? '<span class="mobile-notes-indicator" aria-hidden="true"></span>' : ''}</span>
-        <span class="mobile-notes-chevron" aria-hidden="true">${notesOpen ? '▴' : '▾'}</span>
-      </button>
-      <div class="mobile-notes-editor" ${notesOpen ? '' : 'hidden'}>${sharedNoteEditorHtml(item, false)}</div>
+    <div class="mobile-notes-block mobile-notes-direct is-open${hasNotes ? ' has-notes' : ''}">
+      <div class="mobile-notes-direct-label"><span class="mobile-notes-icon" aria-hidden="true">💬</span><span>${currentLang === "fr" ? "Note" : "Note"}</span></div>
+      <div class="mobile-notes-editor">${sharedNoteEditorHtml(item, false, showOtherRoleColumns)}</div>
     </div>
   </article>`;
 }
