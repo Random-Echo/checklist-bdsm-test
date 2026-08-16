@@ -6415,3 +6415,262 @@ body.first-use-open{overflow:hidden}
     font-size:13.5px !important;
   }
 }
+
+/* =========================================================
+   V1.1.25 — MOBILE READING MODE: COMPLETE COMPACT SUMMARY
+   Title + explanation, one result/history line, exact common-result
+   color and collapsible read-only notes. Desktop remains untouched.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card {
+    overflow:hidden !important;
+    min-height:0 !important;
+    margin-bottom:5px !important;
+    padding:0 !important;
+    border-radius:10px !important;
+    background:var(--mobile-surface) !important;
+  }
+
+  /* The practice surface uses the exact final/common-result color, not a pale tint. */
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card.has-common-result {
+    background:var(--mobile-common-color) !important;
+    border-color:var(--mobile-common-color) !important;
+    box-shadow:0 3px 9px color-mix(in srgb, var(--mobile-common-color) 22%, rgba(35,27,32,.14)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-main {
+    display:block !important;
+    min-width:0 !important;
+    padding:6px 7px 5px !important;
+    background:transparent !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-copy {
+    display:block !important;
+    min-width:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-practice {
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    white-space:normal !important;
+    color:var(--mobile-ink) !important;
+    font-size:13.5px !important;
+    font-weight:900 !important;
+    line-height:1.08 !important;
+    letter-spacing:-.014em !important;
+    overflow-wrap:break-word !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-explanation {
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:2px 0 0 !important;
+    color:color-mix(in srgb, var(--mobile-ink) 70%, transparent) !important;
+    font-size:8px !important;
+    font-weight:520 !important;
+    line-height:1.18 !important;
+    overflow-wrap:break-word !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-line {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:5px !important;
+    min-width:0 !important;
+    margin-top:4px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answers {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:3px !important;
+    flex:0 0 auto !important;
+    white-space:nowrap !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answer,
+  body[data-readonly="true"] .mobile-readonly-common {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:29px !important;
+    min-width:29px !important;
+    height:26px !important;
+    padding:0 !important;
+    border:1px solid rgba(62,54,59,.16) !important;
+    border-radius:7px !important;
+    box-sizing:border-box !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.42) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answer.person-male {
+    background:color-mix(in srgb, var(--male-color,#2f7395) 24%, #fff) !important;
+    border-color:color-mix(in srgb, var(--male-color,#2f7395) 48%, rgba(62,54,59,.14)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answer.person-female {
+    background:color-mix(in srgb, var(--female-color,#8b316e) 24%, #fff) !important;
+    border-color:color-mix(in srgb, var(--female-color,#8b316e) 48%, rgba(62,54,59,.14)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-common {
+    width:31px !important;
+    min-width:31px !important;
+    background:rgba(255,255,255,.58) !important;
+    border-color:color-mix(in srgb, var(--mobile-common-color,#8f878c) 62%, rgba(62,54,59,.16)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-score {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-width:0 !important;
+    font-size:14px !important;
+    line-height:1 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history-list {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-end !important;
+    flex-wrap:nowrap !important;
+    gap:3px !important;
+    min-width:0 !important;
+    margin-left:auto !important;
+    white-space:nowrap !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:2px !important;
+    height:22px !important;
+    min-width:0 !important;
+    padding:0 5px !important;
+    border:1px solid rgba(62,54,59,.13) !important;
+    border-radius:6px !important;
+    background:rgba(255,255,255,.52) !important;
+    color:#4c454a !important;
+    font-size:7px !important;
+    font-weight:850 !important;
+    line-height:1 !important;
+    box-sizing:border-box !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history.person-male {
+    background:color-mix(in srgb, var(--male-color,#2f7395) 15%, rgba(255,255,255,.76)) !important;
+    border-color:color-mix(in srgb, var(--male-color,#2f7395) 34%, rgba(62,54,59,.12)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history.person-female {
+    background:color-mix(in srgb, var(--female-color,#8b316e) 15%, rgba(255,255,255,.76)) !important;
+    border-color:color-mix(in srgb, var(--female-color,#8b316e) 34%, rgba(62,54,59,.12)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history.together {
+    background:color-mix(in srgb, var(--s5,#b6d7a8) 42%, rgba(255,255,255,.76)) !important;
+    border-color:color-mix(in srgb, #5e8d50 42%, rgba(62,54,59,.12)) !important;
+    color:#35502e !important;
+  }
+
+  /* Same fold/unfold pattern as edit mode, without editable fields. */
+  body[data-readonly="true"] .mobile-readonly-notes-block {
+    margin:0 !important;
+    border-top:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 52%, rgba(70,61,67,.18)) !important;
+    background:rgba(255,255,255,.24) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-notes-block .mobile-notes-toggle {
+    min-height:27px !important;
+    padding:3px 7px !important;
+    color:#514a4f !important;
+    background:transparent !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-notes-block.is-open {
+    background:rgba(255,255,255,.34) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-notes-panel {
+    padding:0 !important;
+    background:transparent !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-notes {
+    display:grid !important;
+    gap:3px !important;
+    padding:4px 7px 6px !important;
+    border-top:1px solid rgba(70,61,67,.10) !important;
+    background:rgba(255,255,255,.32) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-note {
+    display:grid !important;
+    grid-template-columns:19px minmax(0,1fr) !important;
+    align-items:start !important;
+    gap:5px !important;
+    min-width:0 !important;
+    font-size:8.8px !important;
+    line-height:1.24 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-note-empty {
+    padding:5px 7px 6px !important;
+    border-top:1px solid rgba(70,61,67,.10) !important;
+    background:rgba(255,255,255,.26) !important;
+    color:#70686d !important;
+    font-size:8px !important;
+    font-style:italic !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] .mobile-readonly-main {
+    padding-left:6px !important;
+    padding-right:6px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-practice {
+    font-size:12.8px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-explanation {
+    font-size:7.6px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-line {
+    gap:3px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answer,
+  body[data-readonly="true"] .mobile-readonly-common {
+    width:27px !important;
+    min-width:27px !important;
+    height:25px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-common {
+    width:29px !important;
+    min-width:29px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history-list {
+    gap:2px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history {
+    height:21px !important;
+    padding-left:4px !important;
+    padding-right:4px !important;
+    font-size:6.6px !important;
+  }
+}

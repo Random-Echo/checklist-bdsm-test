@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.24
+CHECKLISTS D/s — V1.1.25
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -69,3 +69,5 @@ V1.1.22 : correction propre du rendu mobile quand le panneau de l’autre rôle 
 V1.1.24 : nouveau mode lecture mobile compact : une seule ligne par pratique avec réponse Homme, réponse Femme et résultat commun ; les contrôles d’édition, explication, niveau, risque et épingle ne sont plus rendus dans ce mode ; les notes existantes H/F apparaissent directement sous la ligne. Desktop inchangé.
 
 V1.1.24 : finition visuelle du mode lecture mobile : réponses rendues sous forme de trois puces emoji uniquement (Homme bleu, Femme prune, résultat commun), davantage de largeur rendue au nom de pratique, rythme vertical resserré et notes légèrement plus lisibles. Desktop inchangé.
+
+V1.1.25 : mode lecture mobile enrichi et compact : titre puis explication, ligne de réponses H/F + résultat commun, indicateurs positifs « Avant » par personne et « Ensemble » commun, coloration exacte selon le résultat commun et notes repliables en lecture seule comme en mode édition. Desktop inchangé.
