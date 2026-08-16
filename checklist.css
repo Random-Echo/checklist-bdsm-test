@@ -8095,3 +8095,179 @@ body[data-readonly="true"] #toggleOtherRole[hidden] {
     font-size:15px !important;
   }
 }
+
+/* =========================================================
+   V1.1.45 — MOBILE READING: PRECISE RESULT ALIGNMENT
+   Header legend and practice result columns share the exact same grid.
+   The shared/couple marker uses 🔗 and keeps a slightly stronger visual weight.
+   Desktop unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] {
+    --reading-person-col:30px;
+    --reading-common-col:40px;
+    --reading-person-box:30px;
+    --reading-common-box:38px;
+    --reading-results-gap:4px;
+    --reading-results-width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2);
+  }
+
+  body[data-readonly="true"] .mobile-category-bar {
+    grid-template-columns:minmax(0,1fr) var(--reading-results-width) !important;
+    column-gap:8px !important;
+    align-items:center !important;
+    min-height:43px !important;
+    padding:5px 8px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide {
+    display:grid !important;
+    grid-template-rows:30px 11px !important;
+    row-gap:1px !important;
+    width:var(--reading-results-width) !important;
+    min-width:var(--reading-results-width) !important;
+    justify-self:end !important;
+    align-self:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-top,
+  body[data-readonly="true"] .mobile-category-guide-bottom,
+  body[data-readonly="true"] .mobile-readonly-answers {
+    display:grid !important;
+    grid-template-columns:var(--reading-person-col) var(--reading-person-col) var(--reading-common-col) !important;
+    column-gap:var(--reading-results-gap) !important;
+    width:var(--reading-results-width) !important;
+    min-width:var(--reading-results-width) !important;
+    justify-content:end !important;
+    align-items:start !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip,
+  body[data-readonly="true"] .mobile-readonly-answer {
+    width:var(--reading-person-box) !important;
+    min-width:var(--reading-person-box) !important;
+    height:27px !important;
+    min-height:27px !important;
+    padding:0 !important;
+    margin:0 !important;
+    border-radius:8px !important;
+    justify-self:center !important;
+    box-sizing:border-box !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:13px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple,
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    height:30px !important;
+    min-height:30px !important;
+    border-radius:9px !important;
+    justify-self:center !important;
+    box-sizing:border-box !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
+    font-size:15px !important;
+    font-weight:900 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack,
+  body[data-readonly="true"] .mobile-readonly-result-stack.common {
+    display:grid !important;
+    grid-template-rows:30px 12px !important;
+    row-gap:1px !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    justify-items:center !important;
+    align-items:start !important;
+    justify-self:stretch !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-answer {
+    align-self:start !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
+    font-size:16px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-experience-mark {
+    justify-self:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom {
+    height:11px !important;
+    align-items:center !important;
+    font-size:6.7px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    letter-spacing:-.02em !important;
+    color:#687078 !important;
+    text-align:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom > span {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    min-width:0 !important;
+    white-space:nowrap !important;
+    overflow:visible !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] {
+    --reading-person-col:28px;
+    --reading-common-col:37px;
+    --reading-person-box:28px;
+    --reading-common-box:35px;
+    --reading-results-gap:3px;
+  }
+
+  body[data-readonly="true"] .mobile-category-bar {
+    column-gap:6px !important;
+    min-height:41px !important;
+    padding-left:6px !important;
+    padding-right:6px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide {
+    grid-template-rows:28px 10px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip,
+  body[data-readonly="true"] .mobile-readonly-answer {
+    height:25px !important;
+    min-height:25px !important;
+    font-size:12px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple,
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
+    height:28px !important;
+    min-height:28px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
+    font-size:14px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack,
+  body[data-readonly="true"] .mobile-readonly-result-stack.common {
+    grid-template-rows:28px 12px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom {
+    font-size:6.1px !important;
+  }
+}
