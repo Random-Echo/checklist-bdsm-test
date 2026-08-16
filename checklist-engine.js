@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.15";
+const APP_VERSION = "V1.1.16";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2594,6 +2594,16 @@ function renderMobilePracticeCard(item) {
   const otherWant = scoreButtonLabel(otherWantValue, other);
   const otherAfter = otherAfterValue === null ? "—" : scoreButtonLabel(otherAfterValue, other);
   const otherRoleName = roleLabel(other);
+
+  // Keep the mobile practice visually tied to the couple/common result,
+  // using the exact same priority rules as the desktop Practice column.
+  const fantasyVisual = s !== 0 && d !== 0 && (s === FANTASY_SCORE || d === FANTASY_SCORE);
+  const commonVisualColor = fantasyVisual
+    ? scoreColors[FANTASY_SCORE]
+    : (compatValue !== null ? scoreColors[compatValue] : "");
+  const commonVisualClass = commonVisualColor ? " has-common-result" : "";
+  const commonVisualStyle = commonVisualColor ? ` style="--mobile-common-color:${commonVisualColor}"` : "";
+
   const otherSummary = showOtherRoleColumns ? `<aside class="mobile-other-summary role-${other}" aria-label="${esc(otherRoleName)}">
     <div class="mobile-other-title"><span class="mobile-other-dot" aria-hidden="true"></span><span>${esc(otherRoleName)}</span></div>
     <div class="mobile-other-row mobile-other-want">
@@ -2607,7 +2617,7 @@ function renderMobilePracticeCard(item) {
     </div>
   </aside>` : "";
 
-  return `<article class="mobile-practice-card${item._randomPicked ? ' row-random-picked' : ''}${showOtherRoleColumns ? ' shows-other-role' : ''}" data-row-id="${item.id}" data-category="${esc(item.category)}">
+  return `<article class="mobile-practice-card${item._randomPicked ? ' row-random-picked' : ''}${showOtherRoleColumns ? ' shows-other-role' : ''}${commonVisualClass}"${commonVisualStyle} data-row-id="${item.id}" data-category="${esc(item.category)}">
     <div class="mobile-practice-head">
       <div class="mobile-practice-copy">
         <strong class="mobile-practice-name">${esc(localizedPractice(item))}</strong>

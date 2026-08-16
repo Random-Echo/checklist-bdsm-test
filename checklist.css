@@ -5180,7 +5180,7 @@ body.first-use-open{overflow:hidden}
 }
 
 /* =========================================================
-   V1.1.15 — MOBILE PREMIUM VISUAL DIRECTION
+   V1.1.16 — MOBILE PREMIUM VISUAL DIRECTION
    Layered neutral surfaces, restrained role accents, clearer hierarchy.
    Desktop remains unchanged.
    ========================================================= */
@@ -5342,4 +5342,188 @@ body.first-use-open{overflow:hidden}
   .mobile-practice-card.row-random-picked {
     outline-color:color-mix(in srgb, var(--variant-bg) 76%, #252329) !important;
   }
+}
+
+/* =========================================================
+   V1.1.16 — MOBILE HIERARCHY / OTHER-ROLE FIT / COMMON COLOR
+   Mobile only. Desktop remains strictly unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  /* Header hierarchy: title clearly dominant, explanation always below it. */
+  .mobile-practice-head {
+    grid-template-columns:minmax(0,1fr) auto !important;
+    gap:6px !important;
+    padding:6px 7px 5px !important;
+  }
+  .mobile-practice-copy {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    align-content:start !important;
+    gap:2px !important;
+    min-width:0 !important;
+  }
+  .mobile-practice-name {
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    font-size:13.5px !important;
+    font-weight:900 !important;
+    line-height:1.08 !important;
+    overflow-wrap:break-word !important;
+  }
+  .mobile-practice-explanation {
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    font-size:7.7px !important;
+    font-weight:500 !important;
+    line-height:1.18 !important;
+    color:var(--mobile-muted) !important;
+    overflow-wrap:break-word !important;
+  }
+  .mobile-practice-meta {
+    max-width:82px !important;
+    gap:2px !important;
+  }
+
+  /* Restore the visual common-result coding on the whole mobile practice. */
+  .mobile-practice-card.has-common-result {
+    border-color:color-mix(in srgb, var(--mobile-common-color) 48%, var(--mobile-line)) !important;
+    background:color-mix(in srgb, var(--mobile-common-color) 9%, var(--mobile-surface)) !important;
+    box-shadow:0 5px 16px color-mix(in srgb, var(--mobile-common-color) 10%, rgba(45,31,40,.08)), 0 1px 2px rgba(45,31,40,.05) !important;
+  }
+  .mobile-practice-card.has-common-result .mobile-practice-head {
+    background:linear-gradient(135deg,
+      color-mix(in srgb, var(--mobile-common-color) 18%, var(--mobile-surface)) 0%,
+      color-mix(in srgb, var(--mobile-common-color) 8%, var(--mobile-surface)) 100%) !important;
+    border-bottom-color:color-mix(in srgb, var(--mobile-common-color) 30%, var(--mobile-line-soft)) !important;
+  }
+  .mobile-practice-card.has-common-result .mobile-rating-stack,
+  .mobile-practice-card.has-common-result .mobile-response-grid.has-other .mobile-rating-stack {
+    border-color:color-mix(in srgb, var(--mobile-common-color) 24%, var(--mobile-line)) !important;
+  }
+  .mobile-practice-card.has-common-result .mobile-notes-block {
+    border-top-color:color-mix(in srgb, var(--mobile-common-color) 18%, var(--mobile-line-soft)) !important;
+  }
+
+  /* With the other role visible, guarantee enough room for all 7 choices + state check. */
+  .mobile-response-grid.has-other {
+    grid-template-columns:minmax(0,1fr) 80px !important;
+    gap:4px !important;
+    padding:0 4px 4px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row {
+    grid-template-columns:31px minmax(0,1fr) 48px !important;
+    gap:2px !important;
+    padding-left:3px !important;
+    padding-right:3px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-label {
+    font-size:7px !important;
+  }
+  .mobile-response-grid.has-other .mobile-score-wrap {
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    gap:1px !important;
+    min-width:0 !important;
+    overflow:visible !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.semantic-score-btn {
+    width:18px !important;
+    min-width:18px !important;
+    height:25px !important;
+    min-height:25px !important;
+    font-size:10px !important;
+    border-radius:5px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.unknown-score {
+    width:16px !important;
+    min-width:16px !important;
+    height:25px !important;
+    min-height:25px !important;
+    font-size:9px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.semantic-score-btn {
+    width:17px !important;
+    min-width:17px !important;
+    height:20px !important;
+    min-height:20px !important;
+    font-size:9px !important;
+    border-radius:5px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.unknown-score {
+    width:15px !important;
+    min-width:15px !important;
+    height:20px !important;
+    min-height:20px !important;
+    font-size:8px !important;
+  }
+  .mobile-response-grid.has-other .mobile-state-check {
+    width:48px !important;
+    min-width:48px !important;
+    max-width:48px !important;
+    min-height:22px !important;
+    padding:1px 2px !important;
+    gap:1px !important;
+    font-size:6.2px !important;
+    justify-content:center !important;
+    overflow:hidden !important;
+  }
+  .mobile-response-grid.has-other .mobile-check-box {
+    flex:0 0 auto !important;
+    font-size:10px !important;
+  }
+  .mobile-response-grid.has-other .mobile-state-check span:last-child {
+    min-width:0 !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  .mobile-other-title {
+    padding:4px !important;
+    font-size:6.4px !important;
+  }
+  .mobile-other-row {
+    padding:4px !important;
+  }
+  .mobile-other-label {
+    font-size:6.4px !important;
+  }
+  .mobile-other-score {
+    font-size:13px !important;
+  }
+}
+
+@media (max-width:380px) {
+  .mobile-response-grid.has-other {
+    grid-template-columns:minmax(0,1fr) 74px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row {
+    grid-template-columns:29px minmax(0,1fr) 44px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.semantic-score-btn {
+    width:17px !important;
+    min-width:17px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.unknown-score {
+    width:15px !important;
+    min-width:15px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.semantic-score-btn {
+    width:16px !important;
+    min-width:16px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.unknown-score {
+    width:14px !important;
+    min-width:14px !important;
+  }
+  .mobile-response-grid.has-other .mobile-state-check {
+    width:44px !important;
+    min-width:44px !important;
+    max-width:44px !important;
+    font-size:5.8px !important;
+  }
+  .mobile-practice-name { font-size:13px !important; }
+  .mobile-practice-explanation { font-size:7.4px !important; }
 }

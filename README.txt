@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.15
+CHECKLISTS D/s — V1.1.16
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -61,6 +61,6 @@ Responsive / performances
 - Le tirage aléatoire retire l’ancien surlignage en O(1) au lieu de parcourir tout le catalogue.
 
 
-V1.1.15 : finalisation de la nouvelle vue mobile en cartes, explications via info, notes repliables, contrôles Envie/Après dynamiques et audit responsive. La vue desktop reste inchangée.
+V1.1.16 : finalisation de la nouvelle vue mobile en cartes, explications via info, notes repliables, contrôles Envie/Après dynamiques et audit responsive. La vue desktop reste inchangée.
 
-V1.1.15 : direction artistique mobile premium : surfaces superposées légèrement teintées, cartes plus distinctes, contraste renforcé entre contenu / préférences / notes, accents bleu-prune plus sobres et résumé de l'autre rôle mieux intégré. Desktop inchangé.
+V1.1.16 : direction artistique mobile premium : surfaces superposées légèrement teintées, cartes plus distinctes, contraste renforcé entre contenu / préférences / notes, accents bleu-prune plus sobres et résumé de l'autre rôle mieux intégré. Desktop inchangé.
