@@ -7931,3 +7931,167 @@ body[data-readonly="true"] #toggleOtherRole[hidden] {
     min-width:0 !important;
   }
 }
+
+/* =========================================================
+   V1.1.44 — MOBILE READING MODE HEADER REFINEMENT
+   - Cleaner alignment between the sticky category guide and the result columns.
+   - Nicer couple icon (🤝) for the shared result.
+   - More explicit labels for the marks below: ✓ Av. / ✓ Ens.
+   - Slightly larger common-result column for better hierarchy.
+   Desktop remains unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] {
+    --reading-person-col:30px;
+    --reading-common-col:42px;
+    --reading-common-box:38px;
+    --reading-results-gap:4px;
+  }
+
+  body[data-readonly="true"] .mobile-category-bar {
+    grid-template-columns:minmax(0,1fr) calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
+    gap:8px !important;
+    min-height:42px !important;
+    padding:5px 8px 4px !important;
+    align-items:start !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-main {
+    align-self:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide {
+    width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
+    min-width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
+    grid-template-rows:28px 11px !important;
+    row-gap:2px !important;
+    justify-self:end !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-top,
+  body[data-readonly="true"] .mobile-category-guide-bottom,
+  body[data-readonly="true"] .mobile-readonly-answers {
+    grid-template-columns:var(--reading-person-col) var(--reading-person-col) var(--reading-common-col) !important;
+    column-gap:var(--reading-results-gap) !important;
+    width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-top {
+    height:28px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip {
+    width:30px !important;
+    min-width:30px !important;
+    height:26px !important;
+    min-height:26px !important;
+    border-radius:8px !important;
+    font-size:13px !important;
+    justify-self:center !important;
+    align-self:start !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    height:28px !important;
+    min-height:28px !important;
+    border-radius:9px !important;
+    font-size:14px !important;
+    justify-self:end !important;
+    letter-spacing:-.02em !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom {
+    height:11px !important;
+    color:#677078 !important;
+    font-size:6.8px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    letter-spacing:-.02em !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom > span {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-width:0 !important;
+    white-space:nowrap !important;
+    overflow:visible !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answers {
+    gap:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack {
+    width:var(--reading-person-col) !important;
+    min-width:var(--reading-person-col) !important;
+    justify-self:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common {
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    justify-self:end !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    height:30px !important;
+    border-radius:9px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
+    font-size:16px !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] {
+    --reading-person-col:28px;
+    --reading-common-col:39px;
+    --reading-common-box:35px;
+    --reading-results-gap:3px;
+  }
+
+  body[data-readonly="true"] .mobile-category-bar {
+    min-height:40px !important;
+    gap:6px !important;
+    padding-left:6px !important;
+    padding-right:6px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide {
+    grid-template-rows:27px 10px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip {
+    width:28px !important;
+    min-width:28px !important;
+    height:24px !important;
+    min-height:24px !important;
+    font-size:12px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    height:27px !important;
+    min-height:27px !important;
+    font-size:13px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom {
+    font-size:6.2px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
+    height:29px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
+    font-size:15px !important;
+  }
+}
