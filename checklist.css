@@ -7912,3 +7912,22 @@ body[data-readonly="true"] #toggleOtherRole[hidden] {
     font-size:6.1px !important;
   }
 }
+
+/* =========================================================
+   V1.1.42 — MOBILE READING MODE: REMOVE EMPTY GRID SLOT
+   The other-role toggle is hidden in reading mode; let the reading-mode
+   button span all remaining space next to the help button instead of
+   leaving a blank middle block. Desktop and edit mode stay unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] header .title-actions > .view-toggle {
+    display:none !important;
+  }
+
+  body[data-readonly="true"] header .title-actions > .readonly-toggle {
+    grid-column:2 / 13 !important;
+    grid-row:2 !important;
+    width:100% !important;
+    min-width:0 !important;
+  }
+}

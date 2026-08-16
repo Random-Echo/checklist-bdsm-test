@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.41";
+const APP_VERSION = "V1.1.43";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -1265,8 +1265,22 @@ function renderRoleUI() {
     btn.textContent = `● ${roleLabel(btn.dataset.roleChoice)}`;
   }
 
-  const other = roleLabel(otherRole());
-  toggleOtherRole.textContent = `👁 ${showOtherRoleColumns ? t("hide") : t("show")} ${other}`;
+  const otherRoleValue = otherRole();
+  const other = roleLabel(otherRoleValue);
+  const otherIsFemale = otherRoleValue === FEMALE_ROLE;
+  const otherStateText = currentLang === "fr"
+    ? (showOtherRoleColumns
+        ? `👁 ${other} visible`
+        : `🙈 ${other} masqu${otherIsFemale ? "ée" : "é"}`)
+    : (showOtherRoleColumns
+        ? `👁 ${other} visible`
+        : `🙈 ${other} hidden`);
+  const otherActionText = currentLang === "fr"
+    ? `${showOtherRoleColumns ? "Masquer" : "Afficher"} ${other}`
+    : `${showOtherRoleColumns ? "Hide" : "Show"} ${other}`;
+  toggleOtherRole.textContent = otherStateText;
+  toggleOtherRole.title = otherActionText;
+  toggleOtherRole.setAttribute("aria-label", otherActionText);
   toggleOtherRole.classList.toggle("active", !showOtherRoleColumns);
   toggleOtherRole.setAttribute("aria-pressed", showOtherRoleColumns ? "false" : "true");
   toggleOtherRole.hidden = readOnly;

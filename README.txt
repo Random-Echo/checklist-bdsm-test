@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.41
+CHECKLISTS D/s — V1.1.43
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -79,3 +79,5 @@ V1.1.33 : cohérence de la légende « Choix » avec les boutons réels : ajout 
 V1.1.34 : correction du bloc de statistiques : une pastille de statistique encore vide n'est plus affichée, ce qui supprime la capsule blanche parasite visible avant « Déjà fait avant ». Elle réapparaît automatiquement dès qu'elle contient une valeur.
 
 V1.1.41 : alignement précis du repère de lecture mobile avec les trois colonnes de résultats : icônes Homme/Femme/Ensemble redimensionnées comme les cartes, libellés Avant/Avant/Ensemble centrés dessous, colonne commune légèrement plus large et barre de catégorie conservée en tête de zone. Le changement de langue FR/EN reste propre. Desktop inchangé.
+
+V1.1.43 : cohérence des boutons d’état en mode édition : le bouton de visibilité de l’autre partenaire affiche désormais l’état courant (« Maîtresse visible » / « Maîtresse masquée », etc.) comme le bouton « Mode édition / Mode lecture ». Son infobulle conserve l’action disponible (« Masquer » / « Afficher »). Desktop et logique des données inchangés.
