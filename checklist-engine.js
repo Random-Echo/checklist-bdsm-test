@@ -1260,6 +1260,8 @@ function renderRoleUI() {
   toggleOtherRole.textContent = `👁 ${showOtherRoleColumns ? t("hide") : t("show")} ${other}`;
   toggleOtherRole.classList.toggle("active", !showOtherRoleColumns);
   toggleOtherRole.setAttribute("aria-pressed", showOtherRoleColumns ? "false" : "true");
+  toggleOtherRole.hidden = readOnly;
+  toggleOtherRole.setAttribute("aria-hidden", readOnly ? "true" : "false");
 
   const readOnlyText = currentLang === "fr"
     ? (readOnly ? "👁 Mode lecture" : "✏️ Mode édition")
@@ -2696,13 +2698,8 @@ function renderMobilePracticeCard(item) {
     const readonlyRisk = riskState === "normal"
       ? ""
       : `<span class="mobile-readonly-side-risk" title="${esc(`${currentLang === "fr" ? "Risque" : "Risk"} : ${riskLabel(riskState)}`)}" aria-label="${esc(`${currentLang === "fr" ? "Risque" : "Risk"} : ${riskLabel(riskState)}`)}">${riskBadge(item)}</span>`;
-    const pinActive = !!selected;
-    const pinTitle = currentLang === "fr"
-      ? "Pratique épinglée"
-      : "Pinned practice";
-    const readonlyPin = pinActive
-      ? `<span class="mobile-readonly-pin is-selected" title="${esc(pinTitle)}" aria-label="${esc(pinTitle)}">📌</span>`
-      : "";
+    const pinTitle = selected ? t("removeSession") : t("addSession");
+    const readonlyPin = `<button class="session-pin-btn mobile-readonly-pin-btn${selected ? ' selected' : ''}" data-action="sessionToggle" data-id="${item.id}" type="button" title="${esc(pinTitle)}" aria-label="${esc(pinTitle)}">📌</button>`;
     return `<article class="mobile-practice-card mobile-readonly-card${item._randomPicked ? ' row-random-picked' : ''}${commonVisualClass}"${commonVisualStyle} data-row-id="${item.id}" data-category="${esc(item.category)}">
       <div class="mobile-readonly-main">
         <div class="mobile-readonly-pinrail">
@@ -3432,7 +3429,6 @@ function handleTableClick(e) {
     return;
   }
 
-  if (readOnly) return;
   const btn = e.target.closest("button[data-action]");
   if (!btn || btn.disabled) return;
 
@@ -3455,6 +3451,8 @@ function handleTableClick(e) {
     renderQuickFilters();
     return;
   }
+
+  if (readOnly) return;
 
   if (action === "priorSub") {
     if (!canEditRole("sub")) return;
