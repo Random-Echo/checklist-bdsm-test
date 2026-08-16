@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.34";
+const APP_VERSION = "V1.1.35";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2918,7 +2918,7 @@ function renderMobileChecklist(filterState, explicitFilters) {
   mobileCategoryHasRows = mobileCardById.size > 0;
   mobileCategoryIndex = 0;
   empty.classList.toggle("hidden", visibleCount !== 0);
-  updateStats();
+  updateStats(visibleCount);
   requestAnimationFrame(updateMobileCategoryBar);
   return visibleCount;
 }
