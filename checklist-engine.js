@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.18";
+const APP_VERSION = "V1.1.19";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2608,10 +2608,22 @@ function renderMobilePracticeCard(item) {
   // using the exact same priority rules as the desktop Practice column.
   const fantasyVisual = s !== 0 && d !== 0 && (s === FANTASY_SCORE || d === FANTASY_SCORE);
   const commonVisualScore = compatibilityFromScores(s, d);
-  const commonVisualColor = fantasyVisual
-    ? scoreColors[FANTASY_SCORE]
-    : (commonVisualScore !== null ? scoreColors[commonVisualScore] : "");
-  const commonVisualClass = commonVisualColor ? " has-common-result" : "";
+  // Mobile card color must be IDENTICAL to the visible selected result button.
+  // Keep literal display colors here because some semantic score buttons override
+  // the base --s* variables (notably Limit and selected Fantasy).
+  const mobileResultColors = {
+    0:"#fbe9eb",
+    1:"#f9cb9c",
+    2:"#fff2cc",
+    3:"#d9ead3",
+    4:"#b6d7a8",
+    5:"#c7d6ee"
+  };
+  const commonVisualDisplayScore = fantasyVisual ? FANTASY_SCORE : commonVisualScore;
+  const commonVisualColor = commonVisualDisplayScore !== null
+    ? (mobileResultColors[commonVisualDisplayScore] || "")
+    : "";
+  const commonVisualClass = commonVisualColor ? ` has-common-result common-result-${commonVisualDisplayScore}` : "";
   const commonVisualStyle = commonVisualColor ? ` style="--mobile-common-color:${commonVisualColor}"` : "";
   // The common result uses the exact same semantic emoji as a score button.
   // For the shared “favorite” state, use the crown rather than the old generic black star.
