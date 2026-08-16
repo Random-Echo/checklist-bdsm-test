@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.25";
+const APP_VERSION = "V1.1.26";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2663,9 +2663,8 @@ function renderMobilePracticeCard(item) {
         ? `${currentLang === "fr" ? "Résultat commun" : "Common result"} : ${scoreDescription(commonVisualScore)}`
         : "");
 
-  // Mobile reading mode keeps only the useful summary data, but preserves the
-  // practice hierarchy: title, explanation, then one compact result/history line.
-  // Notes use the same collapsible interaction as edit mode while remaining read-only.
+  // Mobile reading mode: compact hierarchy with the three result emojis pinned
+  // to the right, explicit experience states, and static read-only notes below.
   if (readOnly) {
     const maleValue = effectiveRoleScore(item, MALE_ROLE);
     const femaleValue = effectiveRoleScore(item, FEMALE_ROLE);
@@ -2675,6 +2674,7 @@ function renderMobilePracticeCard(item) {
     const femaleFields = roleFields(FEMALE_ROLE);
     const malePrior = !!item[maleFields.prior];
     const femalePrior = !!item[femaleFields.prior];
+    const doneTogether = !!item.doneTogether;
     const maleTitle = `${personShortLabel("male")} · ${roleLabel(MALE_ROLE)} · ${scoreDescription(maleValue)}`;
     const femaleTitle = `${personShortLabel("female")} · ${roleLabel(FEMALE_ROLE)} · ${scoreDescription(femaleValue)}`;
     const commonEmoji = commonVisualEmoji || "?";
@@ -2682,23 +2682,28 @@ function renderMobilePracticeCard(item) {
     const explanation = localizedExplanation(item) || (currentLang === "fr" ? "Aucune explication disponible." : "No explanation available.");
     const beforeStateLabel = currentLang === "fr" ? "Avant" : "Before";
     const togetherStateLabel = currentLang === "fr" ? "Ensemble" : "Together";
-    const historyHtml = `${malePrior ? `<span class="mobile-readonly-history person-male" title="${esc(currentLang === "fr" ? `Homme · déjà fait avant` : `Male · done before`)}"><span aria-hidden="true">✓</span><span>${beforeStateLabel}</span></span>` : ''}${femalePrior ? `<span class="mobile-readonly-history person-female" title="${esc(currentLang === "fr" ? `Femme · déjà fait avant` : `Female · done before`)}"><span aria-hidden="true">✓</span><span>${beforeStateLabel}</span></span>` : ''}${item.doneTogether ? `<span class="mobile-readonly-history together" title="${esc(currentLang === "fr" ? "Fait ensemble" : "Done together")}"><span aria-hidden="true">✓</span><span>${togetherStateLabel}</span></span>` : ''}`;
+    const stateMark = value => value ? "✓" : "—";
+    const historyHtml = `
+      <span class="mobile-readonly-history person-male ${malePrior ? 'is-yes' : 'is-no'}" title="${esc(currentLang === "fr" ? `Homme · déjà fait avant : ${malePrior ? 'oui' : 'non'}` : `Male · done before: ${malePrior ? 'yes' : 'no'}`)}"><span class="mobile-readonly-history-person">${personShortLabel("male")}</span><span>${beforeStateLabel}</span><span class="mobile-readonly-history-mark" aria-hidden="true">${stateMark(malePrior)}</span></span>
+      <span class="mobile-readonly-history person-female ${femalePrior ? 'is-yes' : 'is-no'}" title="${esc(currentLang === "fr" ? `Femme · déjà fait avant : ${femalePrior ? 'oui' : 'non'}` : `Female · done before: ${femalePrior ? 'yes' : 'no'}`)}"><span class="mobile-readonly-history-person">${personShortLabel("female")}</span><span>${beforeStateLabel}</span><span class="mobile-readonly-history-mark" aria-hidden="true">${stateMark(femalePrior)}</span></span>
+      <span class="mobile-readonly-history together ${doneTogether ? 'is-yes' : 'is-no'}" title="${esc(currentLang === "fr" ? `Fait ensemble : ${doneTogether ? 'oui' : 'non'}` : `Done together: ${doneTogether ? 'yes' : 'no'}`)}"><span>${togetherStateLabel}</span><span class="mobile-readonly-history-mark" aria-hidden="true">${stateMark(doneTogether)}</span></span>`;
+    const staticNotes = hasNotes
+      ? `<div class="mobile-readonly-static-notes"><div class="mobile-readonly-static-notes-title"><span aria-hidden="true">💬</span><span>${currentLang === "fr" ? "Notes" : "Notes"}</span></div>${mobileReadOnlyNotesHtml(item)}</div>`
+      : "";
     return `<article class="mobile-practice-card mobile-readonly-card${item._randomPicked ? ' row-random-picked' : ''}${commonVisualClass}"${commonVisualStyle} data-row-id="${item.id}" data-category="${esc(item.category)}">
       <div class="mobile-readonly-main">
         <div class="mobile-readonly-copy">
           <strong class="mobile-readonly-practice" title="${esc(localizedPractice(item))}">${esc(localizedPractice(item))}</strong>
           <span class="mobile-readonly-explanation">${esc(explanation)}</span>
         </div>
-        <div class="mobile-readonly-result-line">
-          <div class="mobile-readonly-answers" aria-label="${esc(currentLang === "fr" ? "Réponses du couple" : "Couple answers")}">
-            <span class="mobile-readonly-answer person-male" title="${esc(maleTitle)}" aria-label="${esc(maleTitle)}"><span class="mobile-readonly-score">${maleEmoji}</span></span>
-            <span class="mobile-readonly-answer person-female" title="${esc(femaleTitle)}" aria-label="${esc(femaleTitle)}"><span class="mobile-readonly-score">${femaleEmoji}</span></span>
-            <span class="mobile-readonly-common${commonVisualEmoji ? ' has-value' : ''}" title="${esc(commonTitle)}" aria-label="${esc(commonTitle)}"><span class="mobile-readonly-score">${commonEmoji}</span></span>
-          </div>
-          ${historyHtml ? `<div class="mobile-readonly-history-list" aria-label="${esc(currentLang === "fr" ? "Expérience" : "Experience")}">${historyHtml}</div>` : ''}
+        <div class="mobile-readonly-answers" aria-label="${esc(currentLang === "fr" ? "Réponses du couple" : "Couple answers")}">
+          <span class="mobile-readonly-answer person-male" title="${esc(maleTitle)}" aria-label="${esc(maleTitle)}"><span class="mobile-readonly-score">${maleEmoji}</span></span>
+          <span class="mobile-readonly-answer person-female" title="${esc(femaleTitle)}" aria-label="${esc(femaleTitle)}"><span class="mobile-readonly-score">${femaleEmoji}</span></span>
+          <span class="mobile-readonly-common${commonVisualEmoji ? ' has-value' : ''}" title="${esc(commonTitle)}" aria-label="${esc(commonTitle)}"><span class="mobile-readonly-score">${commonEmoji}</span></span>
         </div>
+        <div class="mobile-readonly-history-list" aria-label="${esc(currentLang === "fr" ? "Expérience" : "Experience")}">${historyHtml}</div>
       </div>
-      ${mobileReadOnlyNotesBlockHtml(item, notesOpen, hasNotes)}
+      ${staticNotes}
     </article>`;
   }
 

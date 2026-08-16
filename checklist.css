@@ -6674,3 +6674,137 @@ body.first-use-open{overflow:hidden}
     font-size:6.6px !important;
   }
 }
+
+/* =========================================================
+   V1.1.26 — MOBILE READING MODE: RIGHT RESULTS + STATIC NOTES
+   Results stay pinned to the right. "Avant" and "Ensemble" are
+   always visible as compact states. Existing notes are shown directly
+   at the bottom without a collapsible control. Desktop is untouched.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+    grid-template-areas:
+      "copy answers"
+      "history history" !important;
+    align-items:start !important;
+    column-gap:7px !important;
+    row-gap:4px !important;
+    padding:6px 7px 5px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-copy {
+    grid-area:copy !important;
+    min-width:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answers {
+    grid-area:answers !important;
+    align-self:start !important;
+    justify-self:end !important;
+    justify-content:flex-end !important;
+    gap:3px !important;
+    margin:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history-list {
+    grid-area:history !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    flex-wrap:wrap !important;
+    gap:3px !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history {
+    height:20px !important;
+    padding:0 5px !important;
+    gap:2px !important;
+    font-size:6.9px !important;
+    background:rgba(255,255,255,.42) !important;
+    border-color:rgba(62,54,59,.13) !important;
+    color:#5b5458 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history.person-male {
+    background:color-mix(in srgb, var(--male-color,#2f7395) 13%, rgba(255,255,255,.70)) !important;
+    border-color:color-mix(in srgb, var(--male-color,#2f7395) 31%, rgba(62,54,59,.12)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history.person-female {
+    background:color-mix(in srgb, var(--female-color,#8b316e) 13%, rgba(255,255,255,.70)) !important;
+    border-color:color-mix(in srgb, var(--female-color,#8b316e) 31%, rgba(62,54,59,.12)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history.together {
+    background:color-mix(in srgb, var(--s5,#b6d7a8) 30%, rgba(255,255,255,.70)) !important;
+    border-color:color-mix(in srgb, #5e8d50 32%, rgba(62,54,59,.12)) !important;
+    color:#3e5238 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history.is-no {
+    opacity:.72 !important;
+    filter:saturate(.72) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history.is-yes {
+    font-weight:900 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history-person {
+    font-weight:950 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history-mark {
+    min-width:7px !important;
+    text-align:center !important;
+    font-weight:950 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-static-notes {
+    margin:0 !important;
+    border-top:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 48%, rgba(70,61,67,.16)) !important;
+    background:rgba(255,255,255,.28) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-static-notes-title {
+    display:flex !important;
+    align-items:center !important;
+    gap:4px !important;
+    padding:4px 7px 2px !important;
+    color:#514a4f !important;
+    font-size:7.6px !important;
+    font-weight:850 !important;
+    line-height:1 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-static-notes .mobile-readonly-notes {
+    padding:3px 7px 6px !important;
+    border-top:0 !important;
+    background:transparent !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
+    column-gap:5px !important;
+    row-gap:3px !important;
+    padding-left:6px !important;
+    padding-right:6px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history-list {
+    gap:2px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-history {
+    height:19px !important;
+    padding-left:4px !important;
+    padding-right:4px !important;
+    font-size:6.5px !important;
+  }
+}
