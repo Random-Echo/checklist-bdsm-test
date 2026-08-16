@@ -8726,3 +8726,272 @@ body[data-readonly="true"] #toggleOtherRole[hidden] {
     height:42px !important;
   }
 }
+
+/* =========================================================
+   V1.1.50 — MOBILE READING MODE: CLEAN GRID REALIGNMENT
+   Rebuilds the alignment on a single shared grid so the sticky legend
+   and the three result columns in each card use the exact same tracks.
+   This is a clean final override to avoid accumulated drift.
+   Desktop unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] {
+    --reading-pin-col: 22px;
+    --reading-person-track: 31px;
+    --reading-common-track: 41px;
+    --reading-person-box: 31px;
+    --reading-common-box: 39px;
+    --reading-track-gap: 4px;
+    --reading-mark-row: 12px;
+    --reading-box-row: 29px;
+    --reading-results-width: calc(var(--reading-person-track) * 2 + var(--reading-common-track) + var(--reading-track-gap) * 2);
+  }
+
+  /* Sticky category header: left info + right legend on the exact same width as cards */
+  body[data-readonly="true"] .mobile-category-bar {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) var(--reading-results-width) !important;
+    align-items:center !important;
+    column-gap:8px !important;
+    min-height:42px !important;
+    padding:4px 8px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-main {
+    min-width:0 !important;
+    align-self:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide {
+    display:grid !important;
+    grid-template-rows:var(--reading-box-row) var(--reading-mark-row) !important;
+    row-gap:1px !important;
+    width:var(--reading-results-width) !important;
+    min-width:var(--reading-results-width) !important;
+    justify-self:end !important;
+    align-self:center !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-top,
+  body[data-readonly="true"] .mobile-category-guide-bottom,
+  body[data-readonly="true"] .mobile-readonly-answers {
+    display:grid !important;
+    grid-template-columns:var(--reading-person-track) var(--reading-person-track) var(--reading-common-track) !important;
+    column-gap:var(--reading-track-gap) !important;
+    width:var(--reading-results-width) !important;
+    min-width:var(--reading-results-width) !important;
+    justify-self:end !important;
+    align-items:start !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  /* Legend chips */
+  body[data-readonly="true"] .mobile-category-guide-top {
+    align-items:start !important;
+    height:var(--reading-box-row) !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip {
+    width:var(--reading-person-box) !important;
+    min-width:var(--reading-person-box) !important;
+    height:27px !important;
+    min-height:27px !important;
+    margin:0 auto !important;
+    padding:0 !important;
+    border-radius:8px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    line-height:1 !important;
+    font-size:13px !important;
+    box-sizing:border-box !important;
+    transform:translateY(0) !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    height:29px !important;
+    min-height:29px !important;
+    margin:0 auto !important;
+    border-radius:9px !important;
+    font-size:14px !important;
+    font-weight:900 !important;
+  }
+
+  /* Legend labels below */
+  body[data-readonly="true"] .mobile-category-guide-bottom {
+    height:var(--reading-mark-row) !important;
+    color:#687078 !important;
+    font-size:6.7px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    letter-spacing:-.015em !important;
+    text-align:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom > span {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:var(--reading-mark-row) !important;
+    margin:0 !important;
+    white-space:nowrap !important;
+    line-height:1 !important;
+    text-align:center !important;
+  }
+
+  /* Read-only cards: same result grid, locked width */
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
+    display:grid !important;
+    grid-template-columns:var(--reading-pin-col) minmax(0,1fr) var(--reading-results-width) !important;
+    grid-template-areas:"pin copy answers" !important;
+    align-items:start !important;
+    column-gap:7px !important;
+    row-gap:0 !important;
+    padding:6px 7px 5px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-pinrail {
+    grid-area:pin !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    justify-content:flex-start !important;
+    gap:4px !important;
+    width:var(--reading-pin-col) !important;
+    min-width:var(--reading-pin-col) !important;
+    padding-top:0 !important;
+    margin:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-copy {
+    grid-area:copy !important;
+    min-width:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answers {
+    grid-area:answers !important;
+    align-self:start !important;
+    justify-self:end !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack,
+  body[data-readonly="true"] .mobile-readonly-result-stack.common {
+    display:grid !important;
+    grid-template-rows:var(--reading-box-row) var(--reading-mark-row) !important;
+    row-gap:1px !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    justify-items:center !important;
+    align-items:start !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-answer {
+    width:var(--reading-person-box) !important;
+    min-width:var(--reading-person-box) !important;
+    height:27px !important;
+    min-height:27px !important;
+    margin:0 auto !important;
+    padding:0 !important;
+    border-radius:8px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    box-sizing:border-box !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    height:29px !important;
+    min-height:29px !important;
+    margin:0 auto !important;
+    padding:0 !important;
+    border-radius:9px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    box-sizing:border-box !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-score {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    height:100% !important;
+    line-height:1 !important;
+    transform:translateY(0) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
+    font-size:16px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-experience-mark {
+    width:18px !important;
+    min-width:18px !important;
+    height:11px !important;
+    min-height:11px !important;
+    margin:0 auto !important;
+    padding:0 !important;
+    align-self:start !important;
+    justify-self:center !important;
+    line-height:1 !important;
+    font-size:8px !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] {
+    --reading-pin-col: 20px;
+    --reading-person-track: 29px;
+    --reading-common-track: 39px;
+    --reading-person-box: 29px;
+    --reading-common-box: 37px;
+    --reading-track-gap: 3px;
+    --reading-mark-row: 11px;
+    --reading-box-row: 28px;
+  }
+
+  body[data-readonly="true"] .mobile-category-bar {
+    column-gap:6px !important;
+    min-height:40px !important;
+    padding-left:6px !important;
+    padding-right:6px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip,
+  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-answer {
+    height:26px !important;
+    min-height:26px !important;
+    font-size:12px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple,
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
+    height:28px !important;
+    min-height:28px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
+    font-size:13px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom {
+    font-size:6.1px !important;
+  }
+
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
+    column-gap:6px !important;
+    padding-left:6px !important;
+    padding-right:6px !important;
+  }
+}
