@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.45";
+const APP_VERSION = "V1.1.46";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2737,6 +2737,7 @@ function renderMobilePracticeCard(item) {
   const otherWant = scoreButtonLabel(otherWantValue, other);
   const otherAfter = otherAfterValue === null ? "—" : scoreButtonLabel(otherAfterValue, other);
   const otherRoleName = roleLabel(other);
+  const otherAfterLabel = currentLang === "fr" ? "Après" : "After";
 
   // Keep the mobile practice visually tied to the couple/common result,
   // using the exact same priority rules as the desktop Practice column.
@@ -2842,7 +2843,7 @@ function renderMobilePracticeCard(item) {
       <span class="mobile-other-prior${otherPrior ? ' checked' : ''}"><span>${otherPrior ? '✓' : '□'}</span><span>${beforeLabel}</span></span>
     </div>
     <div class="mobile-other-row mobile-other-after${otherExperienced ? '' : ' is-disabled'}">
-      <span class="mobile-other-label">${afterLabel}</span>
+      <span class="mobile-other-label" title="${esc(afterLabel)}">${otherAfterLabel}</span>
       <span class="mobile-other-score" title="${otherAfterValue === null ? '' : esc(scoreDescription(otherAfterValue))}">${otherAfter}</span>
     </div>
   </aside>` : "";

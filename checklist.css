@@ -8271,3 +8271,120 @@ body[data-readonly="true"] #toggleOtherRole[hidden] {
     font-size:6.1px !important;
   }
 }
+
+/* =========================================================
+   V1.1.46 — MOBILE EDIT MODE: PARTNER PANEL / STATE CONTROLS
+   Fixes the cramped iPhone layout when the other person is visible:
+   - more room for Avant / Ensemble so labels are not truncated;
+   - slightly narrower, cleaner read-only partner summary;
+   - tighter score-button gaps to preserve comfortable tap targets;
+   - compact "Après" label in the partner panel only.
+   Desktop and reading mode are unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other {
+    grid-template-columns:minmax(0,1fr) 62px !important;
+    gap:3px !important;
+    align-items:stretch !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-rating-row {
+    grid-template-columns:26px minmax(0,1fr) 54px !important;
+    gap:2px !important;
+    padding-left:4px !important;
+    padding-right:4px !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-score-wrap {
+    gap:2px !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-state-check {
+    width:54px !important;
+    min-width:54px !important;
+    max-width:54px !important;
+    gap:2px !important;
+    padding:2px 3px !important;
+    font-size:7.2px !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-state-check span:last-child {
+    display:block !important;
+    min-width:0 !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    white-space:nowrap !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-check-box {
+    flex:0 0 auto !important;
+    font-size:12px !important;
+    line-height:1 !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-other-summary {
+    width:62px !important;
+    min-width:62px !important;
+    max-width:62px !important;
+    border-radius:8px !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-other-title {
+    gap:3px !important;
+    padding:4px 4px 3px !important;
+    font-size:6.7px !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-other-row {
+    grid-template-columns:minmax(0,1fr) 18px !important;
+    gap:2px !important;
+    padding:4px !important;
+    min-height:0 !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-other-label {
+    font-size:6.5px !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-other-score {
+    font-size:13px !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-other-prior {
+    gap:2px !important;
+    font-size:5.8px !important;
+  }
+}
+
+@media (max-width:380px) {
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other {
+    grid-template-columns:minmax(0,1fr) 60px !important;
+    gap:3px !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-rating-row {
+    grid-template-columns:25px minmax(0,1fr) 52px !important;
+    gap:2px !important;
+    padding-left:3px !important;
+    padding-right:3px !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-state-check {
+    width:52px !important;
+    min-width:52px !important;
+    max-width:52px !important;
+    padding-left:2px !important;
+    padding-right:2px !important;
+    font-size:6.9px !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-response-grid.has-other .mobile-other-summary {
+    width:60px !important;
+    min-width:60px !important;
+    max-width:60px !important;
+  }
+}
