@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.20";
+const APP_VERSION = "V1.1.22";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2661,7 +2661,7 @@ function renderMobilePracticeCard(item) {
         <div class="mobile-practice-pin">${pin}</div>
       </div>
     </div>
-    <div class="mobile-response-grid${showOtherRoleColumns ? ' has-other' : ''}">
+    <div class="mobile-response-grid${showOtherRoleColumns ? ' has-other' : ' is-solo'}">
       <div class="mobile-rating-stack${experienced ? ' is-experienced' : ' is-new'}">
         <div class="mobile-rating-row mobile-want-row ${wantRowClass}">
           <span class="mobile-rating-label">${wantLabel}</span>

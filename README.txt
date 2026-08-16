@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.20
+CHECKLISTS D/s — V1.1.22
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -64,3 +64,5 @@ Responsive / performances
 V1.1.20 : finalisation de la nouvelle vue mobile en cartes, explications via info, notes repliables, contrôles Envie/Après dynamiques et audit responsive. La vue desktop reste inchangée.
 
 V1.1.20 : direction artistique mobile premium : surfaces superposées légèrement teintées, cartes plus distinctes, contraste renforcé entre contenu / préférences / notes, accents bleu-prune plus sobres et résumé de l'autre rôle mieux intégré. Desktop inchangé.
+V1.1.21 : ajustement mobile portrait de la barre « Outils & options » : décalée légèrement vers le bas pour équilibrer l’espace vertical, sans modifier la vue desktop.
+V1.1.22 : correction propre du rendu mobile quand le panneau de l’autre rôle est masqué : espacement resserré entre les 7 choix, boutons Avant / Ensemble élargis et coches agrandies ; le mode avec partenaire reste compact et le desktop est inchangé.

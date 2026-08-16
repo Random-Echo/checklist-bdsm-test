@@ -5931,32 +5931,106 @@ body.first-use-open{overflow:hidden}
 }
 
 /* =========================================================
-   V1.1.20 — PREMIUM MOBILE SCORE CONTROLS
-   Wider, calmer score buttons while preserving the partner summary.
+   V1.1.22 — MOBILE SCORE CONTROLS, SOLO / PARTNER LAYOUTS
+   Solo mode uses compact score spacing and a readable state control.
+   Partner mode keeps the narrow layout required by the read-only panel.
    Desktop is intentionally untouched.
    ========================================================= */
 @media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  /* Shared score-button finish. */
+  .mobile-score-wrap .score-btn.semantic-score-btn,
+  .mobile-score-wrap .score-btn.unknown-score {
+    margin:0 !important;
+    border-width:1px !important;
+    border-radius:7px !important;
+    box-shadow:0 1px 2px rgba(35,27,33,.08), inset 0 1px 0 rgba(255,255,255,.45) !important;
+  }
+
+  .mobile-rating-row.is-primary .mobile-score-wrap .score-btn {
+    height:29px !important;
+    min-height:29px !important;
+    font-size:13px !important;
+  }
+  .mobile-rating-row.is-secondary .mobile-score-wrap .score-btn {
+    height:25px !important;
+    min-height:25px !important;
+    font-size:12px !important;
+  }
+  .mobile-score-wrap .score-btn.selected,
+  .mobile-score-wrap .score-btn[aria-pressed="true"] {
+    transform:translateY(-1px) !important;
+    box-shadow:0 2px 5px rgba(35,27,33,.16), inset 0 1px 0 rgba(255,255,255,.58) !important;
+  }
+
+  /* Other role hidden: keep the seven choices close together and
+     give Avant / Ensemble enough width to stay readable. */
+  .mobile-response-grid.is-solo .mobile-rating-row {
+    grid-template-columns:27px minmax(0,1fr) 64px !important;
+    gap:3px !important;
+    padding-left:5px !important;
+    padding-right:5px !important;
+  }
+  .mobile-response-grid.is-solo .mobile-rating-label {
+    font-size:7.4px !important;
+    font-weight:850 !important;
+    line-height:1.02 !important;
+  }
+  .mobile-response-grid.is-solo .mobile-score-wrap {
+    display:grid !important;
+    grid-template-columns:repeat(7,33px) !important;
+    justify-content:center !important;
+    gap:2px !important;
+    width:100% !important;
+    min-width:0 !important;
+    overflow:visible !important;
+  }
+  .mobile-response-grid.is-solo .mobile-score-wrap .score-btn.semantic-score-btn,
+  .mobile-response-grid.is-solo .mobile-score-wrap .score-btn.unknown-score {
+    width:33px !important;
+    min-width:33px !important;
+    max-width:33px !important;
+    padding:0 !important;
+  }
+  .mobile-response-grid.is-solo .mobile-state-check {
+    width:64px !important;
+    min-width:64px !important;
+    max-width:64px !important;
+    min-height:27px !important;
+    gap:4px !important;
+    padding:2px 5px !important;
+    border-radius:8px !important;
+    font-size:7.8px !important;
+    justify-content:center !important;
+  }
+  .mobile-response-grid.is-solo .mobile-rating-row.is-secondary .mobile-state-check {
+    min-height:25px !important;
+  }
+  .mobile-response-grid.is-solo .mobile-check-box {
+    flex:0 0 auto !important;
+    font-size:16px !important;
+    line-height:1 !important;
+  }
+  .mobile-response-grid.is-solo .mobile-state-check span:last-child {
+    overflow:visible !important;
+    text-overflow:clip !important;
+  }
+
+  /* Other role visible: preserve the compact two-column composition. */
   .mobile-response-grid.has-other {
     grid-template-columns:minmax(0,1fr) 70px !important;
     gap:4px !important;
   }
-
-  .mobile-rating-row,
   .mobile-response-grid.has-other .mobile-rating-row {
     grid-template-columns:27px minmax(0,1fr) 44px !important;
     gap:3px !important;
     padding-left:5px !important;
     padding-right:5px !important;
   }
-
-  .mobile-rating-label,
   .mobile-response-grid.has-other .mobile-rating-label {
     font-size:7.4px !important;
     font-weight:850 !important;
     line-height:1.02 !important;
   }
-
-  .mobile-score-wrap,
   .mobile-response-grid.has-other .mobile-score-wrap {
     display:grid !important;
     grid-template-columns:repeat(7,minmax(0,1fr)) !important;
@@ -5964,9 +6038,6 @@ body.first-use-open{overflow:hidden}
     width:100% !important;
     min-width:0 !important;
   }
-
-  .mobile-score-wrap .score-btn.semantic-score-btn,
-  .mobile-score-wrap .score-btn.unknown-score,
   .mobile-response-grid.has-other .mobile-score-wrap .score-btn.semantic-score-btn,
   .mobile-response-grid.has-other .mobile-score-wrap .score-btn.unknown-score,
   .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.semantic-score-btn,
@@ -5976,62 +6047,95 @@ body.first-use-open{overflow:hidden}
     width:100% !important;
     min-width:0 !important;
     max-width:none !important;
-    margin:0 !important;
-    border-width:1px !important;
-    border-radius:7px !important;
-    box-shadow:0 1px 2px rgba(35,27,33,.08), inset 0 1px 0 rgba(255,255,255,.45) !important;
   }
-
-  .mobile-rating-row.is-primary .mobile-score-wrap .score-btn,
-  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.semantic-score-btn,
-  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.unknown-score {
-    height:29px !important;
-    min-height:29px !important;
-    font-size:13px !important;
-  }
-
-  .mobile-rating-row.is-secondary .mobile-score-wrap .score-btn,
-  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.semantic-score-btn,
-  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.unknown-score {
-    height:25px !important;
-    min-height:25px !important;
-    font-size:12px !important;
-  }
-
-  .mobile-score-wrap .score-btn.selected,
-  .mobile-score-wrap .score-btn[aria-pressed="true"] {
-    transform:translateY(-1px) !important;
-    box-shadow:0 2px 5px rgba(35,27,33,.16), inset 0 1px 0 rgba(255,255,255,.58) !important;
-  }
-
-  .mobile-state-check,
   .mobile-response-grid.has-other .mobile-state-check {
     width:44px !important;
     min-width:44px !important;
     max-width:44px !important;
     border-radius:8px !important;
   }
-
   .mobile-other-summary {
     min-width:0 !important;
   }
 }
 
 @media (max-width:380px) {
-  .mobile-response-grid.has-other { grid-template-columns:minmax(0,1fr) 66px !important; }
-  .mobile-rating-row,
+  .mobile-response-grid.is-solo .mobile-rating-row {
+    grid-template-columns:25px minmax(0,1fr) 60px !important;
+    gap:2px !important;
+    padding-left:4px !important;
+    padding-right:4px !important;
+  }
+  .mobile-response-grid.is-solo .mobile-score-wrap {
+    grid-template-columns:repeat(7,31px) !important;
+    gap:2px !important;
+  }
+  .mobile-response-grid.is-solo .mobile-score-wrap .score-btn.semantic-score-btn,
+  .mobile-response-grid.is-solo .mobile-score-wrap .score-btn.unknown-score {
+    width:31px !important;
+    min-width:31px !important;
+    max-width:31px !important;
+  }
+  .mobile-response-grid.is-solo .mobile-state-check {
+    width:60px !important;
+    min-width:60px !important;
+    max-width:60px !important;
+  }
+
+  .mobile-response-grid.has-other {
+    grid-template-columns:minmax(0,1fr) 66px !important;
+  }
   .mobile-response-grid.has-other .mobile-rating-row {
     grid-template-columns:25px minmax(0,1fr) 40px !important;
     gap:2px !important;
     padding-left:4px !important;
     padding-right:4px !important;
   }
-  .mobile-state-check,
   .mobile-response-grid.has-other .mobile-state-check {
     width:40px !important;
     min-width:40px !important;
     max-width:40px !important;
   }
-  .mobile-score-wrap,
-  .mobile-response-grid.has-other .mobile-score-wrap { gap:2px !important; }
+  .mobile-response-grid.has-other .mobile-score-wrap {
+    gap:2px !important;
+  }
+}
+
+@media (max-width:340px) {
+  .mobile-response-grid.is-solo .mobile-rating-row {
+    grid-template-columns:24px minmax(0,1fr) 56px !important;
+    gap:2px !important;
+    padding-left:3px !important;
+    padding-right:3px !important;
+  }
+  .mobile-response-grid.is-solo .mobile-score-wrap {
+    grid-template-columns:repeat(7,27px) !important;
+    gap:2px !important;
+  }
+  .mobile-response-grid.is-solo .mobile-score-wrap .score-btn.semantic-score-btn,
+  .mobile-response-grid.is-solo .mobile-score-wrap .score-btn.unknown-score {
+    width:27px !important;
+    min-width:27px !important;
+    max-width:27px !important;
+  }
+  .mobile-response-grid.is-solo .mobile-state-check {
+    width:56px !important;
+    min-width:56px !important;
+    max-width:56px !important;
+    padding-left:3px !important;
+    padding-right:3px !important;
+    font-size:7px !important;
+  }
+  .mobile-response-grid.is-solo .mobile-check-box {
+    font-size:15px !important;
+  }
+}
+
+/* =========================================================
+   V1.1.21 — MOBILE PORTRAIT TOOLS BAR VERTICAL BALANCE
+   ========================================================= */
+@media (max-width:650px) and (orientation:portrait) {
+  header .all-tools {
+    transform:translateY(3px) !important;
+  }
 }
