@@ -7319,3 +7319,54 @@ body.first-use-open{overflow:hidden}
     font-size:8px !important;
   }
 }
+
+/* =========================================================
+   V1.1.32 — HELP / LEGEND: CURRENT MOBILE READING UI
+   Adds the missing unrated state and explains the three compact
+   experience indicators shown under the couple results in reading mode.
+   ========================================================= */
+.semantic-legend-unknown {
+  background:#f3f4f5;
+  border-color:#d6dadd;
+}
+
+.reading-legend-card {
+  display:grid;
+  gap:3px;
+  width:100%;
+  margin-top:2px;
+  padding:7px 8px;
+  border:1px solid rgba(59,67,73,.14);
+  border-radius:8px;
+  background:#f7f9fa;
+  color:#353b40;
+  box-sizing:border-box;
+}
+
+.reading-legend-card strong {
+  font-size:10px;
+  line-height:1.15;
+}
+
+.reading-legend-card span {
+  font-size:8.5px;
+  font-weight:600;
+  line-height:1.25;
+  color:#555e65;
+}
+
+@media (max-width:650px) {
+  .semantic-legend .reading-legend-card {
+    grid-column:1 / -1;
+    margin-top:1px;
+    padding:7px 8px;
+  }
+
+  .reading-legend-card strong {
+    font-size:10.5px;
+  }
+
+  .reading-legend-card span {
+    font-size:8.8px;
+  }
+}
