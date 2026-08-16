@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.35
+CHECKLISTS D/s — V1.1.36
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -78,4 +78,4 @@ V1.1.33 : cohérence de la légende « Choix » avec les boutons réels : ajout 
 
 V1.1.34 : correction du bloc de statistiques : une pastille de statistique encore vide n'est plus affichée, ce qui supprime la capsule blanche parasite visible avant « Déjà fait avant ». Elle réapparaît automatiquement dès qu'elle contient une valeur.
 
-V1.1.35 : correction des statistiques sur mobile : le compteur « x / 600 dans ce mode / filtre » reçoit désormais le nombre visible lors du rendu mobile, comme sur desktop. Aucun changement de mise en page desktop.
+V1.1.36 : ajout d’un bandeau explicatif rapide sur mobile en mode lecture, au-dessus des catégories, pour rappeler à quoi correspondent les trois préférences visibles et les trois petits indicateurs « déjà fait ». Desktop inchangé.
