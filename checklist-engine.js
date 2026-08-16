@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.46";
+const APP_VERSION = "V1.1.47";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2840,7 +2840,7 @@ function renderMobilePracticeCard(item) {
     <div class="mobile-other-row mobile-other-want">
       <span class="mobile-other-label">${wantLabel}</span>
       <span class="mobile-other-score" title="${esc(scoreDescription(otherWantValue))}">${otherWant}</span>
-      <span class="mobile-other-prior${otherPrior ? ' checked' : ''}"><span>${otherPrior ? '✓' : '□'}</span><span>${beforeLabel}</span></span>
+      <span class="mobile-other-prior${otherPrior ? ' checked' : ''}"><span class="mobile-check-box">${otherPrior ? '✓' : '□'}</span><span>${beforeLabel}</span></span>
     </div>
     <div class="mobile-other-row mobile-other-after${otherExperienced ? '' : ' is-disabled'}">
       <span class="mobile-other-label" title="${esc(afterLabel)}">${otherAfterLabel}</span>
