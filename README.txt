@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.47
+CHECKLISTS D/s — V1.1.48
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -80,4 +80,4 @@ V1.1.34 : correction du bloc de statistiques : une pastille de statistique encor
 
 V1.1.41 : alignement précis du repère de lecture mobile avec les trois colonnes de résultats : icônes Homme/Femme/Ensemble redimensionnées comme les cartes, libellés Avant/Avant/Ensemble centrés dessous, colonne commune légèrement plus large et barre de catégorie conservée en tête de zone. Le changement de langue FR/EN reste propre. Desktop inchangé.
 
-V1.1.47 : en mode édition mobile avec partenaire visible, l’indicateur « Avant » du panneau partenaire reprend désormais la même logique visuelle que le contrôle actif : case/tick + libellé dans une pastille, avec état coché vert et état non coché neutre. Desktop et mode lecture inchangés.
+V1.1.48 : réalignement du repère sticky et des colonnes de résultats en mode lecture mobile ; symboles du haut recentrés dans leurs cases, colonnes du haut et du bas recalées sur une même grille, et meilleure homogénéité visuelle des coches dessous. Desktop inchangé.
