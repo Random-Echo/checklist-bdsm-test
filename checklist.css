@@ -7445,3 +7445,57 @@ body.first-use-open{overflow:hidden}
     font-weight:900;
   }
 }
+
+/* =========================================================
+   V1.1.37 — READING MODE: OTHER-ROLE TOGGLE HIDDEN
+   In reading mode both partners are always visible, so the
+   show/hide-other-person control must not be displayed.
+   ========================================================= */
+body[data-readonly="true"] #toggleOtherRole,
+body[data-readonly="true"] #toggleOtherRole[hidden] {
+  display:none !important;
+}
+
+/* =========================================================
+   V1.1.38 — MOBILE READING MODE: COMMON RESULT EMPHASIS
+   Makes the common/couple result slightly larger so it reads more
+   clearly as the shared outcome, without changing desktop.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] .mobile-readonly-answers {
+    column-gap:3px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common {
+    margin-left:3px !important;
+    min-width:33px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
+    width:33px !important;
+    min-width:33px !important;
+    height:28px !important;
+    border-radius:8px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
+    font-size:15px !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] .mobile-readonly-result-stack.common {
+    margin-left:2px !important;
+    min-width:31px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
+    width:31px !important;
+    min-width:31px !important;
+    height:27px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
+    font-size:14px !important;
+  }
+}

@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.36";
+const APP_VERSION = "V1.1.38";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -1270,6 +1270,7 @@ function renderRoleUI() {
   toggleOtherRole.classList.toggle("active", !showOtherRoleColumns);
   toggleOtherRole.setAttribute("aria-pressed", showOtherRoleColumns ? "false" : "true");
   toggleOtherRole.hidden = readOnly;
+  toggleOtherRole.disabled = readOnly;
   toggleOtherRole.setAttribute("aria-hidden", readOnly ? "true" : "false");
 
   const readOnlyText = currentLang === "fr"
@@ -1384,6 +1385,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 toggleOtherRole.addEventListener("click", () => {
+  if (readOnly) return;
   showOtherRoleColumns = !showOtherRoleColumns;
   localStorage.setItem(OTHER_ROLE_COLUMNS_KEY, String(showOtherRoleColumns));
   renderRoleUI();
@@ -1819,7 +1821,7 @@ function roleCellClass(owner) {
 let lastHeadsSignature = "";
 function renderHeads() {
   const signature = [
-    currentLang, currentRole, showOtherRoleColumns,
+    currentLang, currentRole, showOtherRoleColumns, readOnly ? "ro" : "edit",
     MOBILE_MQ.matches ? "m" : "d",
     ...Object.entries(visibleColumns).map(([k,v]) => `${k}:${v ? 1 : 0}`)
   ].join("|");
@@ -2042,7 +2044,7 @@ function renderColumnControls() {
   const isMobile = MOBILE_MQ.matches;
   const cols = [...fixedColumns, ...scrollColumns].filter(col => {
     if (isMobile && ["num","category"].includes(col.key)) return false;
-    return showOtherRoleColumns || !col.owner || col.owner === currentRole;
+    return readOnly || showOtherRoleColumns || !col.owner || col.owner === currentRole;
   });
   columnControls.innerHTML = cols.map(col => {
     const ownerClass = col.owner ? ` owner-${col.owner}` : "";
@@ -2109,7 +2111,7 @@ function getVisibleFixedColumns() {
 function getVisibleScrollColumns() {
   return scrollColumns.filter(c => {
     if (!visibleColumns[c.key]) return false;
-    if (!showOtherRoleColumns && c.owner && c.owner !== currentRole) return false;
+    if (!readOnly && !showOtherRoleColumns && c.owner && c.owner !== currentRole) return false;
     return true;
   });
 }
@@ -2118,7 +2120,7 @@ let lastGeometrySignature = "";
 function applyColumnGeometry() {
   const isMobile = MOBILE_MQ.matches;
   const signature = [
-    isMobile ? "m" : "d", currentRole, showOtherRoleColumns,
+    isMobile ? "m" : "d", currentRole, showOtherRoleColumns, readOnly ? "ro" : "edit",
     ...Object.entries(visibleColumns).map(([k,v]) => `${k}:${v ? 1 : 0}`)
   ].join("|");
   if (signature === lastGeometrySignature) return;
