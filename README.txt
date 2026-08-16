@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.38
+CHECKLISTS D/s — V1.1.39
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -78,4 +78,4 @@ V1.1.33 : cohérence de la légende « Choix » avec les boutons réels : ajout 
 
 V1.1.34 : correction du bloc de statistiques : une pastille de statistique encore vide n'est plus affichée, ce qui supprime la capsule blanche parasite visible avant « Déjà fait avant ». Elle réapparaît automatiquement dès qu'elle contient une valeur.
 
-V1.1.38 : en mode lecture mobile, le résultat commun du couple est légèrement agrandi et un peu plus dissocié des deux réponses individuelles pour améliorer la lisibilité. Desktop inchangé.
+V1.1.39 : le bandeau d’aide rapide mobile en mode lecture a été simplifié en version minimale : « Pratiques » à gauche, puis un repère compact à droite pour lire les trois résultats (homme / femme / couple) et la ligne « avant / avant / ensemble ». Desktop inchangé.

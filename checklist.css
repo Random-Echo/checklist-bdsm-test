@@ -7402,10 +7402,12 @@ body.first-use-open{overflow:hidden}
 }
 
 /* =========================================================
-   V1.1.36 — MOBILE: QUICK READING LEGEND ABOVE CATEGORIES
-   Compact explanatory banner shown on mobile in reading mode,
-   to clarify what the three preference results and the three
-   small "already done" indicators mean. Desktop unchanged.
+   V1.1.39 — MOBILE: MINIMAL QUICK READING LEGEND
+   Replaces the long bilingual explanatory banner with a much more
+   compact visual key: practices on the left, the 3 result columns
+   on the right (male / female / couple), then the line below for
+   before / before / together.
+   Desktop unchanged.
    ========================================================= */
 .mobile-quick-reading-help {
   display:none;
@@ -7414,35 +7416,110 @@ body.first-use-open{overflow:hidden}
 @media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
   body[data-readonly="true"] .mobile-quick-reading-help {
     display:grid;
-    gap:3px;
+    grid-template-columns:minmax(72px, .95fr) auto;
+    align-items:center;
+    gap:8px;
     margin:0 0 6px;
-    padding:6px 8px;
-    border:1px solid rgba(98,108,116,.18);
+    padding:5px 8px;
+    border:1px solid rgba(98,108,116,.16);
     border-radius:10px;
-    background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,248,250,.98));
+    background:linear-gradient(180deg, rgba(255,255,255,.97), rgba(247,248,250,.99));
     box-shadow:0 1px 2px rgba(24,32,38,.04);
     color:#485058;
   }
 
-  body[data-readonly="true"] .mobile-quick-reading-help-title {
-    display:flex;
-    align-items:center;
-    gap:5px;
+  body[data-readonly="true"] .mobile-quick-reading-help-left {
+    min-width:0;
     color:#323a41;
     font-size:10px;
     font-weight:900;
-    line-height:1.15;
+    line-height:1.1;
   }
 
-  body[data-readonly="true"] .mobile-quick-reading-help-line {
-    font-size:8.2px;
-    line-height:1.28;
+  body[data-readonly="true"] .mobile-quick-reading-help-right {
+    display:grid;
+    gap:2px;
+    justify-items:end;
+    min-width:0;
+  }
+
+  body[data-readonly="true"] .mobile-quick-reading-help-row {
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:4px;
+    min-width:0;
     color:#5b656d;
+    font-size:8.2px;
+    line-height:1.15;
+    font-weight:800;
+    white-space:nowrap;
   }
 
-  body[data-readonly="true"] .mobile-quick-reading-help-line strong {
-    color:#39424a;
+  body[data-readonly="true"] .mobile-quick-reading-help-row-top {
+    gap:3px;
+  }
+
+  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:18px;
+    min-width:18px;
+    height:18px;
+    border-radius:6px;
+    border:1px solid rgba(74,65,71,.12);
+    background:rgba(255,255,255,.5);
+    font-size:10px;
+    line-height:1;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+  }
+
+  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip-male {
+    background:rgba(208,232,248,.84);
+    border-color:rgba(87,138,170,.28);
+    color:#406577;
+  }
+
+  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip-female {
+    background:rgba(241,219,234,.86);
+    border-color:rgba(160,96,133,.28);
+    color:#7f4b68;
+  }
+
+  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip-couple {
+    background:rgba(247,240,213,.88);
+    border-color:rgba(171,146,67,.26);
+    color:#765f1d;
+  }
+
+  body[data-readonly="true"] .mobile-quick-reading-help .guide-sep {
+    opacity:.5;
     font-weight:900;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] .mobile-quick-reading-help {
+    grid-template-columns:minmax(64px, .9fr) auto;
+    gap:6px;
+    padding:5px 7px;
+  }
+
+  body[data-readonly="true"] .mobile-quick-reading-help-left {
+    font-size:9.4px;
+  }
+
+  body[data-readonly="true"] .mobile-quick-reading-help-row {
+    font-size:7.6px;
+    gap:3px;
+  }
+
+  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip {
+    width:17px;
+    min-width:17px;
+    height:17px;
+    font-size:9px;
   }
 }
 
