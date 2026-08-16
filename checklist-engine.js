@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.17";
+const APP_VERSION = "V1.1.18";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2613,6 +2613,16 @@ function renderMobilePracticeCard(item) {
     : (commonVisualScore !== null ? scoreColors[commonVisualScore] : "");
   const commonVisualClass = commonVisualColor ? " has-common-result" : "";
   const commonVisualStyle = commonVisualColor ? ` style="--mobile-common-color:${commonVisualColor}"` : "";
+  // The common result uses the exact same semantic emoji as a score button.
+  // For the shared “favorite” state, use the crown rather than the old generic black star.
+  const commonVisualEmoji = fantasyVisual
+    ? scoreButtonLabel(FANTASY_SCORE, "dom")
+    : (commonVisualScore !== null ? scoreButtonLabel(commonVisualScore, "dom") : "");
+  const commonVisualTitle = fantasyVisual
+    ? (currentLang === "fr" ? "Résultat commun : fantasme" : "Common result: fantasy")
+    : (commonVisualScore !== null
+        ? `${currentLang === "fr" ? "Résultat commun" : "Common result"} : ${scoreDescription(commonVisualScore)}`
+        : "");
 
   const otherSummary = showOtherRoleColumns ? `<aside class="mobile-other-summary role-${other}" aria-label="${esc(otherRoleName)}">
     <div class="mobile-other-title"><span class="mobile-other-dot" aria-hidden="true"></span><span>${esc(otherRoleName)}</span></div>
@@ -2633,7 +2643,11 @@ function renderMobilePracticeCard(item) {
         <strong class="mobile-practice-name">${esc(localizedPractice(item))}</strong>
         <span class="mobile-practice-explanation">${esc(localizedExplanation(item) || (currentLang === "fr" ? "Aucune explication disponible." : "No explanation available."))}</span>
       </div>
-      <div class="mobile-practice-meta">${level}${risk}${compat}${pin}</div>
+      <div class="mobile-practice-head-bottom">
+        <div class="mobile-practice-meta">${level}${risk}</div>
+        <div class="mobile-common-result${commonVisualEmoji ? ' has-value' : ''}" ${commonVisualTitle ? `title="${esc(commonVisualTitle)}"` : ''} aria-label="${commonVisualTitle ? esc(commonVisualTitle) : ''}">${commonVisualEmoji || ''}</div>
+        <div class="mobile-practice-pin">${pin}</div>
+      </div>
     </div>
     <div class="mobile-response-grid${showOtherRoleColumns ? ' has-other' : ''}">
       <div class="mobile-rating-stack${experienced ? ' is-experienced' : ' is-new'}">

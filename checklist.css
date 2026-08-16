@@ -5528,3 +5528,150 @@ body.first-use-open{overflow:hidden}
   .mobile-practice-explanation { font-size:7.4px !important; }
 }
 \n\n/* =========================================================\n   V1.1.17 — MOBILE COMMON RESULT COLOR + MODE LABELS\n   Desktop untouched.\n   ========================================================= */\n@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {\n  /* The practice card now uses the same common-result palette as the former\n     Practice column: red / orange / fantasy blue / yellow / green / favorite. */\n  .mobile-practice-card.has-common-result {\n    background:var(--mobile-common-color) !important;\n    border-color:color-mix(in srgb, var(--mobile-common-color) 72%, #596066) !important;\n    box-shadow:0 4px 12px rgba(45,31,40,.10), 0 1px 2px rgba(45,31,40,.06) !important;\n  }\n  .mobile-practice-card.has-common-result .mobile-practice-head {\n    background:var(--mobile-common-color) !important;\n    border-bottom-color:color-mix(in srgb, var(--mobile-common-color) 68%, #8c9297) !important;\n  }\n  .mobile-practice-card.has-common-result .mobile-response-grid,\n  .mobile-practice-card.has-common-result .mobile-notes-block {\n    background:color-mix(in srgb, var(--mobile-common-color) 34%, rgba(255,255,255,.90)) !important;\n  }\n  .mobile-practice-card.has-common-result .mobile-rating-stack,\n  .mobile-practice-card.has-common-result .mobile-response-grid.has-other .mobile-rating-stack {\n    background:color-mix(in srgb, var(--mobile-common-color) 24%, rgba(255,255,255,.92)) !important;\n    border-color:color-mix(in srgb, var(--mobile-common-color) 60%, #a1a6aa) !important;\n  }\n  .mobile-practice-card.has-common-result .mobile-other-summary {\n    background:color-mix(in srgb, var(--mobile-common-color) 12%, var(--mobile-other-surface, #fff)) !important;\n  }\n}\n
+
+/* =========================================================
+   V1.1.18 — MOBILE RESULT-COLOR / FOOTER META / FULL-WIDTH SCORES
+   Desktop untouched.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  /* Practice descriptive area: full width, with metadata anchored along its bottom. */
+  .mobile-practice-head {
+    display:block !important;
+    padding:6px 7px 4px !important;
+    position:relative !important;
+  }
+  .mobile-practice-copy {
+    width:100% !important;
+    padding:0 !important;
+  }
+  .mobile-practice-name {
+    font-size:14px !important;
+    line-height:1.08 !important;
+  }
+  .mobile-practice-explanation {
+    margin-top:2px !important;
+    font-size:8px !important;
+    line-height:1.18 !important;
+  }
+  .mobile-practice-head-bottom {
+    display:grid !important;
+    grid-template-columns:1fr auto 1fr !important;
+    align-items:end !important;
+    gap:4px !important;
+    min-height:24px !important;
+    margin-top:3px !important;
+  }
+  .mobile-practice-meta {
+    justify-self:start !important;
+    align-self:end !important;
+    display:flex !important;
+    flex-wrap:wrap !important;
+    gap:2px !important;
+    max-width:none !important;
+  }
+  .mobile-common-result {
+    justify-self:center !important;
+    align-self:end !important;
+    min-width:24px !important;
+    height:24px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:18px !important;
+    line-height:1 !important;
+  }
+  .mobile-common-result:not(.has-value) {
+    visibility:hidden !important;
+  }
+  .mobile-practice-pin {
+    justify-self:end !important;
+    align-self:end !important;
+    display:flex !important;
+  }
+  .mobile-practice-pin .session-pin-btn,
+  .mobile-practice-meta .session-pin-btn {
+    width:24px !important;
+    min-width:24px !important;
+    height:24px !important;
+    min-height:24px !important;
+    padding:0 !important;
+    margin:0 !important;
+    font-size:14px !important;
+    border-radius:7px !important;
+  }
+
+  /* The descriptive practice zone is EXACTLY the common-result color.
+     No tint, gradient or mix: same CSS variable as the corresponding result button. */
+  .mobile-practice-card.has-common-result {
+    border-color:var(--mobile-common-color) !important;
+    background:var(--mobile-common-color) !important;
+  }
+  .mobile-practice-card.has-common-result .mobile-practice-head {
+    background:var(--mobile-common-color) !important;
+    border-bottom-color:var(--mobile-common-color) !important;
+  }
+
+  /* Use all available width for the seven score choices instead of fixed tiny buttons. */
+  .mobile-score-wrap {
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    width:100% !important;
+    min-width:0 !important;
+    gap:2px !important;
+    overflow:visible !important;
+  }
+  .mobile-score-wrap .score-btn.semantic-score-btn,
+  .mobile-score-wrap .score-btn.unknown-score,
+  .mobile-response-grid.has-other .mobile-score-wrap .score-btn.semantic-score-btn,
+  .mobile-response-grid.has-other .mobile-score-wrap .score-btn.unknown-score {
+    flex:1 1 0 !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+  }
+  .mobile-rating-row.is-primary .mobile-score-wrap .score-btn.semantic-score-btn,
+  .mobile-rating-row.is-primary .mobile-score-wrap .score-btn.unknown-score,
+  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.semantic-score-btn,
+  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.unknown-score {
+    height:27px !important;
+    min-height:27px !important;
+    font-size:11px !important;
+  }
+  .mobile-rating-row.is-secondary .mobile-score-wrap .score-btn.semantic-score-btn,
+  .mobile-rating-row.is-secondary .mobile-score-wrap .score-btn.unknown-score,
+  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.semantic-score-btn,
+  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.unknown-score {
+    height:22px !important;
+    min-height:22px !important;
+    font-size:10px !important;
+  }
+
+  /* Keep state buttons in their own reserved column; score choices consume the rest. */
+  .mobile-rating-row,
+  .mobile-response-grid.has-other .mobile-rating-row {
+    grid-template-columns:31px minmax(0,1fr) 52px !important;
+    gap:3px !important;
+  }
+  .mobile-state-check,
+  .mobile-response-grid.has-other .mobile-state-check {
+    width:52px !important;
+    min-width:52px !important;
+    max-width:52px !important;
+  }
+}
+
+@media (max-width:380px) {
+  .mobile-rating-row,
+  .mobile-response-grid.has-other .mobile-rating-row {
+    grid-template-columns:29px minmax(0,1fr) 47px !important;
+    gap:2px !important;
+  }
+  .mobile-state-check,
+  .mobile-response-grid.has-other .mobile-state-check {
+    width:47px !important;
+    min-width:47px !important;
+    max-width:47px !important;
+  }
+  .mobile-practice-name { font-size:13.5px !important; }
+  .mobile-practice-explanation { font-size:7.8px !important; }
+}
