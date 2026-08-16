@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.50";
+const APP_VERSION = "V1.1.52";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -439,8 +439,6 @@ let searchNotesById = new Map();
 let leftRowById = new Map();
 let rightRowById = new Map();
 let mobileCardById = new Map();
-const mobileOpenNotes = new Set();
-let mobilePracticeInfoReturnFocus = null;
 let categorySectionByName = new Map();
 let syncLeftRows = [];
 let syncRightRows = [];
@@ -849,10 +847,13 @@ function personNoteField(person) {
   return person === "male" ? "noteMale" : "noteFemale";
 }
 
+const ROLE_FIELDS = Object.freeze({
+  sub:Object.freeze({ want:"wantSub", prior:"priorSub", after:"afterSub" }),
+  dom:Object.freeze({ want:"wantDom", prior:"priorDom", after:"afterDom" })
+});
+
 function roleFields(role) {
-  return role === "sub"
-    ? { want:"wantSub", prior:"priorSub", after:"afterSub" }
-    : { want:"wantDom", prior:"priorDom", after:"afterDom" };
+  return role === "sub" ? ROLE_FIELDS.sub : ROLE_FIELDS.dom;
 }
 
 function compactStoredItem(raw) {
@@ -1753,9 +1754,11 @@ function refreshItemRow(item) {
       render();
       return;
     }
-    card.outerHTML = renderMobilePracticeCard(item);
-    const fresh = leftTable.querySelector(`.mobile-practice-card[data-row-id="${item.id}"]`);
-    if (fresh) mobileCardById.set(Number(item.id), fresh);
+    const html = renderMobilePracticeCard(item, createMobileRenderContext());
+    card.insertAdjacentHTML("afterend", html);
+    const fresh = card.nextElementSibling;
+    card.remove();
+    if (fresh?.matches?.(".mobile-practice-card")) mobileCardById.set(Number(item.id), fresh);
     updateStats();
     updateMobileCategoryBar();
     return;
@@ -2234,14 +2237,20 @@ function categoryProgressTitle(categoryName, completion) {
 }
 
 function refreshCategoryProgress(categoryName) {
-  if (MOBILE_MQ.matches) {
-    render();
-    return;
-  }
   const completion = categoryCompletion(categoryName);
   const title = categoryProgressTitle(categoryName, completion);
   const section = categorySectionByName.get(categoryName);
   if (!section) return;
+
+  if (MOBILE_MQ.matches) {
+    const progress = section.querySelector(".mobile-section-progress");
+    if (!progress) return;
+    progress.textContent = `${completion.filled}/${completion.total}`;
+    progress.title = title;
+    progress.setAttribute("aria-label", title);
+    return;
+  }
+
   const pill = section.querySelector(".category-progress");
   if (!pill) return;
   pill.textContent = `${completion.filled}/${completion.total}`;
@@ -2557,68 +2566,6 @@ function mobileReadOnlyNotesHtml(item) {
   </div>`;
 }
 
-function mobileReadOnlyNotesBlockHtml(item, notesOpen, hasNotes) {
-  const notesAria = currentLang === "fr"
-    ? (notesOpen ? "Replier les notes" : "Déplier les notes")
-    : (notesOpen ? "Collapse notes" : "Expand notes");
-  return `<div class="mobile-notes-block mobile-readonly-notes-block${notesOpen ? ' is-open' : ''}${hasNotes ? ' has-notes' : ''}">
-    <button class="mobile-notes-toggle" type="button" data-mobile-notes-toggle="${item.id}" aria-expanded="${notesOpen ? 'true' : 'false'}" aria-label="${esc(notesAria)}">
-      <span class="mobile-notes-label"><span class="mobile-notes-icon">💬</span><span>${currentLang === "fr" ? "Notes" : "Notes"}</span>${hasNotes ? '<span class="mobile-notes-indicator" aria-hidden="true"></span>' : ''}</span>
-      <span class="mobile-notes-chevron" aria-hidden="true">${notesOpen ? '▴' : '▾'}</span>
-    </button>
-    <div class="mobile-notes-editor mobile-readonly-notes-panel" ${notesOpen ? '' : 'hidden'}>${mobileReadOnlyNotesHtml(item)}</div>
-  </div>`;
-}
-
-function ensureMobilePracticeInfoModal() {
-  let modal = document.getElementById("mobilePracticeInfoModal");
-  if (modal) return modal;
-  modal = document.createElement("div");
-  modal.id = "mobilePracticeInfoModal";
-  modal.className = "mobile-practice-info-modal";
-  modal.hidden = true;
-  modal.setAttribute("aria-hidden", "true");
-  modal.innerHTML = `<div class="mobile-practice-info-backdrop" data-mobile-info-close="true"></div>
-    <section class="mobile-practice-info-sheet" role="dialog" aria-modal="true" aria-labelledby="mobilePracticeInfoTitle">
-      <div class="mobile-practice-info-handle" aria-hidden="true"></div>
-      <div class="mobile-practice-info-head">
-        <strong id="mobilePracticeInfoTitle"></strong>
-        <button type="button" class="mobile-practice-info-close" data-mobile-info-close="true" aria-label="${currentLang === "fr" ? "Fermer" : "Close"}">×</button>
-      </div>
-      <div class="mobile-practice-info-copy" id="mobilePracticeInfoCopy"></div>
-    </section>`;
-  document.body.appendChild(modal);
-  modal.addEventListener("click", e => {
-    if (e.target.closest('[data-mobile-info-close="true"]')) closeMobilePracticeInfo();
-  });
-  return modal;
-}
-
-function openMobilePracticeInfo(item, sourceButton) {
-  if (!item) return;
-  const modal = ensureMobilePracticeInfoModal();
-  mobilePracticeInfoReturnFocus = sourceButton || null;
-  const title = modal.querySelector("#mobilePracticeInfoTitle");
-  const copy = modal.querySelector("#mobilePracticeInfoCopy");
-  if (title) title.textContent = localizedPractice(item);
-  if (copy) copy.textContent = localizedExplanation(item) || (currentLang === "fr" ? "Aucune explication disponible." : "No explanation available.");
-  modal.hidden = false;
-  modal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("mobile-practice-info-open");
-  requestAnimationFrame(() => modal.querySelector(".mobile-practice-info-close")?.focus());
-}
-
-function closeMobilePracticeInfo() {
-  const modal = document.getElementById("mobilePracticeInfoModal");
-  if (!modal || modal.hidden) return;
-  modal.hidden = true;
-  modal.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("mobile-practice-info-open");
-  const focusTarget = mobilePracticeInfoReturnFocus;
-  mobilePracticeInfoReturnFocus = null;
-  if (focusTarget && document.contains(focusTarget)) focusTarget.focus();
-}
-
 let mobileRiskTooltipButton = null;
 
 function ensureMobileRiskTooltip() {
@@ -2635,9 +2582,10 @@ function ensureMobileRiskTooltip() {
 }
 
 function closeMobileRiskTooltip() {
+  if (!mobileRiskTooltipButton) return;
   const tooltip = document.getElementById("mobileRiskTooltip");
   if (tooltip) tooltip.hidden = true;
-  if (mobileRiskTooltipButton && document.contains(mobileRiskTooltipButton)) {
+  if (document.contains(mobileRiskTooltipButton)) {
     mobileRiskTooltipButton.setAttribute("aria-expanded", "false");
   }
   mobileRiskTooltipButton = null;
@@ -2689,6 +2637,7 @@ function openMobileRiskTooltip(item, button) {
 }
 
 document.addEventListener("click", e => {
+  if (!mobileRiskTooltipButton) return;
   const tooltip = document.getElementById("mobileRiskTooltip");
   if (!tooltip || tooltip.hidden) return;
   if (e.target.closest("button[data-mobile-risk-info]") || e.target.closest("#mobileRiskTooltip")) return;
@@ -2698,189 +2647,212 @@ document.addEventListener("click", e => {
 window.addEventListener("resize", closeMobileRiskTooltip, { passive:true });
 window.addEventListener("scroll", closeMobileRiskTooltip, { passive:true, capture:true });
 
-function renderMobilePracticeCard(item) {
-  const fields = roleFields(currentRole);
-  const experienced = hasRoleExperience(item, currentRole);
-  const editableRole = canEditRole(currentRole);
-  const sharedEditable = canEditShared();
-  const roleFavorite = favoriteSymbol(currentRole);
-  const selected = isInSession(item);
-  const risk = mobileRiskButton(item);
-  const s = effectiveRoleScore(item, "sub");
-  const d = effectiveRoleScore(item, "dom");
-  const bothRated = Number.isInteger(s) && Number.isInteger(d);
-  const fantasyBlocked = bothRated && s !== 0 && d !== 0 && (s === FANTASY_SCORE || d === FANTASY_SCORE);
-  const compatValue = bothRated && !fantasyBlocked ? Math.min(s,d) : null;
-  const compat = fantasyBlocked
-    ? `<span class="compatibility-badge fantasy-compat" title="${esc(currentLang === "fr" ? "Fantasme uniquement" : "Fantasy only")}">💭</span>`
-    : (compatValue !== null ? `<span class="compatibility-badge" title="${esc(currentLang === "fr" ? "Compatibilité" : "Compatibility")}">${scoreLabel(compatValue,true)}</span>` : "");
-  const pin = `<button class="session-pin-btn${selected ? " selected" : ""}" data-action="sessionToggle" data-id="${item.id}" type="button" ${readOnly ? "disabled" : ""} title="${selected ? t("removeSession") : t("addSession")}">📌</button>`;
-  const level = `<span class="level-badge level-${item.level || 3}" title="${experienceLabel(item.level === 1 ? "beginner" : item.level === 2 ? "confirmed" : "advanced")}">${levelShortLabel(item.level || 3)}</span>`;
-  const priorChecked = !!item[fields.prior];
-  const beforeLabel = currentLang === "fr" ? "Avant" : "Before";
-  const togetherLabel = currentLang === "fr" ? "Ensemble" : "Together";
-  const wantLabel = currentLang === "fr" ? "Envie" : "Want";
-  const afterLabel = currentLang === "fr" ? "Après essai" : "After";
-  const notesOpen = mobileOpenNotes.has(Number(item.id));
-  const hasNotes = mobileHasNotes(item);
-  const notesLabel = currentLang === "fr" ? (hasNotes ? "Notes" : "Ajouter une note") : (hasNotes ? "Notes" : "Add a note");
-  const notesAria = currentLang === "fr" ? (notesOpen ? "Replier les notes" : "Déplier les notes") : (notesOpen ? "Collapse notes" : "Expand notes");
+const MOBILE_RESULT_COLORS = Object.freeze({
+  0:"#fbe9eb",
+  1:"#f9cb9c",
+  2:"#fff2cc",
+  3:"#d9ead3",
+  4:"#b6d7a8",
+  5:"#c7d6ee"
+});
 
-  const wantRowClass = experienced ? "is-secondary" : "is-primary";
-  const afterRowClass = experienced ? "is-primary" : "is-secondary is-disabled";
-
+function createMobileRenderContext() {
+  const fr = currentLang === "fr";
   const other = otherRole();
-  const otherFields = roleFields(other);
-  const otherExperienced = hasRoleExperience(item, other);
-  const otherPrior = !!item[otherFields.prior];
-  const otherWantValue = Number.isInteger(item[otherFields.want]) ? item[otherFields.want] : null;
-  const otherAfterValue = otherExperienced && Number.isInteger(item[otherFields.after]) ? item[otherFields.after] : null;
-  const otherWant = scoreButtonLabel(otherWantValue, other);
-  const otherAfter = otherAfterValue === null ? "—" : scoreButtonLabel(otherAfterValue, other);
-  const otherRoleName = roleLabel(other);
-  const otherAfterLabel = currentLang === "fr" ? "Après" : "After";
-
-  // Keep the mobile practice visually tied to the couple/common result,
-  // using the exact same priority rules as the desktop Practice column.
-  const fantasyVisual = s !== 0 && d !== 0 && (s === FANTASY_SCORE || d === FANTASY_SCORE);
-  const commonVisualScore = compatibilityFromScores(s, d);
-  // Mobile card color must be IDENTICAL to the visible selected result button.
-  // Keep literal display colors here because some semantic score buttons override
-  // the base --s* variables (notably Limit and selected Fantasy).
-  const mobileResultColors = {
-    0:"#fbe9eb",
-    1:"#f9cb9c",
-    2:"#fff2cc",
-    3:"#d9ead3",
-    4:"#b6d7a8",
-    5:"#c7d6ee"
+  return {
+    readOnly,
+    role:currentRole,
+    fields:roleFields(currentRole),
+    other,
+    otherFields:roleFields(other),
+    maleFields:roleFields(MALE_ROLE),
+    femaleFields:roleFields(FEMALE_ROLE),
+    showOther:showOtherRoleColumns,
+    editableRole:canEditRole(currentRole),
+    sharedEditable:canEditShared(),
+    otherRoleName:roleLabel(other),
+    maleRoleName:roleLabel(MALE_ROLE),
+    femaleRoleName:roleLabel(FEMALE_ROLE),
+    labels:{
+      before:fr ? "Avant" : "Before",
+      together:fr ? "Ensemble" : "Together",
+      want:fr ? "Envie" : "Want",
+      after:fr ? "Après essai" : "After",
+      otherAfter:fr ? "Après" : "After",
+      note:"Note",
+      notes:"Notes",
+      noExplanation:fr ? "Aucune explication disponible." : "No explanation available.",
+      coupleAnswers:fr ? "Réponses du couple" : "Couple answers",
+      commonUnknown:fr ? "Résultat commun non renseigné" : "Common result not rated",
+      risk:fr ? "Risque" : "Risk",
+      male:fr ? "Homme" : "Male",
+      female:fr ? "Femme" : "Female",
+      yes:fr ? "oui" : "yes",
+      no:fr ? "non" : "no",
+      doneBefore:fr ? "déjà fait avant" : "done before",
+      doneTogether:fr ? "Fait ensemble" : "Done together",
+      stateSeparator:fr ? " : " : ": "
+    }
   };
-  const commonVisualDisplayScore = fantasyVisual ? FANTASY_SCORE : commonVisualScore;
-  const commonVisualColor = commonVisualDisplayScore !== null
-    ? (mobileResultColors[commonVisualDisplayScore] || "")
-    : "";
-  const commonVisualClass = commonVisualColor ? ` has-common-result common-result-${commonVisualDisplayScore}` : "";
-  const commonVisualStyle = commonVisualColor ? ` style="--mobile-common-color:${commonVisualColor}"` : "";
-  // The common result uses the exact same semantic emoji as a score button.
-  // For the shared “favorite” state, use the crown rather than the old generic black star.
-  const commonVisualEmoji = fantasyVisual
+}
+
+function getMobileCommonVisual(item) {
+  const subScore = effectiveRoleScore(item, "sub");
+  const domScore = effectiveRoleScore(item, "dom");
+  const fantasy = subScore !== 0 && domScore !== 0 && (subScore === FANTASY_SCORE || domScore === FANTASY_SCORE);
+  const score = compatibilityFromScores(subScore, domScore);
+  const displayScore = fantasy ? FANTASY_SCORE : score;
+  const color = displayScore !== null ? (MOBILE_RESULT_COLORS[displayScore] || "") : "";
+  const emoji = fantasy
     ? scoreButtonLabel(FANTASY_SCORE, "dom")
-    : (commonVisualScore !== null ? scoreButtonLabel(commonVisualScore, "dom") : "");
-  const commonVisualTitle = fantasyVisual
+    : (score !== null ? scoreButtonLabel(score, "dom") : "");
+  const title = fantasy
     ? (currentLang === "fr" ? "Résultat commun : fantasme" : "Common result: fantasy")
-    : (commonVisualScore !== null
-        ? `${currentLang === "fr" ? "Résultat commun" : "Common result"} : ${scoreDescription(commonVisualScore)}`
+    : (score !== null
+        ? `${currentLang === "fr" ? "Résultat commun" : "Common result"} : ${scoreDescription(score)}`
         : "");
+  return {
+    subScore,
+    domScore,
+    score,
+    displayScore,
+    color,
+    emoji,
+    title,
+    className:color ? ` has-common-result common-result-${displayScore}` : "",
+    style:color ? ` style="--mobile-common-color:${color}"` : ""
+  };
+}
 
-  // Mobile reading mode: pin on the left, title + meta on the middle,
-  // and the three compact result columns on the right. The small mark
-  // directly below each personal result means "already done before";
-  // the mark below the common result means "done together".
-  if (readOnly) {
-    const maleValue = effectiveRoleScore(item, MALE_ROLE);
-    const femaleValue = effectiveRoleScore(item, FEMALE_ROLE);
-    const maleEmoji = scoreButtonLabel(maleValue, MALE_ROLE);
-    const femaleEmoji = scoreButtonLabel(femaleValue, FEMALE_ROLE);
-    const maleFields = roleFields(MALE_ROLE);
-    const femaleFields = roleFields(FEMALE_ROLE);
-    const malePrior = !!item[maleFields.prior];
-    const femalePrior = !!item[femaleFields.prior];
-    const doneTogether = !!item.doneTogether;
-    const maleTitle = `${personShortLabel("male")} · ${roleLabel(MALE_ROLE)} · ${scoreDescription(maleValue)}`;
-    const femaleTitle = `${personShortLabel("female")} · ${roleLabel(FEMALE_ROLE)} · ${scoreDescription(femaleValue)}`;
-    const commonEmoji = commonVisualEmoji || "?";
-    const commonTitle = commonVisualTitle || (currentLang === "fr" ? "Résultat commun non renseigné" : "Common result not rated");
-    const explanation = localizedExplanation(item) || (currentLang === "fr" ? "Aucune explication disponible." : "No explanation available.");
-    const mark = value => value ? "✓" : "—";
-    const beforeTitle = (person, value) => currentLang === "fr"
-      ? `${person === "male" ? "Homme" : "Femme"} · déjà fait avant : ${value ? "oui" : "non"}`
-      : `${person === "male" ? "Male" : "Female"} · done before: ${value ? "yes" : "no"}`;
-    const togetherTitle = currentLang === "fr"
-      ? `Fait ensemble : ${doneTogether ? "oui" : "non"}`
-      : `Done together: ${doneTogether ? "yes" : "no"}`;
-    const staticNotes = hasNotes
-      ? `<div class="mobile-readonly-static-notes"><div class="mobile-readonly-static-notes-title"><span aria-hidden="true">💬</span><span>${currentLang === "fr" ? "Notes" : "Notes"}</span></div>${mobileReadOnlyNotesHtml(item)}</div>`
-      : "";
-    const riskState = ["normal", "caution", "high"].includes(item.risk) ? item.risk : "normal";
-    const readonlyRisk = riskState === "normal"
-      ? ""
-      : `<span class="mobile-readonly-side-risk">${mobileRiskButton(item)}</span>`;
-    const pinTitle = selected ? t("removeSession") : t("addSession");
-    const readonlyPin = `<button class="session-pin-btn mobile-readonly-pin-btn${selected ? ' selected' : ''}" data-action="sessionToggle" data-id="${item.id}" type="button" title="${esc(pinTitle)}" aria-label="${esc(pinTitle)}">📌</button>`;
-    return `<article class="mobile-practice-card mobile-readonly-card${item._randomPicked ? ' row-random-picked' : ''}${commonVisualClass}"${commonVisualStyle} data-row-id="${item.id}" data-category="${esc(item.category)}">
-      <div class="mobile-readonly-main">
-        <div class="mobile-readonly-pinrail">
-          ${readonlyPin}
-          ${readonlyRisk}
-        </div>
-        <div class="mobile-readonly-copy">
-          <strong class="mobile-readonly-practice" title="${esc(localizedPractice(item))}">${esc(localizedPractice(item))}</strong>
-          <span class="mobile-readonly-explanation">${esc(explanation)}</span>
-        </div>
-        <div class="mobile-readonly-answers" aria-label="${esc(currentLang === "fr" ? "Réponses du couple" : "Couple answers")}">
-          <span class="mobile-readonly-result-stack person-male">
-            <span class="mobile-readonly-answer person-male" title="${esc(maleTitle)}" aria-label="${esc(maleTitle)}"><span class="mobile-readonly-score">${maleEmoji}</span></span>
-            <span class="mobile-readonly-experience-mark${malePrior ? ' is-yes' : ' is-no'}" title="${esc(beforeTitle('male', malePrior))}" aria-label="${esc(beforeTitle('male', malePrior))}">${mark(malePrior)}</span>
-          </span>
-          <span class="mobile-readonly-result-stack person-female">
-            <span class="mobile-readonly-answer person-female" title="${esc(femaleTitle)}" aria-label="${esc(femaleTitle)}"><span class="mobile-readonly-score">${femaleEmoji}</span></span>
-            <span class="mobile-readonly-experience-mark${femalePrior ? ' is-yes' : ' is-no'}" title="${esc(beforeTitle('female', femalePrior))}" aria-label="${esc(beforeTitle('female', femalePrior))}">${mark(femalePrior)}</span>
-          </span>
-          <span class="mobile-readonly-result-stack common">
-            <span class="mobile-readonly-common${commonVisualEmoji ? ' has-value' : ''}" title="${esc(commonTitle)}" aria-label="${esc(commonTitle)}"><span class="mobile-readonly-score">${commonEmoji}</span></span>
-            <span class="mobile-readonly-experience-mark${doneTogether ? ' is-yes' : ' is-no'}" title="${esc(togetherTitle)}" aria-label="${esc(togetherTitle)}">${mark(doneTogether)}</span>
-          </span>
-        </div>
+function renderMobileReadOnlyPracticeCard(item, context, common, selected, hasNotes) {
+  const maleValue = MALE_ROLE === "sub" ? common.subScore : common.domScore;
+  const femaleValue = FEMALE_ROLE === "sub" ? common.subScore : common.domScore;
+  const malePrior = !!item[context.maleFields.prior];
+  const femalePrior = !!item[context.femaleFields.prior];
+  const doneTogether = !!item.doneTogether;
+  const maleEmoji = scoreButtonLabel(maleValue, MALE_ROLE);
+  const femaleEmoji = scoreButtonLabel(femaleValue, FEMALE_ROLE);
+  const maleTitle = `${personShortLabel("male")} · ${context.maleRoleName} · ${scoreDescription(maleValue)}`;
+  const femaleTitle = `${personShortLabel("female")} · ${context.femaleRoleName} · ${scoreDescription(femaleValue)}`;
+  const commonEmoji = common.emoji || "?";
+  const commonTitle = common.title || context.labels.commonUnknown;
+  const explanation = localizedExplanation(item) || context.labels.noExplanation;
+  const mark = value => value ? "✓" : "—";
+  const beforeTitle = (personLabel, value) => `${personLabel} · ${context.labels.doneBefore}${context.labels.stateSeparator}${value ? context.labels.yes : context.labels.no}`;
+  const togetherTitle = `${context.labels.doneTogether}${context.labels.stateSeparator}${doneTogether ? context.labels.yes : context.labels.no}`;
+  const staticNotes = hasNotes
+    ? `<div class="mobile-readonly-static-notes"><div class="mobile-readonly-static-notes-title"><span aria-hidden="true">💬</span><span>${context.labels.notes}</span></div>${mobileReadOnlyNotesHtml(item)}</div>`
+    : "";
+  const riskState = ["normal", "caution", "high"].includes(item.risk) ? item.risk : "normal";
+  const readonlyRisk = riskState === "normal" ? "" : `<span class="mobile-readonly-side-risk">${mobileRiskButton(item)}</span>`;
+  const pinTitle = selected ? t("removeSession") : t("addSession");
+  const readonlyPin = `<button class="session-pin-btn mobile-readonly-pin-btn${selected ? ' selected' : ''}" data-action="sessionToggle" data-id="${item.id}" type="button" title="${esc(pinTitle)}" aria-label="${esc(pinTitle)}">📌</button>`;
+
+  return `<article class="mobile-practice-card mobile-readonly-card${item._randomPicked ? ' row-random-picked' : ''}${common.className}"${common.style} data-row-id="${item.id}" data-category="${esc(item.category)}">
+    <div class="mobile-readonly-main">
+      <div class="mobile-readonly-pinrail">
+        ${readonlyPin}
+        ${readonlyRisk}
       </div>
-      ${staticNotes}
-    </article>`;
-  }
+      <div class="mobile-readonly-copy">
+        <strong class="mobile-readonly-practice" title="${esc(localizedPractice(item))}">${esc(localizedPractice(item))}</strong>
+        <span class="mobile-readonly-explanation">${esc(explanation)}</span>
+      </div>
+      <div class="mobile-readonly-answers" aria-label="${esc(context.labels.coupleAnswers)}">
+        <span class="mobile-readonly-result-stack person-male">
+          <span class="mobile-readonly-answer person-male" title="${esc(maleTitle)}" aria-label="${esc(maleTitle)}"><span class="mobile-readonly-score">${maleEmoji}</span></span>
+          <span class="mobile-readonly-experience-mark${malePrior ? ' is-yes' : ' is-no'}" title="${esc(beforeTitle(context.labels.male, malePrior))}" aria-label="${esc(beforeTitle(context.labels.male, malePrior))}">${mark(malePrior)}</span>
+        </span>
+        <span class="mobile-readonly-result-stack person-female">
+          <span class="mobile-readonly-answer person-female" title="${esc(femaleTitle)}" aria-label="${esc(femaleTitle)}"><span class="mobile-readonly-score">${femaleEmoji}</span></span>
+          <span class="mobile-readonly-experience-mark${femalePrior ? ' is-yes' : ' is-no'}" title="${esc(beforeTitle(context.labels.female, femalePrior))}" aria-label="${esc(beforeTitle(context.labels.female, femalePrior))}">${mark(femalePrior)}</span>
+        </span>
+        <span class="mobile-readonly-result-stack common">
+          <span class="mobile-readonly-common${common.emoji ? ' has-value' : ''}" title="${esc(commonTitle)}" aria-label="${esc(commonTitle)}"><span class="mobile-readonly-score">${commonEmoji}</span></span>
+          <span class="mobile-readonly-experience-mark${doneTogether ? ' is-yes' : ' is-no'}" title="${esc(togetherTitle)}" aria-label="${esc(togetherTitle)}">${mark(doneTogether)}</span>
+        </span>
+      </div>
+    </div>
+    ${staticNotes}
+  </article>`;
+}
 
-  const otherSummary = showOtherRoleColumns ? `<aside class="mobile-other-summary role-${other}" aria-label="${esc(otherRoleName)}">
-    <div class="mobile-other-title"><span class="mobile-other-dot" aria-hidden="true"></span><span>${esc(otherRoleName)}</span></div>
+function renderMobileOtherSummary(item, context) {
+  if (!context.showOther) return "";
+  const otherExperienced = hasRoleExperience(item, context.other);
+  const otherPrior = !!item[context.otherFields.prior];
+  const otherWantValue = Number.isInteger(item[context.otherFields.want]) ? item[context.otherFields.want] : null;
+  const otherAfterValue = otherExperienced && Number.isInteger(item[context.otherFields.after]) ? item[context.otherFields.after] : null;
+  const otherWant = scoreButtonLabel(otherWantValue, context.other);
+  const otherAfter = otherAfterValue === null ? "—" : scoreButtonLabel(otherAfterValue, context.other);
+
+  return `<aside class="mobile-other-summary role-${context.other}" aria-label="${esc(context.otherRoleName)}">
+    <div class="mobile-other-title"><span class="mobile-other-dot" aria-hidden="true"></span><span>${esc(context.otherRoleName)}</span></div>
     <div class="mobile-other-row mobile-other-want">
-      <span class="mobile-other-label">${wantLabel}</span>
+      <span class="mobile-other-label">${context.labels.want}</span>
       <span class="mobile-other-score" title="${esc(scoreDescription(otherWantValue))}">${otherWant}</span>
-      <span class="mobile-other-prior${otherPrior ? ' checked' : ''}"><span class="mobile-check-box">${otherPrior ? '✓' : '□'}</span><span>${beforeLabel}</span></span>
+      <span class="mobile-other-prior${otherPrior ? ' checked' : ''}"><span class="mobile-check-box">${otherPrior ? '✓' : '□'}</span><span>${context.labels.before}</span></span>
     </div>
     <div class="mobile-other-row mobile-other-after${otherExperienced ? '' : ' is-disabled'}">
-      <span class="mobile-other-label" title="${esc(afterLabel)}">${otherAfterLabel}</span>
+      <span class="mobile-other-label" title="${esc(context.labels.after)}">${context.labels.otherAfter}</span>
       <span class="mobile-other-score" title="${otherAfterValue === null ? '' : esc(scoreDescription(otherAfterValue))}">${otherAfter}</span>
     </div>
-  </aside>` : "";
+  </aside>`;
+}
 
-  return `<article class="mobile-practice-card${item._randomPicked ? ' row-random-picked' : ''}${showOtherRoleColumns ? ' shows-other-role' : ''}${commonVisualClass}"${commonVisualStyle} data-row-id="${item.id}" data-category="${esc(item.category)}">
+function renderMobileEditPracticeCard(item, context, common, selected) {
+  const experienced = hasRoleExperience(item, context.role);
+  const priorChecked = !!item[context.fields.prior];
+  const wantRowClass = experienced ? "is-secondary" : "is-primary";
+  const afterRowClass = experienced ? "is-primary" : "is-secondary is-disabled";
+  const risk = mobileRiskButton(item);
+  const levelValue = item.level || 3;
+  const levelMode = levelValue === 1 ? "beginner" : levelValue === 2 ? "confirmed" : "advanced";
+  const level = `<span class="level-badge level-${levelValue}" title="${experienceLabel(levelMode)}">${levelShortLabel(levelValue)}</span>`;
+  const pin = `<button class="session-pin-btn${selected ? " selected" : ""}" data-action="sessionToggle" data-id="${item.id}" type="button" title="${selected ? t("removeSession") : t("addSession")}">📌</button>`;
+  const otherSummary = renderMobileOtherSummary(item, context);
+  const explanation = localizedExplanation(item) || context.labels.noExplanation;
+
+  return `<article class="mobile-practice-card${item._randomPicked ? ' row-random-picked' : ''}${context.showOther ? ' shows-other-role' : ''}${common.className}"${common.style} data-row-id="${item.id}" data-category="${esc(item.category)}">
     <div class="mobile-practice-head">
       <div class="mobile-practice-copy">
         <strong class="mobile-practice-name">${esc(localizedPractice(item))}</strong>
-        <span class="mobile-practice-explanation">${esc(localizedExplanation(item) || (currentLang === "fr" ? "Aucune explication disponible." : "No explanation available."))}</span>
+        <span class="mobile-practice-explanation">${esc(explanation)}</span>
       </div>
       <div class="mobile-practice-head-bottom">
         <div class="mobile-practice-meta">${level}${risk}</div>
-        <div class="mobile-common-result${commonVisualEmoji ? ' has-value' : ''}" ${commonVisualTitle ? `title="${esc(commonVisualTitle)}"` : ''} aria-label="${commonVisualTitle ? esc(commonVisualTitle) : ''}">${commonVisualEmoji || ''}</div>
+        <div class="mobile-common-result${common.emoji ? ' has-value' : ''}" ${common.title ? `title="${esc(common.title)}"` : ''} aria-label="${common.title ? esc(common.title) : ''}">${common.emoji || ''}</div>
         <div class="mobile-practice-pin">${pin}</div>
       </div>
     </div>
-    <div class="mobile-response-grid${showOtherRoleColumns ? ' has-other' : ' is-solo'}">
+    <div class="mobile-response-grid${context.showOther ? ' has-other' : ' is-solo'}">
       <div class="mobile-rating-stack${experienced ? ' is-experienced' : ' is-new'}">
         <div class="mobile-rating-row mobile-want-row ${wantRowClass}">
-          <span class="mobile-rating-label">${wantLabel}</span>
-          <div class="mobile-score-wrap">${scoreButtons(item,fields.want,true,currentRole)}</div>
-          <button class="mobile-state-check${priorChecked ? ' checked' : ''}" data-action="${fields.prior}" data-id="${item.id}" type="button" ${editableRole ? '' : 'disabled'} aria-pressed="${priorChecked ? 'true' : 'false'}"><span class="mobile-check-box">${priorChecked ? '✓' : '□'}</span><span>${beforeLabel}</span></button>
+          <span class="mobile-rating-label">${context.labels.want}</span>
+          <div class="mobile-score-wrap">${scoreButtons(item,context.fields.want,true,context.role)}</div>
+          <button class="mobile-state-check${priorChecked ? ' checked' : ''}" data-action="${context.fields.prior}" data-id="${item.id}" type="button" ${context.editableRole ? '' : 'disabled'} aria-pressed="${priorChecked ? 'true' : 'false'}"><span class="mobile-check-box">${priorChecked ? '✓' : '□'}</span><span>${context.labels.before}</span></button>
         </div>
         <div class="mobile-rating-row mobile-after-row ${afterRowClass}">
-          <span class="mobile-rating-label">${afterLabel}</span>
-          <div class="mobile-score-wrap">${experienced ? scoreButtons(item,fields.after,true,currentRole) : '<span class="mobile-after-placeholder">—</span>'}</div>
-          <button class="mobile-state-check${item.doneTogether ? ' checked' : ''}" data-action="doneTogether" data-id="${item.id}" type="button" ${sharedEditable ? '' : 'disabled'} aria-pressed="${item.doneTogether ? 'true' : 'false'}"><span class="mobile-check-box">${item.doneTogether ? '✓' : '□'}</span><span>${togetherLabel}</span></button>
+          <span class="mobile-rating-label">${context.labels.after}</span>
+          <div class="mobile-score-wrap">${experienced ? scoreButtons(item,context.fields.after,true,context.role) : '<span class="mobile-after-placeholder">—</span>'}</div>
+          <button class="mobile-state-check${item.doneTogether ? ' checked' : ''}" data-action="doneTogether" data-id="${item.id}" type="button" ${context.sharedEditable ? '' : 'disabled'} aria-pressed="${item.doneTogether ? 'true' : 'false'}"><span class="mobile-check-box">${item.doneTogether ? '✓' : '□'}</span><span>${context.labels.together}</span></button>
         </div>
       </div>
       ${otherSummary}
     </div>
-    <div class="mobile-notes-block mobile-notes-direct is-open${hasNotes ? ' has-notes' : ''}">
-      <div class="mobile-notes-direct-label"><span class="mobile-notes-icon" aria-hidden="true">💬</span><span>${currentLang === "fr" ? "Note" : "Note"}</span></div>
-      <div class="mobile-notes-editor">${sharedNoteEditorHtml(item, false, showOtherRoleColumns)}</div>
+    <div class="mobile-notes-block mobile-notes-direct is-open">
+      <div class="mobile-notes-direct-label"><span class="mobile-notes-icon" aria-hidden="true">💬</span><span>${context.labels.note}</span></div>
+      <div class="mobile-notes-editor">${sharedNoteEditorHtml(item, false, context.showOther)}</div>
     </div>
   </article>`;
+}
+
+function renderMobilePracticeCard(item, context = createMobileRenderContext()) {
+  const selected = isInSession(item);
+  const common = getMobileCommonVisual(item);
+  return context.readOnly
+    ? renderMobileReadOnlyPracticeCard(item, context, common, selected, mobileHasNotes(item))
+    : renderMobileEditPracticeCard(item, context, common, selected);
 }
 
 function renderMobileCategoryHeader(categoryName, collapsed, completion, catColor) {
@@ -2899,6 +2871,7 @@ function renderMobileCategoryHeader(categoryName, collapsed, completion, catColo
 function renderMobileChecklist(filterState, explicitFilters) {
   let html = "";
   let visibleCount = 0;
+  const renderContext = createMobileRenderContext();
   mobileCardById = new Map();
   categorySectionByName = new Map();
 
@@ -2914,7 +2887,9 @@ function renderMobileChecklist(filterState, explicitFilters) {
     const collapsed = explicitFilters ? false : collapsedCategories.has(categoryName);
     const completion = categoryCompletion(categoryName);
     html += renderMobileCategoryHeader(categoryName, collapsed, completion, catColor);
-    if (!collapsed) html += categoryItems.map(renderMobilePracticeCard).join("");
+    if (!collapsed) {
+      for (const item of categoryItems) html += renderMobilePracticeCard(item, renderContext);
+    }
   }
 
   leftTable.innerHTML = html;
@@ -3516,30 +3491,6 @@ function handleTableClick(e) {
     return;
   }
 
-  const mobileInfo = e.target.closest("button[data-mobile-info]");
-  if (mobileInfo) {
-    const item = itemsById.get(Number(mobileInfo.dataset.mobileInfo));
-    if (item) openMobilePracticeInfo(item, mobileInfo);
-    return;
-  }
-
-  const mobileNotesToggle = e.target.closest("button[data-mobile-notes-toggle]");
-  if (mobileNotesToggle) {
-    const id = Number(mobileNotesToggle.dataset.mobileNotesToggle);
-    const card = mobileNotesToggle.closest(".mobile-practice-card");
-    const editor = card?.querySelector(".mobile-notes-editor");
-    const block = card?.querySelector(".mobile-notes-block");
-    const opening = !mobileOpenNotes.has(id);
-    if (opening) mobileOpenNotes.add(id);
-    else mobileOpenNotes.delete(id);
-    mobileNotesToggle.setAttribute("aria-expanded", opening ? "true" : "false");
-    if (editor) editor.hidden = !opening;
-    if (block) block.classList.toggle("is-open", opening);
-    const chevron = mobileNotesToggle.querySelector(".mobile-notes-chevron");
-    if (chevron) chevron.textContent = opening ? "▴" : "▾";
-    return;
-  }
-
   const btn = e.target.closest("button[data-action]");
   if (!btn || btn.disabled) return;
 
@@ -3630,7 +3581,7 @@ search.addEventListener("input", () => {
 });
 [category, status, minFilterScore, riskFilter].forEach(el => el.addEventListener("input", render));
 
-leftTable.addEventListener("input", (e) => {
+function handlePersonNoteInput(e) {
   if (readOnly) return;
   const input = e.target.closest('textarea[data-person-note]');
   if (!input) return;
@@ -3640,37 +3591,11 @@ leftTable.addEventListener("input", (e) => {
   if (!item) return;
   item[noteFieldForPerson(person)] = input.value;
   searchNotesById.set(Number(item.id), `${item.noteFemale || ""} ${item.noteMale || ""}`.toLowerCase());
-  const block = input.closest(".mobile-notes-block");
-  if (block) {
-    const hasNotes = mobileHasNotes(item);
-    block.classList.toggle("has-notes", hasNotes);
-    const label = block.querySelector(".mobile-notes-label > span:nth-child(2)");
-    if (label) label.textContent = currentLang === "fr" ? (hasNotes ? "Notes" : "Ajouter une note") : (hasNotes ? "Notes" : "Add a note");
-    let indicator = block.querySelector(".mobile-notes-indicator");
-    if (hasNotes && !indicator) {
-      indicator = document.createElement("span");
-      indicator.className = "mobile-notes-indicator";
-      indicator.setAttribute("aria-hidden", "true");
-      block.querySelector(".mobile-notes-label")?.appendChild(indicator);
-    } else if (!hasNotes && indicator) {
-      indicator.remove();
-    }
-  }
   scheduleSave(["common", currentRole]);
-});
+}
 
-rightTable.addEventListener("input", (e) => {
-  if (readOnly) return;
-  const input = e.target.closest('textarea[data-person-note]');
-  if (!input) return;
-  const person = input.dataset.notePerson;
-  if (person !== currentPerson()) return;
-  const item = itemsById.get(Number(input.dataset.personNote));
-  if (!item) return;
-  item[noteFieldForPerson(person)] = input.value;
-  searchNotesById.set(Number(item.id), `${item.noteFemale || ""} ${item.noteMale || ""}`.toLowerCase());
-  scheduleSave(["common", currentRole]);
-});
+leftTable.addEventListener("input", handlePersonNoteInput);
+rightTable.addEventListener("input", handlePersonNoteInput);
 
 quickFilters.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-quick-filter]");
@@ -4458,8 +4383,3 @@ render();
 renderMergeReviewBanner();
 requestAnimationFrame(showFirstUseGuideIfNeeded);
 
-
-// V1.1.12 · Fermeture clavier de la fiche d’explication mobile.
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeMobilePracticeInfo();
-});

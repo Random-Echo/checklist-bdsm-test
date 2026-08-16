@@ -819,12 +819,6 @@ header {
 .head-cell.owner-dom {
   box-shadow:inset 0 4px 0 var(--dom-role-accent);
 }
-.head-cell.owner-sub.active-owner {
-  background:var(--sub-role-head);
-}
-.head-cell.owner-dom.active-owner {
-  background:var(--dom-role-head);
-}
 .head-cell.grouped-head {
   position:relative;
   overflow:hidden;
@@ -1141,10 +1135,6 @@ body[data-readonly="true"] .session-person-note {
 .practice {
   gap:6px;
 }
-.practice-label {
-  flex:1 1 auto;
-  min-width:0;
-}
 .session-pin-btn {
   flex:0 0 auto;
   width:27px;
@@ -1253,8 +1243,7 @@ body[data-readonly="true"] .session-person-note {
   font-weight:800;
   cursor:pointer;
 }
-.compat-filter-btn:hover,
-.compat-filter-btn.active-hint {
+.compat-filter-btn:hover {
   border-color:#737b82;
   color:#222;
   background:#f4f5f6;
@@ -3985,9 +3974,6 @@ body[data-checklist-id="maitre-soumise"] .table-shell {
     font-size:9.5px !important;
     line-height:1.08 !important;
   }
-  .practice-label {
-    line-height:1.08 !important;
-  }
   .level-badge,
   .risk-badge,
   .compatibility-badge {
@@ -4598,33 +4584,11 @@ body.first-use-open{overflow:hidden}
     overflow:hidden;
     box-shadow:0 1px 2px rgba(0,0,0,.045);
   }
-  .mobile-practice-heading {
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 28px;
-    align-items:start;
-    gap:5px;
-    padding:7px 7px 2px;
-  }
   .mobile-practice-name {
     min-width:0;
     font-size:11px;
     line-height:1.18;
     color:#252b30;
-  }
-  .mobile-info-btn {
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width:25px;
-    height:25px;
-    justify-self:end;
-    border:1px solid #c7ccd0;
-    border-radius:50%;
-    background:#f7f8f9;
-    color:#4f5960;
-    font-size:15px;
-    font-weight:900;
-    padding:0;
   }
   .mobile-practice-meta {
     display:flex;
@@ -4633,16 +4597,6 @@ body.first-use-open{overflow:hidden}
     gap:6px;
     min-height:23px;
     padding:0 7px 4px;
-  }
-  .mobile-practice-meta-left {
-    display:flex;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:3px;
-    min-width:0;
-  }
-  .mobile-practice-meta-right {
-    flex:0 0 auto;
   }
   .mobile-practice-meta .level-badge,
   .mobile-practice-meta .risk-badge,
@@ -4794,151 +4748,6 @@ body.first-use-open{overflow:hidden}
 }
 
 /* =========================================================
-   V1.2.1 · MOBILE STEP 2 — EXPLICATION + NOTES REPLIABLES
-   Desktop inchangé : tout est limité à <= 650 px.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  .mobile-notes-block {
-    border-top:1px solid #e2e5e7;
-    background:#fafbfb;
-  }
-  .mobile-notes-toggle {
-    width:100%;
-    min-height:31px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    padding:4px 8px;
-    border:0;
-    background:transparent;
-    color:#4c555c;
-    text-align:left;
-    cursor:pointer;
-  }
-  .mobile-notes-label {
-    display:flex;
-    align-items:center;
-    gap:5px;
-    min-width:0;
-    font-size:8.5px;
-    font-weight:850;
-  }
-  .mobile-notes-icon { font-size:11px; }
-  .mobile-notes-indicator {
-    width:6px;
-    height:6px;
-    flex:0 0 6px;
-    border-radius:50%;
-    background:var(--variant-bg);
-    box-shadow:0 0 0 2px rgba(255,255,255,.9);
-  }
-  .mobile-notes-chevron {
-    flex:0 0 auto;
-    color:#68727a;
-    font-size:10px;
-    font-weight:900;
-  }
-  .mobile-notes-block.is-open { background:#fff; }
-  .mobile-notes-editor {
-    padding:2px 7px 7px;
-  }
-  .mobile-notes-editor[hidden] { display:none !important; }
-  .mobile-notes-editor .shared-note-editor { gap:4px; }
-  .mobile-notes-editor .shared-note-row {
-    grid-template-columns:18px minmax(0,1fr);
-    gap:4px;
-    align-items:start;
-  }
-  .mobile-notes-editor .shared-note-person {
-    padding-top:7px;
-    font-size:9px;
-  }
-  .mobile-notes-editor .person-note-input {
-    min-height:42px;
-    height:42px;
-    max-height:92px;
-    resize:vertical;
-    padding:6px 7px;
-    border-radius:7px;
-    font-size:10px;
-    line-height:1.25;
-  }
-
-  body.mobile-practice-info-open { overflow:hidden; }
-  .mobile-practice-info-modal {
-    position:fixed;
-    inset:0;
-    z-index:10050;
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-  }
-  .mobile-practice-info-modal[hidden] { display:none !important; }
-  .mobile-practice-info-backdrop {
-    position:absolute;
-    inset:0;
-    background:rgba(20,24,27,.46);
-    backdrop-filter:blur(1.5px);
-  }
-  .mobile-practice-info-sheet {
-    position:relative;
-    z-index:1;
-    width:min(100%, 560px);
-    max-height:min(60vh, 430px);
-    overflow:auto;
-    padding:7px 13px calc(15px + env(safe-area-inset-bottom));
-    border-radius:16px 16px 0 0;
-    background:#fff;
-    box-shadow:0 -8px 28px rgba(0,0,0,.18);
-  }
-  .mobile-practice-info-handle {
-    width:38px;
-    height:4px;
-    margin:0 auto 7px;
-    border-radius:99px;
-    background:#c9ced2;
-  }
-  .mobile-practice-info-head {
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 30px;
-    gap:8px;
-    align-items:start;
-  }
-  .mobile-practice-info-head strong {
-    padding-top:3px;
-    font-size:13px;
-    line-height:1.2;
-    color:#23292e;
-  }
-  .mobile-practice-info-close {
-    width:28px;
-    height:28px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border:1px solid #cbd0d4;
-    border-radius:50%;
-    background:#f6f7f8;
-    color:#4d565d;
-    font-size:20px;
-    line-height:1;
-  }
-  .mobile-practice-info-copy {
-    margin-top:8px;
-    padding:9px 10px;
-    border-left:3px solid var(--variant-bg);
-    border-radius:0 8px 8px 0;
-    background:#f7f8f9;
-    color:#3e474d;
-    font-size:11px;
-    line-height:1.45;
-    white-space:pre-wrap;
-  }
-}
-
-
-/* =========================================================
    V1.1.12 — MOBILE CARD FINALISATION / AUDIT
    Même breakpoint que MOBILE_MQ ; desktop strictement inchangé.
    ========================================================= */
@@ -4965,15 +4774,12 @@ body.first-use-open{overflow:hidden}
     overflow:hidden;
     text-overflow:ellipsis;
   }
-  .mobile-info-btn,
-  .mobile-notes-toggle,
   .mobile-state-check,
   .mobile-practice-meta .session-pin-btn {
     touch-action:manipulation;
     -webkit-tap-highlight-color:transparent;
   }
   .mobile-practice-card button:focus-visible,
-  .mobile-practice-info-sheet button:focus-visible,
   .mobile-notes-editor textarea:focus-visible {
     outline:2px solid #263238;
     outline-offset:2px;
@@ -4987,18 +4793,7 @@ body.first-use-open{overflow:hidden}
 }
 
 @media (orientation:landscape) and (max-height:520px) and (max-width:1100px) and (min-width:651px) {
-  .mobile-practice-info-sheet {
-    width:min(86vw,680px);
-    max-height:82vh;
-    border-radius:14px 14px 0 0;
-  }
-  .mobile-practice-card {
-    margin-top:4px;
-  }
-  .mobile-notes-editor .person-note-input {
-    min-height:36px;
-    height:36px;
-  }
+  .mobile-practice-card { margin-top:4px; }
 }
 
 
@@ -5061,12 +4856,6 @@ body.first-use-open{overflow:hidden}
     min-width:23px !important;
     height:23px !important;
     min-height:23px !important;
-  }
-  .mobile-practice-heading,
-  .mobile-info-btn,
-  .mobile-practice-meta-left,
-  .mobile-practice-meta-right {
-    display:none !important;
   }
 }
 
@@ -5394,9 +5183,6 @@ body.first-use-open{overflow:hidden}
   .mobile-notes-block.is-open {
     background:var(--mobile-surface) !important;
   }
-  .mobile-notes-toggle { color:#5e575c !important; }
-  body[data-checklist-id="maitre-soumise"] .mobile-notes-toggle { color:#566168 !important; }
-  .mobile-notes-chevron { color:#827a80 !important; }
   .mobile-notes-editor .person-note-input {
     border-color:var(--mobile-line) !important;
     background:#fff !important;
@@ -6141,1102 +5927,6 @@ body.first-use-open{overflow:hidden}
 }
 
 /* =========================================================
-   V1.1.23 — MOBILE READING MODE: ONE-LINE COMPACT CARDS
-   Read mode gets its own minimal markup: practice + H/F answers +
-   common result on one line, with existing notes directly below.
-   Desktop is intentionally untouched.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card {
-    overflow:hidden !important;
-    border-radius:10px !important;
-    min-height:0 !important;
-    padding:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card.has-common-result {
-    background:color-mix(in srgb, var(--mobile-common-color) 38%, var(--mobile-surface)) !important;
-    border-color:color-mix(in srgb, var(--mobile-common-color) 60%, var(--mobile-line)) !important;
-    box-shadow:0 2px 7px color-mix(in srgb, var(--mobile-common-color) 16%, rgba(35,27,32,.10)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-line {
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) auto !important;
-    align-items:center !important;
-    gap:6px !important;
-    min-width:0 !important;
-    min-height:34px !important;
-    padding:4px 6px 4px 8px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-practice {
-    display:block !important;
-    min-width:0 !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    white-space:nowrap !important;
-    color:var(--mobile-ink) !important;
-    font-size:11.5px !important;
-    font-weight:850 !important;
-    line-height:1.05 !important;
-    letter-spacing:-.012em !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answers {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:flex-end !important;
-    gap:3px !important;
-    flex:0 0 auto !important;
-    white-space:nowrap !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answer,
-  body[data-readonly="true"] .mobile-readonly-common {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    gap:2px !important;
-    min-width:34px !important;
-    height:25px !important;
-    padding:0 4px !important;
-    border:1px solid rgba(70,61,67,.12) !important;
-    border-radius:7px !important;
-    box-sizing:border-box !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.45) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answer.person-male {
-    background:color-mix(in srgb, var(--male-color,#2f7395) 22%, rgba(255,255,255,.78)) !important;
-    border-color:color-mix(in srgb, var(--male-color,#2f7395) 45%, rgba(70,61,67,.12)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answer.person-female {
-    background:color-mix(in srgb, var(--female-color,#8b316e) 22%, rgba(255,255,255,.78)) !important;
-    border-color:color-mix(in srgb, var(--female-color,#8b316e) 45%, rgba(70,61,67,.12)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-common {
-    min-width:35px !important;
-    background:rgba(255,255,255,.55) !important;
-    border-color:color-mix(in srgb, var(--mobile-common-color,#8f878c) 48%, rgba(70,61,67,.14)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-person,
-  body[data-readonly="true"] .mobile-readonly-common-mark {
-    font-size:7px !important;
-    font-weight:900 !important;
-    line-height:1 !important;
-    color:#51494e !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-score {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    min-width:13px !important;
-    font-size:13px !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-notes {
-    display:grid !important;
-    gap:2px !important;
-    padding:3px 7px 5px !important;
-    border-top:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 20%, var(--mobile-line-soft)) !important;
-    background:rgba(255,255,255,.36) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-note {
-    display:grid !important;
-    grid-template-columns:18px minmax(0,1fr) !important;
-    align-items:start !important;
-    gap:4px !important;
-    min-width:0 !important;
-    font-size:8px !important;
-    line-height:1.2 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-note-person {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:18px !important;
-    min-height:16px !important;
-    border-radius:5px !important;
-    font-size:7px !important;
-    font-weight:900 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-note.person-male .mobile-readonly-note-person {
-    background:color-mix(in srgb, var(--male-color,#2f7395) 24%, #fff) !important;
-  }
-  body[data-readonly="true"] .mobile-readonly-note.person-female .mobile-readonly-note-person {
-    background:color-mix(in srgb, var(--female-color,#8b316e) 24%, #fff) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-note-text {
-    min-width:0 !important;
-    color:#4e474b !important;
-    overflow-wrap:anywhere !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-readonly-line {
-    gap:4px !important;
-    padding-left:6px !important;
-    padding-right:5px !important;
-  }
-  body[data-readonly="true"] .mobile-readonly-practice {
-    font-size:10.8px !important;
-  }
-  body[data-readonly="true"] .mobile-readonly-answer,
-  body[data-readonly="true"] .mobile-readonly-common {
-    min-width:31px !important;
-    height:24px !important;
-    padding-left:3px !important;
-    padding-right:3px !important;
-  }
-  body[data-readonly="true"] .mobile-readonly-answers {
-    gap:2px !important;
-  }
-}
-
-  body[data-readonly="true"] .mobile-readonly-note-text {
-    white-space:pre-wrap !important;
-  }
-
-
-/* =========================================================
-   V1.1.24 — MOBILE READING MODE: VISUAL POLISH
-   Emoji-only answer chips, more room for the practice title,
-   tighter rhythm and clearer notes. Desktop remains untouched.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card {
-    border-radius:9px !important;
-    margin-bottom:4px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-line {
-    grid-template-columns:minmax(0,1fr) auto !important;
-    gap:7px !important;
-    min-height:32px !important;
-    padding:3px 5px 3px 8px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-practice {
-    font-size:12px !important;
-    font-weight:850 !important;
-    line-height:1.08 !important;
-    letter-spacing:-.015em !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answers {
-    gap:3px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answer,
-  body[data-readonly="true"] .mobile-readonly-common {
-    width:28px !important;
-    min-width:28px !important;
-    height:26px !important;
-    padding:0 !important;
-    gap:0 !important;
-    border-radius:7px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-common {
-    width:30px !important;
-    min-width:30px !important;
-    background:rgba(255,255,255,.52) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-score {
-    min-width:0 !important;
-    font-size:14px !important;
-    line-height:1 !important;
-  }
-
-  /* Role identity is intentionally encoded only by the permanent blue/prune
-     chip styling; no extra M/F glyphs consume horizontal room in read mode. */
-  body[data-readonly="true"] .mobile-readonly-person,
-  body[data-readonly="true"] .mobile-readonly-common-mark {
-    display:none !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-notes {
-    gap:2px !important;
-    padding:4px 7px 5px !important;
-    background:rgba(255,255,255,.30) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-note {
-    grid-template-columns:19px minmax(0,1fr) !important;
-    gap:5px !important;
-    font-size:8.7px !important;
-    line-height:1.22 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-note-person {
-    width:19px !important;
-    min-height:17px !important;
-    border-radius:5px !important;
-    font-size:7.4px !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-readonly-line {
-    gap:5px !important;
-    padding-left:6px !important;
-    padding-right:4px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-practice {
-    font-size:11.4px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answer,
-  body[data-readonly="true"] .mobile-readonly-common {
-    width:26px !important;
-    min-width:26px !important;
-    height:25px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-common {
-    width:28px !important;
-    min-width:28px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-score {
-    font-size:13.5px !important;
-  }
-}
-
-/* =========================================================
-   V1.1.25 — MOBILE READING MODE: COMPLETE COMPACT SUMMARY
-   Title + explanation, one result/history line, exact common-result
-   color and collapsible read-only notes. Desktop remains untouched.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card {
-    overflow:hidden !important;
-    min-height:0 !important;
-    margin-bottom:5px !important;
-    padding:0 !important;
-    border-radius:10px !important;
-    background:var(--mobile-surface) !important;
-  }
-
-  /* The practice surface uses the exact final/common-result color, not a pale tint. */
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card.has-common-result {
-    background:var(--mobile-common-color) !important;
-    border-color:var(--mobile-common-color) !important;
-    box-shadow:0 3px 9px color-mix(in srgb, var(--mobile-common-color) 22%, rgba(35,27,32,.14)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-main {
-    display:block !important;
-    min-width:0 !important;
-    padding:6px 7px 5px !important;
-    background:transparent !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-copy {
-    display:block !important;
-    min-width:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-practice {
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    overflow:visible !important;
-    text-overflow:clip !important;
-    white-space:normal !important;
-    color:var(--mobile-ink) !important;
-    font-size:13.5px !important;
-    font-weight:900 !important;
-    line-height:1.08 !important;
-    letter-spacing:-.014em !important;
-    overflow-wrap:break-word !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-explanation {
-    display:block !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:2px 0 0 !important;
-    color:color-mix(in srgb, var(--mobile-ink) 70%, transparent) !important;
-    font-size:8px !important;
-    font-weight:520 !important;
-    line-height:1.18 !important;
-    overflow-wrap:break-word !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-line {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    gap:5px !important;
-    min-width:0 !important;
-    margin-top:4px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answers {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:flex-start !important;
-    gap:3px !important;
-    flex:0 0 auto !important;
-    white-space:nowrap !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answer,
-  body[data-readonly="true"] .mobile-readonly-common {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:29px !important;
-    min-width:29px !important;
-    height:26px !important;
-    padding:0 !important;
-    border:1px solid rgba(62,54,59,.16) !important;
-    border-radius:7px !important;
-    box-sizing:border-box !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.42) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answer.person-male {
-    background:color-mix(in srgb, var(--male-color,#2f7395) 24%, #fff) !important;
-    border-color:color-mix(in srgb, var(--male-color,#2f7395) 48%, rgba(62,54,59,.14)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answer.person-female {
-    background:color-mix(in srgb, var(--female-color,#8b316e) 24%, #fff) !important;
-    border-color:color-mix(in srgb, var(--female-color,#8b316e) 48%, rgba(62,54,59,.14)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-common {
-    width:31px !important;
-    min-width:31px !important;
-    background:rgba(255,255,255,.58) !important;
-    border-color:color-mix(in srgb, var(--mobile-common-color,#8f878c) 62%, rgba(62,54,59,.16)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-score {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    min-width:0 !important;
-    font-size:14px !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history-list {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:flex-end !important;
-    flex-wrap:nowrap !important;
-    gap:3px !important;
-    min-width:0 !important;
-    margin-left:auto !important;
-    white-space:nowrap !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    gap:2px !important;
-    height:22px !important;
-    min-width:0 !important;
-    padding:0 5px !important;
-    border:1px solid rgba(62,54,59,.13) !important;
-    border-radius:6px !important;
-    background:rgba(255,255,255,.52) !important;
-    color:#4c454a !important;
-    font-size:7px !important;
-    font-weight:850 !important;
-    line-height:1 !important;
-    box-sizing:border-box !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history.person-male {
-    background:color-mix(in srgb, var(--male-color,#2f7395) 15%, rgba(255,255,255,.76)) !important;
-    border-color:color-mix(in srgb, var(--male-color,#2f7395) 34%, rgba(62,54,59,.12)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history.person-female {
-    background:color-mix(in srgb, var(--female-color,#8b316e) 15%, rgba(255,255,255,.76)) !important;
-    border-color:color-mix(in srgb, var(--female-color,#8b316e) 34%, rgba(62,54,59,.12)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history.together {
-    background:color-mix(in srgb, var(--s5,#b6d7a8) 42%, rgba(255,255,255,.76)) !important;
-    border-color:color-mix(in srgb, #5e8d50 42%, rgba(62,54,59,.12)) !important;
-    color:#35502e !important;
-  }
-
-  /* Same fold/unfold pattern as edit mode, without editable fields. */
-  body[data-readonly="true"] .mobile-readonly-notes-block {
-    margin:0 !important;
-    border-top:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 52%, rgba(70,61,67,.18)) !important;
-    background:rgba(255,255,255,.24) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-notes-block .mobile-notes-toggle {
-    min-height:27px !important;
-    padding:3px 7px !important;
-    color:#514a4f !important;
-    background:transparent !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-notes-block.is-open {
-    background:rgba(255,255,255,.34) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-notes-panel {
-    padding:0 !important;
-    background:transparent !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-notes {
-    display:grid !important;
-    gap:3px !important;
-    padding:4px 7px 6px !important;
-    border-top:1px solid rgba(70,61,67,.10) !important;
-    background:rgba(255,255,255,.32) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-note {
-    display:grid !important;
-    grid-template-columns:19px minmax(0,1fr) !important;
-    align-items:start !important;
-    gap:5px !important;
-    min-width:0 !important;
-    font-size:8.8px !important;
-    line-height:1.24 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-note-empty {
-    padding:5px 7px 6px !important;
-    border-top:1px solid rgba(70,61,67,.10) !important;
-    background:rgba(255,255,255,.26) !important;
-    color:#70686d !important;
-    font-size:8px !important;
-    font-style:italic !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-readonly-main {
-    padding-left:6px !important;
-    padding-right:6px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-practice {
-    font-size:12.8px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-explanation {
-    font-size:7.6px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-line {
-    gap:3px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answer,
-  body[data-readonly="true"] .mobile-readonly-common {
-    width:27px !important;
-    min-width:27px !important;
-    height:25px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-common {
-    width:29px !important;
-    min-width:29px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history-list {
-    gap:2px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history {
-    height:21px !important;
-    padding-left:4px !important;
-    padding-right:4px !important;
-    font-size:6.6px !important;
-  }
-}
-
-/* =========================================================
-   V1.1.26 — MOBILE READING MODE: RIGHT RESULTS + STATIC NOTES
-   Results stay pinned to the right. "Avant" and "Ensemble" are
-   always visible as compact states. Existing notes are shown directly
-   at the bottom without a collapsible control. Desktop is untouched.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) auto !important;
-    grid-template-areas:
-      "copy answers"
-      "history history" !important;
-    align-items:start !important;
-    column-gap:7px !important;
-    row-gap:4px !important;
-    padding:6px 7px 5px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-copy {
-    grid-area:copy !important;
-    min-width:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answers {
-    grid-area:answers !important;
-    align-self:start !important;
-    justify-self:end !important;
-    justify-content:flex-end !important;
-    gap:3px !important;
-    margin:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history-list {
-    grid-area:history !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:flex-start !important;
-    flex-wrap:wrap !important;
-    gap:3px !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history {
-    height:20px !important;
-    padding:0 5px !important;
-    gap:2px !important;
-    font-size:6.9px !important;
-    background:rgba(255,255,255,.42) !important;
-    border-color:rgba(62,54,59,.13) !important;
-    color:#5b5458 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history.person-male {
-    background:color-mix(in srgb, var(--male-color,#2f7395) 13%, rgba(255,255,255,.70)) !important;
-    border-color:color-mix(in srgb, var(--male-color,#2f7395) 31%, rgba(62,54,59,.12)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history.person-female {
-    background:color-mix(in srgb, var(--female-color,#8b316e) 13%, rgba(255,255,255,.70)) !important;
-    border-color:color-mix(in srgb, var(--female-color,#8b316e) 31%, rgba(62,54,59,.12)) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history.together {
-    background:color-mix(in srgb, var(--s5,#b6d7a8) 30%, rgba(255,255,255,.70)) !important;
-    border-color:color-mix(in srgb, #5e8d50 32%, rgba(62,54,59,.12)) !important;
-    color:#3e5238 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history.is-no {
-    opacity:.72 !important;
-    filter:saturate(.72) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history.is-yes {
-    font-weight:900 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history-person {
-    font-weight:950 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history-mark {
-    min-width:7px !important;
-    text-align:center !important;
-    font-weight:950 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-static-notes {
-    margin:0 !important;
-    border-top:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 48%, rgba(70,61,67,.16)) !important;
-    background:rgba(255,255,255,.28) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-static-notes-title {
-    display:flex !important;
-    align-items:center !important;
-    gap:4px !important;
-    padding:4px 7px 2px !important;
-    color:#514a4f !important;
-    font-size:7.6px !important;
-    font-weight:850 !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-static-notes .mobile-readonly-notes {
-    padding:3px 7px 6px !important;
-    border-top:0 !important;
-    background:transparent !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
-    column-gap:5px !important;
-    row-gap:3px !important;
-    padding-left:6px !important;
-    padding-right:6px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history-list {
-    gap:2px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-history {
-    height:19px !important;
-    padding-left:4px !important;
-    padding-right:4px !important;
-    font-size:6.5px !important;
-  }
-}
-
-/* =========================================================
-   V1.1.27 — MOBILE: EXPERIENCE MARKS UNDER RESULTS + NOTE OWNERSHIP
-   Reading mode keeps the three results pinned right and places the
-   corresponding experience state directly underneath each result.
-   In edit mode, the other partner's read-only note is visibly greyed.
-   Desktop is untouched.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  /* Edit mode: clearly distinguish the partner's non-editable note. */
-  body:not([data-readonly="true"]) .mobile-notes-editor .shared-note-row.is-other-person .person-note-input {
-    background:#eceeef !important;
-    border-color:#d3d7da !important;
-    color:#73797e !important;
-    box-shadow:inset 0 1px 1px rgba(40,48,54,.04) !important;
-  }
-  body:not([data-readonly="true"]) .mobile-notes-editor .shared-note-row.is-other-person .shared-note-person {
-    color:#8a8f93 !important;
-  }
-  body:not([data-readonly="true"]) .mobile-notes-editor .shared-note-row.is-other-person .person-note-input::placeholder {
-    color:#a3a7aa !important;
-    opacity:1 !important;
-  }
-
-  /* Reading mode: no separate Avant/Ensemble row; each state belongs to
-     the result directly above it, keeping the whole block aligned right. */
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
-    grid-template-areas:"copy answers" !important;
-    grid-template-rows:auto !important;
-    row-gap:0 !important;
-    align-items:start !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answers {
-    display:grid !important;
-    grid-template-columns:repeat(3, minmax(29px, auto)) !important;
-    align-items:start !important;
-    justify-content:end !important;
-    gap:3px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack {
-    display:grid !important;
-    grid-template-rows:auto 12px !important;
-    justify-items:center !important;
-    align-items:start !important;
-    row-gap:1px !important;
-    min-width:29px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-answer,
-  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-common {
-    margin:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-experience-mark {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:16px !important;
-    height:11px !important;
-    min-width:16px !important;
-    padding:0 !important;
-    border-radius:5px !important;
-    font-size:8px !important;
-    font-weight:950 !important;
-    line-height:1 !important;
-    color:#7c767a !important;
-    background:rgba(255,255,255,.38) !important;
-    border:1px solid rgba(74,65,71,.11) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-experience-mark.is-yes {
-    color:#315b29 !important;
-    background:rgba(223,239,216,.76) !important;
-    border-color:rgba(82,125,69,.30) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-experience-mark.is-no {
-    opacity:.62 !important;
-  }
-
-  /* Legacy experience pills are no longer rendered from V1.1.27 onward. */
-  body[data-readonly="true"] .mobile-readonly-history-list {
-    display:none !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-readonly-answers {
-    grid-template-columns:repeat(3, 28px) !important;
-    gap:2px !important;
-  }
-  body[data-readonly="true"] .mobile-readonly-result-stack {
-    min-width:28px !important;
-  }
-}
-
-/* =========================================================
-   V1.1.28 — MOBILE: TITLE META + LEFT PIN IN READING MODE
-   - Read-only card now shows the pin on the far left.
-   - Practice title keeps level + risk inline, explanation below.
-   - Edit mode keeps the other partner note clearly greyed.
-   Desktop remains unchanged.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body:not([data-readonly="true"]) .mobile-notes-editor .shared-note-row.is-other-person {
-    opacity:.9 !important;
-  }
-
-  body:not([data-readonly="true"]) .mobile-notes-editor .shared-note-row.is-other-person .person-note-input {
-    background:#e7eaed !important;
-    border-color:#cdd2d7 !important;
-    color:#6f767c !important;
-    box-shadow:inset 0 1px 1px rgba(40,48,54,.05) !important;
-  }
-
-  body:not([data-readonly="true"]) .mobile-notes-editor .shared-note-row.is-other-person .shared-note-person {
-    color:#80878d !important;
-  }
-
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
-    display:grid !important;
-    grid-template-columns:20px minmax(0,1fr) auto !important;
-    grid-template-areas:"pin copy answers" !important;
-    align-items:start !important;
-    column-gap:6px !important;
-    row-gap:0 !important;
-    padding:6px 7px 5px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-pinrail {
-    grid-area:pin !important;
-    display:flex !important;
-    align-items:flex-start !important;
-    justify-content:flex-start !important;
-    min-width:0 !important;
-    padding-top:1px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-pin {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:18px !important;
-    height:18px !important;
-    border-radius:6px !important;
-    font-size:11px !important;
-    line-height:1 !important;
-    color:#8f8a8e !important;
-    background:rgba(255,255,255,.36) !important;
-    border:1px solid rgba(71,62,67,.12) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.35) !important;
-    opacity:.78 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-pin.is-selected {
-    color:#5f4b06 !important;
-    background:color-mix(in srgb, #f4d35e 72%, rgba(255,255,255,.54)) !important;
-    border-color:rgba(141,109,14,.28) !important;
-    opacity:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-copy {
-    grid-area:copy !important;
-    min-width:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-title-line {
-    display:flex !important;
-    align-items:flex-start !important;
-    flex-wrap:wrap !important;
-    gap:4px !important;
-    min-width:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-title-line .mobile-readonly-practice {
-    display:inline !important;
-    width:auto !important;
-    min-width:0 !important;
-    margin:0 !important;
-    flex:0 1 auto !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-meta-inline {
-    display:inline-flex !important;
-    align-items:center !important;
-    flex-wrap:wrap !important;
-    gap:4px !important;
-    min-width:0 !important;
-    margin-top:1px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-level-badge {
-    height:18px !important;
-    min-height:18px !important;
-    padding:0 6px !important;
-    border-radius:7px !important;
-    font-size:8px !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-risk {
-    display:inline-flex !important;
-    align-items:center !important;
-    gap:3px !important;
-    height:18px !important;
-    min-height:18px !important;
-    padding:0 6px !important;
-    border-radius:7px !important;
-    border:1px solid rgba(71,62,67,.12) !important;
-    background:rgba(255,255,255,.44) !important;
-    color:#4f474b !important;
-    box-sizing:border-box !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.34) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-risk-icon {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    font-size:9px !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-risk-text {
-    display:inline-block !important;
-    font-size:7.4px !important;
-    font-weight:850 !important;
-    line-height:1 !important;
-    letter-spacing:-.01em !important;
-    white-space:nowrap !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-risk.risk-normal {
-    color:#476240 !important;
-    background:rgba(232,243,228,.72) !important;
-    border-color:rgba(95,130,86,.24) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-risk.risk-caution {
-    color:#7b5a1e !important;
-    background:rgba(255,243,210,.82) !important;
-    border-color:rgba(171,125,31,.26) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-risk.risk-high {
-    color:#7f3f1a !important;
-    background:rgba(252,225,208,.82) !important;
-    border-color:rgba(179,96,43,.28) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-explanation {
-    margin-top:2px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answers {
-    grid-area:answers !important;
-    align-self:start !important;
-    justify-self:end !important;
-    margin:0 !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
-    grid-template-columns:18px minmax(0,1fr) auto !important;
-    column-gap:5px !important;
-    padding-left:6px !important;
-    padding-right:6px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-pin {
-    width:17px !important;
-    height:17px !important;
-    font-size:10px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-meta-inline {
-    gap:3px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-risk {
-    padding:0 5px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-risk-text {
-    font-size:7px !important;
-  }
-}
-
-
-/* =========================================================
-   V1.1.29 — MOBILE: PIN AS STATUS + RISK ONLY WHEN NEEDED
-   - Read-only mobile cards no longer show level.
-   - Risk is shown only for caution/high practices, under the pin.
-   - The pin is now a pure status badge shown only when pinned,
-     which avoids looking like a non-working button.
-   Desktop remains unchanged.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
-    grid-template-columns:20px minmax(0,1fr) auto !important;
-    grid-template-areas:"pin copy answers" !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-pinrail {
-    grid-area:pin !important;
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:flex-start !important;
-    justify-content:flex-start !important;
-    gap:4px !important;
-    min-width:0 !important;
-    padding-top:1px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-pin {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:18px !important;
-    height:18px !important;
-    border-radius:6px !important;
-    font-size:11px !important;
-    line-height:1 !important;
-    color:#5f4b06 !important;
-    background:color-mix(in srgb, #f4d35e 72%, rgba(255,255,255,.54)) !important;
-    border:1px solid rgba(141,109,14,.28) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.35) !important;
-    opacity:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-side-risk {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    min-width:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-side-risk .risk-badge {
-    margin-left:0 !important;
-    min-width:17px !important;
-    width:17px !important;
-    height:17px !important;
-    padding:0 !important;
-    border-radius:999px !important;
-    font-size:9px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-copy {
-    grid-area:copy !important;
-    min-width:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-title-line,
-  body[data-readonly="true"] .mobile-readonly-meta-inline,
-  body[data-readonly="true"] .mobile-readonly-level-badge,
-  body[data-readonly="true"] .mobile-readonly-risk,
-  body[data-readonly="true"] .mobile-readonly-risk-icon,
-  body[data-readonly="true"] .mobile-readonly-risk-text {
-    display:none !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
-    grid-template-columns:18px minmax(0,1fr) auto !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-pin {
-    width:17px !important;
-    height:17px !important;
-    font-size:10px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-side-risk .risk-badge {
-    width:16px !important;
-    min-width:16px !important;
-    height:16px !important;
-    font-size:8px !important;
-  }
-}
-
-/* =========================================================
-   V1.1.30 — MOBILE: WORKING PIN BUTTON IN READING MODE
-   - Reading mode keeps a real session pin button on each card.
-   - The "show other role" control is hidden in reading mode because
-     both partners are always visible there.
-   - Risk stays only when caution/high and remains under the pin.
-   Desktop remains unchanged.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] .mobile-readonly-pinrail .mobile-readonly-pin-btn {
-    width:18px !important;
-    min-width:18px !important;
-    height:18px !important;
-    min-height:18px !important;
-    padding:0 !important;
-    margin:0 !important;
-    border-radius:6px !important;
-    font-size:11px !important;
-    line-height:1 !important;
-    opacity:.76 !important;
-    background:rgba(255,255,255,.38) !important;
-    border-color:rgba(71,62,67,.14) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.35) !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-pinrail .mobile-readonly-pin-btn.selected {
-    color:#5f4b06 !important;
-    background:color-mix(in srgb, #f4d35e 72%, rgba(255,255,255,.54)) !important;
-    border-color:rgba(141,109,14,.30) !important;
-    opacity:1 !important;
-    box-shadow:inset 0 0 0 1px rgba(181,139,0,.16) !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-readonly-pinrail .mobile-readonly-pin-btn {
-    width:17px !important;
-    min-width:17px !important;
-    height:17px !important;
-    min-height:17px !important;
-    font-size:10px !important;
-  }
-}
-
-/* =========================================================
    V1.1.31 — MOBILE: TAP INFO BUBBLE FOR RISK BADGES
    The caution/high-risk symbols are buttons on mobile. A tap opens a
    compact anchored explanation bubble; tapping outside, scrolling,
@@ -7399,877 +6089,6 @@ body.first-use-open{overflow:hidden}
    ========================================================= */
 .stat:empty {
   display:none !important;
-}
-
-/* =========================================================
-   V1.1.39 — MOBILE: MINIMAL QUICK READING LEGEND
-   Replaces the long bilingual explanatory banner with a much more
-   compact visual key: practices on the left, the 3 result columns
-   on the right (male / female / couple), then the line below for
-   before / before / together.
-   Desktop unchanged.
-   ========================================================= */
-.mobile-quick-reading-help {
-  display:none;
-}
-
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] .mobile-quick-reading-help {
-    display:grid;
-    grid-template-columns:minmax(72px, .95fr) auto;
-    align-items:center;
-    gap:8px;
-    margin:0 0 6px;
-    padding:5px 8px;
-    border:1px solid rgba(98,108,116,.16);
-    border-radius:10px;
-    background:linear-gradient(180deg, rgba(255,255,255,.97), rgba(247,248,250,.99));
-    box-shadow:0 1px 2px rgba(24,32,38,.04);
-    color:#485058;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help-left {
-    min-width:0;
-    color:#323a41;
-    font-size:10px;
-    font-weight:900;
-    line-height:1.1;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help-right {
-    display:grid;
-    gap:2px;
-    justify-items:end;
-    min-width:0;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help-row {
-    display:flex;
-    align-items:center;
-    justify-content:flex-end;
-    gap:4px;
-    min-width:0;
-    color:#5b656d;
-    font-size:8.2px;
-    line-height:1.15;
-    font-weight:800;
-    white-space:nowrap;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help-row-top {
-    gap:3px;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip {
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    width:18px;
-    min-width:18px;
-    height:18px;
-    border-radius:6px;
-    border:1px solid rgba(74,65,71,.12);
-    background:rgba(255,255,255,.5);
-    font-size:10px;
-    line-height:1;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip-male {
-    background:rgba(208,232,248,.84);
-    border-color:rgba(87,138,170,.28);
-    color:#406577;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip-female {
-    background:rgba(241,219,234,.86);
-    border-color:rgba(160,96,133,.28);
-    color:#7f4b68;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip-couple {
-    background:rgba(247,240,213,.88);
-    border-color:rgba(171,146,67,.26);
-    color:#765f1d;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help .guide-sep {
-    opacity:.5;
-    font-weight:900;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-quick-reading-help {
-    grid-template-columns:minmax(64px, .9fr) auto;
-    gap:6px;
-    padding:5px 7px;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help-left {
-    font-size:9.4px;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help-row {
-    font-size:7.6px;
-    gap:3px;
-  }
-
-  body[data-readonly="true"] .mobile-quick-reading-help .guide-chip {
-    width:17px;
-    min-width:17px;
-    height:17px;
-    font-size:9px;
-  }
-}
-
-/* =========================================================
-   V1.1.37 — READING MODE: OTHER-ROLE TOGGLE HIDDEN
-   In reading mode both partners are always visible, so the
-   show/hide-other-person control must not be displayed.
-   ========================================================= */
-body[data-readonly="true"] #toggleOtherRole,
-body[data-readonly="true"] #toggleOtherRole[hidden] {
-  display:none !important;
-}
-
-/* =========================================================
-   V1.1.38 — MOBILE READING MODE: COMMON RESULT EMPHASIS
-   Makes the common/couple result slightly larger so it reads more
-   clearly as the shared outcome, without changing desktop.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] .mobile-readonly-answers {
-    column-gap:3px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common {
-    margin-left:3px !important;
-    min-width:33px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    width:33px !important;
-    min-width:33px !important;
-    height:28px !important;
-    border-radius:8px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
-    font-size:15px !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] .mobile-readonly-result-stack.common {
-    margin-left:2px !important;
-    min-width:31px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    width:31px !important;
-    min-width:31px !important;
-    height:27px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
-    font-size:14px !important;
-  }
-}
-
-/* =========================================================
-   V1.1.40 — MOBILE READING HEADER: CATEGORY BAR + MINIMAL GUIDE
-   - Integrates the minimal reading guide into the sticky mobile category bar.
-   - Fixes the FR/EN duplication by using the existing adult-lang-* toggles.
-   - Slightly enlarges the common/couple result both in the sticky guide and
-     in each read-only practice row.
-   Desktop remains unchanged.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  /* old standalone helper no longer used */
-  .mobile-quick-reading-help {
-    display:none !important;
-  }
-
-  .mobile-category-bar {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    gap:8px !important;
-    min-height:34px !important;
-    padding:4px 8px !important;
-    position:sticky !important;
-    top:0 !important;
-    z-index:16 !important;
-  }
-
-  .mobile-category-main {
-    display:flex !important;
-    align-items:center !important;
-    gap:5px !important;
-    min-width:0 !important;
-    flex:1 1 auto !important;
-  }
-
-  .mobile-category-guide {
-    display:none !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide {
-    display:grid !important;
-    gap:2px !important;
-    justify-items:end !important;
-    flex:0 0 auto !important;
-    min-width:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-top,
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:flex-end !important;
-    gap:3px !important;
-    min-width:0 !important;
-    white-space:nowrap !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    font-size:7.2px !important;
-    font-weight:800 !important;
-    color:#677078 !important;
-    letter-spacing:-.01em !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:18px !important;
-    min-width:18px !important;
-    height:18px !important;
-    border-radius:6px !important;
-    border:1px solid rgba(74,65,71,.12) !important;
-    background:rgba(255,255,255,.5) !important;
-    font-size:10px !important;
-    line-height:1 !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.35) !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-male {
-    background:rgba(208,232,248,.84) !important;
-    border-color:rgba(87,138,170,.28) !important;
-    color:#406577 !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-female {
-    background:rgba(241,219,234,.86) !important;
-    border-color:rgba(160,96,133,.28) !important;
-    color:#7f4b68 !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    width:21px !important;
-    min-width:21px !important;
-    height:20px !important;
-    border-radius:7px !important;
-    background:rgba(247,240,213,.88) !important;
-    border-color:rgba(171,146,67,.26) !important;
-    color:#765f1d !important;
-    font-size:11px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-sep {
-    opacity:.5 !important;
-    font-weight:900 !important;
-    font-size:8px !important;
-  }
-
-  /* Common result in reading cards: a touch bigger and more separated */
-  body[data-readonly="true"] .mobile-readonly-result-stack.common {
-    margin-left:4px !important;
-    min-width:35px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    width:35px !important;
-    min-width:35px !important;
-    height:29px !important;
-    border-radius:8px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
-    font-size:15.5px !important;
-  }
-}
-
-@media (max-width:360px) {
-  .mobile-category-bar {
-    gap:6px !important;
-    padding:4px 7px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-top,
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    gap:2px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    font-size:6.7px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip {
-    width:17px !important;
-    min-width:17px !important;
-    height:17px !important;
-    font-size:9px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    width:19px !important;
-    min-width:19px !important;
-    height:18px !important;
-    font-size:10px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common {
-    margin-left:3px !important;
-    min-width:33px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    width:33px !important;
-    min-width:33px !important;
-    height:28px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
-    font-size:14.5px !important;
-  }
-}
-
-/* =========================================================
-   V1.1.41 — MOBILE READING: PRECISE HEADER/RESULT ALIGNMENT
-   The sticky category bar now uses the exact same three-column geometry
-   as the read-only result area. Personal results stay compact; the couple
-   result has its own wider visual column and the labels sit directly below.
-   Desktop unchanged.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] {
-    --reading-person-col:29px;
-    --reading-common-col:39px;
-    --reading-common-box:35px;
-    --reading-results-gap:3px;
-  }
-
-  body[data-readonly="true"] .mobile-category-bar {
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) auto !important;
-    align-items:center !important;
-    gap:8px !important;
-    min-height:39px !important;
-    padding:4px 7px 4px 8px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-main {
-    min-width:0 !important;
-    align-self:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide {
-    display:grid !important;
-    grid-template-rows:29px 9px !important;
-    row-gap:1px !important;
-    align-items:start !important;
-    justify-items:stretch !important;
-    width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
-    min-width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-top,
-  body[data-readonly="true"] .mobile-category-guide-bottom,
-  body[data-readonly="true"] .mobile-readonly-answers {
-    display:grid !important;
-    grid-template-columns:var(--reading-person-col) var(--reading-person-col) var(--reading-common-col) !important;
-    column-gap:var(--reading-results-gap) !important;
-    align-items:start !important;
-    justify-content:end !important;
-    width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-top {
-    height:29px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    height:9px !important;
-    align-items:center !important;
-    color:#697179 !important;
-    font-size:6.5px !important;
-    font-weight:850 !important;
-    line-height:1 !important;
-    letter-spacing:-.025em !important;
-    text-align:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom > span {
-    display:block !important;
-    min-width:0 !important;
-    overflow:hidden !important;
-    text-overflow:clip !important;
-    white-space:nowrap !important;
-    text-align:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip {
-    align-self:start !important;
-    justify-self:center !important;
-    width:29px !important;
-    min-width:29px !important;
-    height:26px !important;
-    min-height:26px !important;
-    padding:0 !important;
-    border-radius:7px !important;
-    font-size:13px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    justify-self:end !important;
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:29px !important;
-    min-height:29px !important;
-    border-radius:8px !important;
-    font-size:14px !important;
-  }
-
-  /* Match the practice rows to the exact same header geometry. */
-  body[data-readonly="true"] .mobile-readonly-answers {
-    gap:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack {
-    min-width:var(--reading-person-col) !important;
-    width:var(--reading-person-col) !important;
-    justify-self:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common {
-    margin-left:0 !important;
-    min-width:var(--reading-common-box) !important;
-    width:var(--reading-common-box) !important;
-    justify-self:end !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:29px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-experience-mark {
-    justify-self:center !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] {
-    --reading-person-col:28px;
-    --reading-common-col:36px;
-    --reading-common-box:33px;
-    --reading-results-gap:2px;
-  }
-
-  body[data-readonly="true"] .mobile-category-bar {
-    gap:6px !important;
-    min-height:38px !important;
-    padding-left:6px !important;
-    padding-right:6px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide {
-    grid-template-rows:28px 9px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip {
-    width:28px !important;
-    min-width:28px !important;
-    height:25px !important;
-    min-height:25px !important;
-    font-size:12px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:28px !important;
-    min-height:28px !important;
-    font-size:13px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    font-size:6.1px !important;
-  }
-}
-
-/* =========================================================
-   V1.1.42 — MOBILE READING MODE: REMOVE EMPTY GRID SLOT
-   The other-role toggle is hidden in reading mode; let the reading-mode
-   button span all remaining space next to the help button instead of
-   leaving a blank middle block. Desktop and edit mode stay unchanged.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] header .title-actions > .view-toggle {
-    display:none !important;
-  }
-
-  body[data-readonly="true"] header .title-actions > .readonly-toggle {
-    grid-column:2 / 13 !important;
-    grid-row:2 !important;
-    width:100% !important;
-    min-width:0 !important;
-  }
-}
-
-/* =========================================================
-   V1.1.44 — MOBILE READING MODE HEADER REFINEMENT
-   - Cleaner alignment between the sticky category guide and the result columns.
-   - Nicer couple icon (🤝) for the shared result.
-   - More explicit labels for the marks below: ✓ Av. / ✓ Ens.
-   - Slightly larger common-result column for better hierarchy.
-   Desktop remains unchanged.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] {
-    --reading-person-col:30px;
-    --reading-common-col:42px;
-    --reading-common-box:38px;
-    --reading-results-gap:4px;
-  }
-
-  body[data-readonly="true"] .mobile-category-bar {
-    grid-template-columns:minmax(0,1fr) calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
-    gap:8px !important;
-    min-height:42px !important;
-    padding:5px 8px 4px !important;
-    align-items:start !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-main {
-    align-self:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide {
-    width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
-    min-width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
-    grid-template-rows:28px 11px !important;
-    row-gap:2px !important;
-    justify-self:end !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-top,
-  body[data-readonly="true"] .mobile-category-guide-bottom,
-  body[data-readonly="true"] .mobile-readonly-answers {
-    grid-template-columns:var(--reading-person-col) var(--reading-person-col) var(--reading-common-col) !important;
-    column-gap:var(--reading-results-gap) !important;
-    width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-top {
-    height:28px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip {
-    width:30px !important;
-    min-width:30px !important;
-    height:26px !important;
-    min-height:26px !important;
-    border-radius:8px !important;
-    font-size:13px !important;
-    justify-self:center !important;
-    align-self:start !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:28px !important;
-    min-height:28px !important;
-    border-radius:9px !important;
-    font-size:14px !important;
-    justify-self:end !important;
-    letter-spacing:-.02em !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    height:11px !important;
-    color:#677078 !important;
-    font-size:6.8px !important;
-    font-weight:900 !important;
-    line-height:1 !important;
-    letter-spacing:-.02em !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom > span {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    min-width:0 !important;
-    white-space:nowrap !important;
-    overflow:visible !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answers {
-    gap:0 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack {
-    width:var(--reading-person-col) !important;
-    min-width:var(--reading-person-col) !important;
-    justify-self:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    justify-self:end !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:30px !important;
-    border-radius:9px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
-    font-size:16px !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] {
-    --reading-person-col:28px;
-    --reading-common-col:39px;
-    --reading-common-box:35px;
-    --reading-results-gap:3px;
-  }
-
-  body[data-readonly="true"] .mobile-category-bar {
-    min-height:40px !important;
-    gap:6px !important;
-    padding-left:6px !important;
-    padding-right:6px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide {
-    grid-template-rows:27px 10px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip {
-    width:28px !important;
-    min-width:28px !important;
-    height:24px !important;
-    min-height:24px !important;
-    font-size:12px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:27px !important;
-    min-height:27px !important;
-    font-size:13px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    font-size:6.2px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    height:29px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
-    font-size:15px !important;
-  }
-}
-
-/* =========================================================
-   V1.1.45 — MOBILE READING: PRECISE RESULT ALIGNMENT
-   Header legend and practice result columns share the exact same grid.
-   The shared/couple marker uses 🔗 and keeps a slightly stronger visual weight.
-   Desktop unchanged.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] {
-    --reading-person-col:30px;
-    --reading-common-col:40px;
-    --reading-person-box:30px;
-    --reading-common-box:38px;
-    --reading-results-gap:4px;
-    --reading-results-width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2);
-  }
-
-  body[data-readonly="true"] .mobile-category-bar {
-    grid-template-columns:minmax(0,1fr) var(--reading-results-width) !important;
-    column-gap:8px !important;
-    align-items:center !important;
-    min-height:43px !important;
-    padding:5px 8px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide {
-    display:grid !important;
-    grid-template-rows:30px 11px !important;
-    row-gap:1px !important;
-    width:var(--reading-results-width) !important;
-    min-width:var(--reading-results-width) !important;
-    justify-self:end !important;
-    align-self:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-top,
-  body[data-readonly="true"] .mobile-category-guide-bottom,
-  body[data-readonly="true"] .mobile-readonly-answers {
-    display:grid !important;
-    grid-template-columns:var(--reading-person-col) var(--reading-person-col) var(--reading-common-col) !important;
-    column-gap:var(--reading-results-gap) !important;
-    width:var(--reading-results-width) !important;
-    min-width:var(--reading-results-width) !important;
-    justify-content:end !important;
-    align-items:start !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip,
-  body[data-readonly="true"] .mobile-readonly-answer {
-    width:var(--reading-person-box) !important;
-    min-width:var(--reading-person-box) !important;
-    height:27px !important;
-    min-height:27px !important;
-    padding:0 !important;
-    margin:0 !important;
-    border-radius:8px !important;
-    justify-self:center !important;
-    box-sizing:border-box !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    font-size:13px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple,
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:30px !important;
-    min-height:30px !important;
-    border-radius:9px !important;
-    justify-self:center !important;
-    box-sizing:border-box !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    font-size:15px !important;
-    font-weight:900 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack,
-  body[data-readonly="true"] .mobile-readonly-result-stack.common {
-    display:grid !important;
-    grid-template-rows:30px 12px !important;
-    row-gap:1px !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    justify-items:center !important;
-    align-items:start !important;
-    justify-self:stretch !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-answer {
-    align-self:start !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
-    font-size:16px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-experience-mark {
-    justify-self:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    height:11px !important;
-    align-items:center !important;
-    font-size:6.7px !important;
-    font-weight:900 !important;
-    line-height:1 !important;
-    letter-spacing:-.02em !important;
-    color:#687078 !important;
-    text-align:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom > span {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:100% !important;
-    min-width:0 !important;
-    white-space:nowrap !important;
-    overflow:visible !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] {
-    --reading-person-col:28px;
-    --reading-common-col:37px;
-    --reading-person-box:28px;
-    --reading-common-box:35px;
-    --reading-results-gap:3px;
-  }
-
-  body[data-readonly="true"] .mobile-category-bar {
-    column-gap:6px !important;
-    min-height:41px !important;
-    padding-left:6px !important;
-    padding-right:6px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide {
-    grid-template-rows:28px 10px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip,
-  body[data-readonly="true"] .mobile-readonly-answer {
-    height:25px !important;
-    min-height:25px !important;
-    font-size:12px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple,
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    height:28px !important;
-    min-height:28px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    font-size:14px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack,
-  body[data-readonly="true"] .mobile-readonly-result-stack.common {
-    grid-template-rows:28px 12px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    font-size:6.1px !important;
-  }
 }
 
 /* =========================================================
@@ -8438,213 +6257,6 @@ body[data-readonly="true"] #toggleOtherRole[hidden] {
 }
 
 /* =========================================================
-   V1.1.48 — MOBILE READING MODE: HEADER/CARD RESULT REALIGNMENT
-   - Recalibrates the sticky legend and card result columns on the exact same grid.
-   - Improves optical centering of the legend symbols.
-   - Tightens the vertical rhythm so the top legend aligns more cleanly with
-     the result blocks shown in the cards below.
-   Desktop unchanged.
-   ========================================================= */
-@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
-  body[data-readonly="true"] {
-    --reading-person-col:32px;
-    --reading-common-col:42px;
-    --reading-person-box:31px;
-    --reading-common-box:39px;
-    --reading-results-gap:5px;
-    --reading-mark-row:13px;
-    --reading-grid-width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2);
-  }
-
-  body[data-readonly="true"] .mobile-category-bar {
-    grid-template-columns:minmax(0,1fr) var(--reading-grid-width) !important;
-    column-gap:8px !important;
-    align-items:center !important;
-    min-height:44px !important;
-    padding:4px 8px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-main {
-    align-self:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide {
-    display:grid !important;
-    grid-template-rows:30px var(--reading-mark-row) !important;
-    row-gap:1px !important;
-    width:var(--reading-grid-width) !important;
-    min-width:var(--reading-grid-width) !important;
-    justify-self:end !important;
-    align-self:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-top,
-  body[data-readonly="true"] .mobile-category-guide-bottom,
-  body[data-readonly="true"] .mobile-readonly-answers {
-    display:grid !important;
-    grid-template-columns:var(--reading-person-col) var(--reading-person-col) var(--reading-common-col) !important;
-    column-gap:var(--reading-results-gap) !important;
-    width:var(--reading-grid-width) !important;
-    min-width:var(--reading-grid-width) !important;
-    justify-self:end !important;
-    justify-content:end !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-top {
-    align-items:start !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip,
-  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-answer {
-    width:var(--reading-person-box) !important;
-    min-width:var(--reading-person-box) !important;
-    height:28px !important;
-    min-height:28px !important;
-    margin:0 !important;
-    padding:0 !important;
-    border-radius:8px !important;
-    box-sizing:border-box !important;
-    align-self:start !important;
-    justify-self:center !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip {
-    font-size:13px !important;
-    transform:translateY(0) !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple,
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:30px !important;
-    min-height:30px !important;
-    border-radius:9px !important;
-    box-sizing:border-box !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    justify-self:center !important;
-    font-size:14px !important;
-    font-weight:900 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-answers {
-    align-self:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack,
-  body[data-readonly="true"] .mobile-readonly-result-stack.common {
-    display:grid !important;
-    grid-template-rows:30px var(--reading-mark-row) !important;
-    row-gap:1px !important;
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    justify-items:center !important;
-    align-items:start !important;
-    justify-self:stretch !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-score,
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:100% !important;
-    height:100% !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
-    font-size:16px !important;
-  }
-
-  body[data-readonly="true"] .mobile-readonly-experience-mark {
-    width:18px !important;
-    min-width:18px !important;
-    height:12px !important;
-    justify-self:center !important;
-    align-self:start !important;
-    margin:0 !important;
-    line-height:1 !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    height:var(--reading-mark-row) !important;
-    align-items:center !important;
-    color:#687078 !important;
-    font-size:6.8px !important;
-    font-weight:900 !important;
-    line-height:1 !important;
-    letter-spacing:-.015em !important;
-    text-align:center !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom > span {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    height:var(--reading-mark-row) !important;
-    min-width:0 !important;
-    white-space:nowrap !important;
-    overflow:visible !important;
-    text-align:center !important;
-  }
-}
-
-@media (max-width:360px) {
-  body[data-readonly="true"] {
-    --reading-person-col:29px;
-    --reading-common-col:39px;
-    --reading-person-box:28px;
-    --reading-common-box:36px;
-    --reading-results-gap:4px;
-    --reading-mark-row:12px;
-  }
-
-  body[data-readonly="true"] .mobile-category-bar {
-    column-gap:6px !important;
-    min-height:42px !important;
-    padding-left:6px !important;
-    padding-right:6px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide {
-    grid-template-rows:29px var(--reading-mark-row) !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip,
-  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-answer {
-    height:26px !important;
-    min-height:26px !important;
-    font-size:12px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple,
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    height:29px !important;
-    min-height:29px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    font-size:13px !important;
-  }
-
-  body[data-readonly="true"] .mobile-category-guide-bottom {
-    font-size:6.2px !important;
-  }
-}
-
-/* =========================================================
    V1.1.49 — MOBILE EDIT MODE: NOTES DIRECTLY EDITABLE
    - Notes are always open in mobile edit mode: no extra tap required.
    - If the other role is hidden, its note is not rendered either.
@@ -8725,273 +6337,458 @@ body[data-readonly="true"] #toggleOtherRole[hidden] {
     min-height:42px !important;
     height:42px !important;
   }
+
+  body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-row.is-other-person .person-note-input {
+    background:#e7eaed !important;
+    border-color:#cdd2d7 !important;
+    color:#6f767c !important;
+    box-shadow:inset 0 1px 1px rgba(40,48,54,.05) !important;
+  }
+  body:not([data-readonly="true"]) .mobile-notes-block.mobile-notes-direct .shared-note-row.is-other-person .shared-note-person {
+    color:#80878d !important;
+  }
 }
 
 /* =========================================================
-   V1.1.50 — MOBILE READING MODE: CLEAN GRID REALIGNMENT
-   Rebuilds the alignment on a single shared grid so the sticky legend
-   and the three result columns in each card use the exact same tracks.
-   This is a clean final override to avoid accumulated drift.
-   Desktop unchanged.
+   V1.1.51 — MOBILE READING MODE: SINGLE SOURCE OF TRUTH
+   Full cleanup of the mobile reading layout. The sticky category legend
+   and every practice card now share one result-grid definition. No stacked
+   historical overrides remain for these selectors.
+   Desktop and mobile edit mode are intentionally untouched.
    ========================================================= */
 @media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
   body[data-readonly="true"] {
-    --reading-pin-col: 22px;
-    --reading-person-track: 31px;
-    --reading-common-track: 41px;
-    --reading-person-box: 31px;
-    --reading-common-box: 39px;
-    --reading-track-gap: 4px;
-    --reading-mark-row: 12px;
-    --reading-box-row: 29px;
-    --reading-results-width: calc(var(--reading-person-track) * 2 + var(--reading-common-track) + var(--reading-track-gap) * 2);
+    --read-pin-track:22px;
+    --read-person-track:32px;
+    --read-common-track:42px;
+    --read-person-box:30px;
+    --read-common-box:38px;
+    --read-result-gap:5px;
+    --read-result-row:31px;
+    --read-state-row:12px;
+    --read-results-width:calc(var(--read-person-track) * 2 + var(--read-common-track) + var(--read-result-gap) * 2);
+    --read-right-inset:8px;
   }
 
-  /* Sticky category header: left info + right legend on the exact same width as cards */
+  /* Reading mode always shows both people: remove the irrelevant toggle and
+     let the mode button use the freed space. */
+  body[data-readonly="true"] #toggleOtherRole,
+  body[data-readonly="true"] #toggleOtherRole[hidden],
+  body[data-readonly="true"] header .title-actions > .view-toggle {
+    display:none !important;
+  }
+  body[data-readonly="true"] header .title-actions > .readonly-toggle {
+    grid-column:2 / 13 !important;
+    grid-row:2 !important;
+    width:100% !important;
+    min-width:0 !important;
+  }
+
+  /* ---------- Sticky category legend ---------- */
   body[data-readonly="true"] .mobile-category-bar {
     display:grid !important;
-    grid-template-columns:minmax(0,1fr) var(--reading-results-width) !important;
+    grid-template-columns:minmax(0,1fr) var(--read-results-width) !important;
     align-items:center !important;
     column-gap:8px !important;
-    min-height:42px !important;
-    padding:4px 8px !important;
+    min-height:46px !important;
+    padding:4px var(--read-right-inset) 4px 8px !important;
+    box-sizing:border-box !important;
   }
-
   body[data-readonly="true"] .mobile-category-main {
+    display:flex !important;
+    align-items:center !important;
+    gap:5px !important;
     min-width:0 !important;
-    align-self:center !important;
   }
-
+  body[data-readonly="true"] .mobile-category-main strong {
+    min-width:0 !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
   body[data-readonly="true"] .mobile-category-guide {
     display:grid !important;
-    grid-template-rows:var(--reading-box-row) var(--reading-mark-row) !important;
+    grid-template-rows:var(--read-result-row) var(--read-state-row) !important;
     row-gap:1px !important;
-    width:var(--reading-results-width) !important;
-    min-width:var(--reading-results-width) !important;
-    justify-self:end !important;
-    align-self:center !important;
+    width:var(--read-results-width) !important;
+    min-width:var(--read-results-width) !important;
     margin:0 !important;
     padding:0 !important;
+    justify-self:end !important;
+    align-self:center !important;
   }
-
   body[data-readonly="true"] .mobile-category-guide-top,
   body[data-readonly="true"] .mobile-category-guide-bottom,
   body[data-readonly="true"] .mobile-readonly-answers {
     display:grid !important;
-    grid-template-columns:var(--reading-person-track) var(--reading-person-track) var(--reading-common-track) !important;
-    column-gap:var(--reading-track-gap) !important;
-    width:var(--reading-results-width) !important;
-    min-width:var(--reading-results-width) !important;
-    justify-self:end !important;
-    align-items:start !important;
+    grid-template-columns:var(--read-person-track) var(--read-person-track) var(--read-common-track) !important;
+    column-gap:var(--read-result-gap) !important;
+    width:var(--read-results-width) !important;
+    min-width:var(--read-results-width) !important;
     margin:0 !important;
     padding:0 !important;
+    justify-self:end !important;
   }
-
-  /* Legend chips */
   body[data-readonly="true"] .mobile-category-guide-top {
-    align-items:start !important;
-    height:var(--reading-box-row) !important;
+    height:var(--read-result-row) !important;
+    align-items:center !important;
   }
-
   body[data-readonly="true"] .mobile-category-guide .guide-chip {
-    width:var(--reading-person-box) !important;
-    min-width:var(--reading-person-box) !important;
-    height:27px !important;
-    min-height:27px !important;
-    margin:0 auto !important;
-    padding:0 !important;
-    border-radius:8px !important;
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
-    line-height:1 !important;
-    font-size:13px !important;
+    justify-self:center !important;
+    align-self:center !important;
+    width:var(--read-person-box) !important;
+    min-width:var(--read-person-box) !important;
+    height:28px !important;
+    min-height:28px !important;
+    margin:0 !important;
+    padding:0 !important;
+    border-radius:8px !important;
     box-sizing:border-box !important;
-    transform:translateY(0) !important;
+    font-size:13px !important;
+    line-height:1 !important;
   }
-
   body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:29px !important;
-    min-height:29px !important;
-    margin:0 auto !important;
+    width:var(--read-common-box) !important;
+    min-width:var(--read-common-box) !important;
+    height:31px !important;
+    min-height:31px !important;
     border-radius:9px !important;
-    font-size:14px !important;
+    font-size:15px !important;
     font-weight:900 !important;
   }
-
-  /* Legend labels below */
   body[data-readonly="true"] .mobile-category-guide-bottom {
-    height:var(--reading-mark-row) !important;
+    height:var(--read-state-row) !important;
+    align-items:center !important;
     color:#687078 !important;
-    font-size:6.7px !important;
+    font-size:6.6px !important;
     font-weight:900 !important;
     line-height:1 !important;
     letter-spacing:-.015em !important;
     text-align:center !important;
   }
-
   body[data-readonly="true"] .mobile-category-guide-bottom > span {
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
     width:100% !important;
     min-width:0 !important;
-    height:var(--reading-mark-row) !important;
+    height:var(--read-state-row) !important;
     margin:0 !important;
+    padding:0 !important;
     white-space:nowrap !important;
     line-height:1 !important;
-    text-align:center !important;
   }
 
-  /* Read-only cards: same result grid, locked width */
+  /* ---------- Practice cards ---------- */
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card {
+    overflow:hidden !important;
+    min-height:0 !important;
+    margin:0 0 5px !important;
+    padding:0 !important;
+    border-radius:10px !important;
+    background:var(--mobile-surface,#fff) !important;
+    box-sizing:border-box !important;
+  }
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card.has-common-result {
+    background:var(--mobile-common-color) !important;
+    border-color:var(--mobile-common-color) !important;
+    box-shadow:0 2px 8px color-mix(in srgb, var(--mobile-common-color) 20%, rgba(35,27,32,.12)) !important;
+  }
   body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
     display:grid !important;
-    grid-template-columns:var(--reading-pin-col) minmax(0,1fr) var(--reading-results-width) !important;
+    grid-template-columns:var(--read-pin-track) minmax(0,1fr) var(--read-results-width) !important;
     grid-template-areas:"pin copy answers" !important;
     align-items:start !important;
     column-gap:7px !important;
     row-gap:0 !important;
-    padding:6px 7px 5px !important;
+    min-width:0 !important;
+    padding:6px var(--read-right-inset) 5px 7px !important;
+    box-sizing:border-box !important;
+    background:transparent !important;
   }
-
   body[data-readonly="true"] .mobile-readonly-pinrail {
     grid-area:pin !important;
     display:flex !important;
     flex-direction:column !important;
-    align-items:flex-start !important;
+    align-items:center !important;
     justify-content:flex-start !important;
     gap:4px !important;
-    width:var(--reading-pin-col) !important;
-    min-width:var(--reading-pin-col) !important;
-    padding-top:0 !important;
+    width:var(--read-pin-track) !important;
+    min-width:var(--read-pin-track) !important;
     margin:0 !important;
+    padding:0 !important;
   }
-
   body[data-readonly="true"] .mobile-readonly-copy {
     grid-area:copy !important;
     min-width:0 !important;
+    padding-top:1px !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-practice {
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    color:var(--mobile-ink,#2f2930) !important;
+    font-size:13.5px !important;
+    font-weight:900 !important;
+    line-height:1.08 !important;
+    letter-spacing:-.014em !important;
+    white-space:normal !important;
+    overflow-wrap:break-word !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-explanation {
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:2px 0 0 !important;
+    color:color-mix(in srgb, var(--mobile-ink,#2f2930) 70%, transparent) !important;
+    font-size:8px !important;
+    font-weight:520 !important;
+    line-height:1.18 !important;
+    overflow-wrap:break-word !important;
   }
 
+  /* ---------- One shared 3-column result grid ---------- */
   body[data-readonly="true"] .mobile-readonly-answers {
     grid-area:answers !important;
+    grid-template-rows:calc(var(--read-result-row) + var(--read-state-row) + 1px) !important;
     align-self:start !important;
-    justify-self:end !important;
+    align-items:start !important;
   }
-
   body[data-readonly="true"] .mobile-readonly-result-stack,
   body[data-readonly="true"] .mobile-readonly-result-stack.common {
     display:grid !important;
-    grid-template-rows:var(--reading-box-row) var(--reading-mark-row) !important;
+    grid-template-rows:var(--read-result-row) var(--read-state-row) !important;
     row-gap:1px !important;
     width:100% !important;
     min-width:0 !important;
     margin:0 !important;
+    padding:0 !important;
     justify-items:center !important;
-    align-items:start !important;
+    align-items:center !important;
   }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-answer {
-    width:var(--reading-person-box) !important;
-    min-width:var(--reading-person-box) !important;
-    height:27px !important;
-    min-height:27px !important;
-    margin:0 auto !important;
+  body[data-readonly="true"] .mobile-readonly-answer,
+  body[data-readonly="true"] .mobile-readonly-common {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    justify-self:center !important;
+    align-self:center !important;
+    margin:0 !important;
     padding:0 !important;
+    box-sizing:border-box !important;
+    line-height:1 !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.42) !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-answer {
+    width:var(--read-person-box) !important;
+    min-width:var(--read-person-box) !important;
+    height:28px !important;
+    min-height:28px !important;
+    border:1px solid rgba(62,54,59,.16) !important;
     border-radius:8px !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    box-sizing:border-box !important;
   }
-
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    width:var(--reading-common-box) !important;
-    min-width:var(--reading-common-box) !important;
-    height:29px !important;
-    min-height:29px !important;
-    margin:0 auto !important;
-    padding:0 !important;
+  body[data-readonly="true"] .mobile-readonly-answer.person-male {
+    background:color-mix(in srgb, var(--male-color,#2f7395) 24%, #fff) !important;
+    border-color:color-mix(in srgb, var(--male-color,#2f7395) 48%, rgba(62,54,59,.14)) !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-answer.person-female {
+    background:color-mix(in srgb, var(--female-color,#8b316e) 24%, #fff) !important;
+    border-color:color-mix(in srgb, var(--female-color,#8b316e) 48%, rgba(62,54,59,.14)) !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-common {
+    width:var(--read-common-box) !important;
+    min-width:var(--read-common-box) !important;
+    height:31px !important;
+    min-height:31px !important;
+    border:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 62%, rgba(62,54,59,.16)) !important;
     border-radius:9px !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    box-sizing:border-box !important;
+    background:rgba(255,255,255,.58) !important;
   }
-
   body[data-readonly="true"] .mobile-readonly-score {
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
     width:100% !important;
     height:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    font-size:14px !important;
     line-height:1 !important;
-    transform:translateY(0) !important;
   }
-
   body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-score {
     font-size:16px !important;
   }
-
   body[data-readonly="true"] .mobile-readonly-experience-mark {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    justify-self:center !important;
+    align-self:center !important;
     width:18px !important;
     min-width:18px !important;
     height:11px !important;
     min-height:11px !important;
-    margin:0 auto !important;
+    margin:0 !important;
     padding:0 !important;
-    align-self:start !important;
-    justify-self:center !important;
-    line-height:1 !important;
+    border:1px solid rgba(74,65,71,.11) !important;
+    border-radius:5px !important;
+    background:rgba(255,255,255,.38) !important;
+    color:#7c767a !important;
     font-size:8px !important;
+    font-weight:950 !important;
+    line-height:1 !important;
+    box-sizing:border-box !important;
   }
+  body[data-readonly="true"] .mobile-readonly-experience-mark.is-yes {
+    color:#315b29 !important;
+    background:rgba(223,239,216,.78) !important;
+    border-color:rgba(82,125,69,.30) !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-experience-mark.is-no {
+    opacity:.62 !important;
+  }
+
+  /* ---------- Pin + contextual risk ---------- */
+  body[data-readonly="true"] .mobile-readonly-pinrail .mobile-readonly-pin-btn {
+    width:19px !important;
+    min-width:19px !important;
+    height:19px !important;
+    min-height:19px !important;
+    margin:0 !important;
+    padding:0 !important;
+    border-radius:6px !important;
+    font-size:11px !important;
+    line-height:1 !important;
+    opacity:.76 !important;
+    background:rgba(255,255,255,.38) !important;
+    border-color:rgba(71,62,67,.14) !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-pinrail .mobile-readonly-pin-btn.selected {
+    color:#5f4b06 !important;
+    background:color-mix(in srgb, #f4d35e 72%, rgba(255,255,255,.54)) !important;
+    border-color:rgba(141,109,14,.30) !important;
+    opacity:1 !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-side-risk {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:19px !important;
+    min-width:19px !important;
+  }
+
+  /* ---------- Static notes ---------- */
+  body[data-readonly="true"] .mobile-readonly-static-notes {
+    margin:0 !important;
+    border-top:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 48%, rgba(70,61,67,.16)) !important;
+    background:rgba(255,255,255,.28) !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-static-notes-title {
+    display:flex !important;
+    align-items:center !important;
+    gap:4px !important;
+    padding:4px 7px 2px !important;
+    color:#514a4f !important;
+    font-size:7.6px !important;
+    font-weight:850 !important;
+    line-height:1 !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-notes {
+    display:grid !important;
+    gap:3px !important;
+    padding:3px 7px 6px !important;
+    background:transparent !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-note {
+    display:grid !important;
+    grid-template-columns:19px minmax(0,1fr) !important;
+    align-items:start !important;
+    gap:5px !important;
+    min-width:0 !important;
+    font-size:8.8px !important;
+    line-height:1.24 !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-note-person {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:19px !important;
+    min-width:19px !important;
+    min-height:17px !important;
+    border-radius:5px !important;
+    font-size:7px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-note.person-male .mobile-readonly-note-person {
+    background:color-mix(in srgb, var(--male-color,#2f7395) 24%, #fff) !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-note.person-female .mobile-readonly-note-person {
+    background:color-mix(in srgb, var(--female-color,#8b316e) 24%, #fff) !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-note-text {
+    min-width:0 !important;
+    color:#4e474b !important;
+    white-space:pre-wrap !important;
+    overflow-wrap:anywhere !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-note-empty {
+    padding:5px 7px 6px !important;
+    color:#70686d !important;
+    font-size:8px !important;
+    font-style:italic !important;
+  }
+
 }
 
 @media (max-width:360px) {
   body[data-readonly="true"] {
-    --reading-pin-col: 20px;
-    --reading-person-track: 29px;
-    --reading-common-track: 39px;
-    --reading-person-box: 29px;
-    --reading-common-box: 37px;
-    --reading-track-gap: 3px;
-    --reading-mark-row: 11px;
-    --reading-box-row: 28px;
+    --read-pin-track:20px;
+    --read-person-track:29px;
+    --read-common-track:39px;
+    --read-person-box:28px;
+    --read-common-box:36px;
+    --read-result-gap:4px;
+    --read-result-row:29px;
+    --read-state-row:11px;
+    --read-right-inset:6px;
   }
-
   body[data-readonly="true"] .mobile-category-bar {
     column-gap:6px !important;
-    min-height:40px !important;
+    min-height:43px !important;
     padding-left:6px !important;
-    padding-right:6px !important;
   }
-
   body[data-readonly="true"] .mobile-category-guide .guide-chip,
-  body[data-readonly="true"] .mobile-readonly-result-stack .mobile-readonly-answer {
+  body[data-readonly="true"] .mobile-readonly-answer {
     height:26px !important;
     min-height:26px !important;
     font-size:12px !important;
   }
-
   body[data-readonly="true"] .mobile-category-guide .guide-chip-couple,
-  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
-    height:28px !important;
-    min-height:28px !important;
+  body[data-readonly="true"] .mobile-readonly-common {
+    height:29px !important;
+    min-height:29px !important;
   }
-
   body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
     font-size:13px !important;
   }
-
   body[data-readonly="true"] .mobile-category-guide-bottom {
     font-size:6.1px !important;
   }
-
   body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
     column-gap:6px !important;
     padding-left:6px !important;
-    padding-right:6px !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-practice {
+    font-size:12.8px !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-explanation {
+    font-size:7.6px !important;
   }
 }
+
