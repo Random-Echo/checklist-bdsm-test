@@ -4937,3 +4937,409 @@ body.first-use-open{overflow:hidden}
   }
 }
 \n\n/* =========================================================\n   V1.1.12 — MOBILE CARD FINALISATION / AUDIT\n   Même breakpoint que MOBILE_MQ ; desktop strictement inchangé.\n   ========================================================= */\n@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {\n  /* Empêche tout débordement horizontal des cartes et contrôles. */\n  .mobile-practice-card,\n  .mobile-practice-card * {\n    box-sizing:border-box;\n  }\n  .mobile-practice-card {\n    max-width:calc(100% - 10px);\n  }\n  .mobile-score-wrap {\n    overflow:hidden;\n  }\n  .mobile-rating-row {\n    min-width:0;\n  }\n  .mobile-rating-label,\n  .mobile-state-check {\n    min-width:0;\n  }\n  .mobile-state-check span:last-child {\n    overflow:hidden;\n    text-overflow:ellipsis;\n  }\n  .mobile-info-btn,\n  .mobile-notes-toggle,\n  .mobile-state-check,\n  .mobile-practice-meta .session-pin-btn {\n    touch-action:manipulation;\n    -webkit-tap-highlight-color:transparent;\n  }\n  .mobile-practice-card button:focus-visible,\n  .mobile-practice-info-sheet button:focus-visible,\n  .mobile-notes-editor textarea:focus-visible {\n    outline:2px solid #263238;\n    outline-offset:2px;\n  }\n  .mobile-rating-row.is-disabled .mobile-score-wrap {\n    opacity:.55;\n  }\n  .mobile-rating-row.is-disabled .mobile-state-check {\n    opacity:1;\n  }\n}\n\n@media (orientation:landscape) and (max-height:520px) and (max-width:1100px) and (min-width:651px) {\n  .mobile-practice-info-sheet {\n    width:min(86vw,680px);\n    max-height:82vh;\n    border-radius:14px 14px 0 0;\n  }\n  .mobile-practice-card {\n    margin-top:4px;\n  }\n  .mobile-notes-editor .person-note-input {\n    min-height:36px;\n    height:36px;\n  }\n}\n
+
+/* =========================================================
+   V1.1.14 — MOBILE CARD HEADER REFINEMENT
+   Mobile only: inline explanation, no info button, metadata on right.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  .mobile-practice-head {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:start;
+    gap:8px;
+    padding:8px 8px 6px;
+  }
+  .mobile-practice-copy {
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  .mobile-practice-name {
+    display:block;
+    min-width:0;
+    margin:0;
+    color:#22282d;
+    font-size:11px;
+    font-weight:900;
+    line-height:1.16;
+  }
+  .mobile-practice-explanation {
+    display:block;
+    color:#667078;
+    font-size:8.5px;
+    font-weight:500;
+    line-height:1.24;
+    overflow-wrap:anywhere;
+  }
+  .mobile-practice-meta {
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    align-content:flex-start;
+    flex-wrap:wrap;
+    gap:3px;
+    width:auto;
+    max-width:88px;
+    min-height:0;
+    padding:0;
+  }
+  .mobile-practice-meta .level-badge,
+  .mobile-practice-meta .risk-badge,
+  .mobile-practice-meta .compatibility-badge {
+    margin:0 !important;
+    flex:0 0 auto;
+  }
+  .mobile-practice-meta .session-pin-btn {
+    flex:0 0 auto;
+    width:23px !important;
+    min-width:23px !important;
+    height:23px !important;
+    min-height:23px !important;
+  }
+  .mobile-practice-heading,
+  .mobile-info-btn,
+  .mobile-practice-meta-left,
+  .mobile-practice-meta-right {
+    display:none !important;
+  }
+}
+
+
+/* =========================================================
+   V1.1.14 — MOBILE OTHER ROLE SUMMARY
+   Mobile only: the other role is read-only and shows only selected values.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  .mobile-response-grid {
+    min-width:0;
+  }
+  .mobile-response-grid.has-other {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 92px;
+    gap:5px;
+    padding:0 5px 5px;
+    align-items:stretch;
+  }
+  .mobile-response-grid.has-other .mobile-rating-stack {
+    min-width:0;
+    border:1px solid #dde1e4;
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row {
+    grid-template-columns:40px minmax(0,1fr) 50px;
+    gap:2px;
+    padding-left:3px;
+    padding-right:3px;
+  }
+  .mobile-response-grid.has-other .mobile-rating-label {
+    font-size:7.5px;
+  }
+  .mobile-response-grid.has-other .mobile-state-check {
+    min-height:23px;
+    gap:2px;
+    padding:1px 2px;
+    font-size:6.5px;
+    justify-content:center;
+  }
+  .mobile-response-grid.has-other .mobile-check-box {
+    font-size:11px;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.semantic-score-btn {
+    width:22px !important;
+    min-width:22px !important;
+    height:27px !important;
+    min-height:27px !important;
+    font-size:11px !important;
+    border-radius:6px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.unknown-score {
+    width:19px !important;
+    min-width:19px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.semantic-score-btn {
+    width:19px !important;
+    min-width:19px !important;
+    height:21px !important;
+    min-height:21px !important;
+    font-size:9px !important;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-secondary .score-btn.unknown-score {
+    width:17px !important;
+    min-width:17px !important;
+  }
+  .mobile-response-grid.has-other .mobile-score-wrap {
+    gap:1px;
+  }
+
+  .mobile-other-summary {
+    --other-accent:#7b3f6a;
+    display:grid;
+    grid-template-rows:auto 1fr 1fr;
+    min-width:0;
+    overflow:hidden;
+    border:1px solid color-mix(in srgb, var(--other-accent) 28%, #d9dde0);
+    border-radius:8px;
+    background:color-mix(in srgb, var(--other-accent) 5%, #fff);
+  }
+  .mobile-other-summary.role-sub { --other-accent:#2f7395; }
+  .mobile-other-summary.role-dom { --other-accent:#8b316e; }
+  .mobile-other-title {
+    display:flex;
+    align-items:center;
+    gap:4px;
+    min-width:0;
+    padding:4px 5px;
+    border-bottom:1px solid color-mix(in srgb, var(--other-accent) 16%, #e3e6e8);
+    color:var(--other-accent);
+    font-size:7px;
+    font-weight:900;
+    line-height:1;
+    white-space:nowrap;
+    overflow:hidden;
+  }
+  .mobile-other-title > span:last-child {
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .mobile-other-dot {
+    width:6px;
+    height:6px;
+    flex:0 0 6px;
+    border-radius:50%;
+    background:var(--other-accent);
+  }
+  .mobile-other-row {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 20px;
+    grid-template-areas:"label score" "prior prior";
+    align-content:center;
+    gap:2px 3px;
+    min-width:0;
+    padding:4px 5px;
+    color:#3f484f;
+  }
+  .mobile-other-row + .mobile-other-row {
+    border-top:1px solid color-mix(in srgb, var(--other-accent) 12%, #e7e9eb);
+  }
+  .mobile-other-label {
+    grid-area:label;
+    min-width:0;
+    font-size:6.8px;
+    font-weight:850;
+    line-height:1.05;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .mobile-other-score {
+    grid-area:score;
+    justify-self:end;
+    font-size:14px;
+    line-height:1;
+  }
+  .mobile-other-prior {
+    grid-area:prior;
+    display:flex;
+    align-items:center;
+    gap:2px;
+    color:#747d83;
+    font-size:6px;
+    font-weight:800;
+    line-height:1;
+    white-space:nowrap;
+  }
+  .mobile-other-prior.checked {
+    color:#3d6f35;
+  }
+  .mobile-other-after.is-disabled {
+    opacity:.5;
+  }
+  .mobile-other-after .mobile-other-prior {
+    display:none;
+  }
+}
+
+@media (max-width:380px) {
+  .mobile-response-grid.has-other {
+    grid-template-columns:minmax(0,1fr) 82px;
+    gap:4px;
+    padding-left:4px;
+    padding-right:4px;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row {
+    grid-template-columns:34px minmax(0,1fr) 45px;
+  }
+  .mobile-response-grid.has-other .mobile-rating-row.is-primary .score-btn.semantic-score-btn {
+    width:20px !important;
+    min-width:20px !important;
+  }
+  .mobile-other-title { font-size:6.5px; }
+}
+
+/* =========================================================
+   V1.1.15 — MOBILE PREMIUM VISUAL DIRECTION
+   Layered neutral surfaces, restrained role accents, clearer hierarchy.
+   Desktop remains unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body {
+    --mobile-canvas:#ece8eb;
+    --mobile-panel:#f5f2f4;
+    --mobile-surface:#fbf9fa;
+    --mobile-surface-soft:#f1edef;
+    --mobile-line:#d9d1d6;
+    --mobile-line-soft:#e7e1e4;
+    --mobile-ink:#27252a;
+    --mobile-muted:#746d73;
+    --mobile-shadow:0 5px 16px rgba(45,31,40,.085), 0 1px 2px rgba(45,31,40,.06);
+    background:linear-gradient(180deg,
+      color-mix(in srgb, var(--variant-bg) 18%, #f4f0f2) 0,
+      var(--mobile-canvas) 54%,
+      #e7e2e5 100%) fixed !important;
+  }
+  body[data-checklist-id="maitre-soumise"] {
+    --mobile-canvas:#e8ecef;
+    --mobile-panel:#f1f4f6;
+    --mobile-surface:#f8fafb;
+    --mobile-surface-soft:#edf1f4;
+    --mobile-line:#d0d8de;
+    --mobile-line-soft:#e0e6ea;
+    --mobile-ink:#24292d;
+    --mobile-muted:#69747c;
+    --mobile-shadow:0 5px 16px rgba(31,48,60,.085), 0 1px 2px rgba(31,48,60,.06);
+  }
+
+  .table-shell,
+  .rows-wrap,
+  .left-pane,
+  .left-table {
+    background:transparent !important;
+  }
+  .table-body {
+    background:var(--mobile-canvas) !important;
+  }
+
+  .mobile-category-bar {
+    border-color:color-mix(in srgb, var(--variant-bg) 30%, var(--mobile-line)) !important;
+    background:color-mix(in srgb, var(--variant-bg) 7%, rgba(250,248,249,.96)) !important;
+    box-shadow:0 2px 9px rgba(35,27,32,.07);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+  }
+  .mobile-section-header {
+    border-top-color:var(--mobile-line) !important;
+    border-bottom-color:var(--mobile-line) !important;
+    background:linear-gradient(90deg,
+      color-mix(in srgb, var(--category-color,#9aa0a6) 10%, var(--mobile-panel)),
+      var(--mobile-panel) 42%,
+      color-mix(in srgb, var(--variant-bg) 4%, var(--mobile-panel))) !important;
+  }
+  .mobile-category-toggle { color:var(--mobile-ink) !important; }
+  .mobile-section-progress { color:var(--mobile-muted) !important; }
+  .mobile-section-separator,
+  .mobile-section-chevron { color:#8a8187 !important; }
+
+  .mobile-practice-card {
+    border-color:color-mix(in srgb, var(--variant-bg) 12%, var(--mobile-line)) !important;
+    border-radius:12px !important;
+    background:var(--mobile-surface) !important;
+    box-shadow:var(--mobile-shadow) !important;
+  }
+  .mobile-practice-head {
+    background:linear-gradient(135deg,
+      var(--mobile-surface) 0%,
+      color-mix(in srgb, var(--variant-bg) 5%, var(--mobile-surface)) 100%);
+    border-bottom:1px solid var(--mobile-line-soft);
+  }
+  .mobile-practice-name {
+    color:var(--mobile-ink) !important;
+    letter-spacing:-.01em;
+  }
+  .mobile-practice-explanation {
+    color:var(--mobile-muted) !important;
+  }
+  .mobile-practice-meta .session-pin-btn {
+    border-color:color-mix(in srgb, var(--variant-bg) 22%, var(--mobile-line)) !important;
+    background:color-mix(in srgb, var(--variant-bg) 5%, var(--mobile-surface)) !important;
+    box-shadow:0 1px 2px rgba(30,24,28,.06);
+  }
+  .mobile-practice-meta .session-pin-btn.selected {
+    background:color-mix(in srgb, var(--variant-bg) 18%, var(--mobile-surface)) !important;
+    border-color:color-mix(in srgb, var(--variant-bg) 48%, var(--mobile-line)) !important;
+  }
+
+  .mobile-rating-stack,
+  .mobile-response-grid.has-other .mobile-rating-stack {
+    border-color:var(--mobile-line) !important;
+    background:var(--mobile-surface-soft) !important;
+  }
+  .mobile-rating-row + .mobile-rating-row {
+    border-top-color:var(--mobile-line-soft) !important;
+  }
+  .mobile-rating-row.is-primary {
+    background:color-mix(in srgb, var(--variant-bg) 6%, var(--mobile-surface)) !important;
+  }
+  .mobile-rating-row.is-secondary {
+    background:var(--mobile-surface-soft) !important;
+  }
+  .mobile-rating-row.is-disabled {
+    color:#8b858a !important;
+    background:#e9e6e8 !important;
+  }
+  body[data-checklist-id="maitre-soumise"] .mobile-rating-row.is-disabled {
+    background:#e5e9ec !important;
+  }
+  .mobile-rating-label { color:#413c40; }
+  body[data-checklist-id="maitre-soumise"] .mobile-rating-label { color:#394248; }
+
+  .mobile-state-check {
+    border-color:var(--mobile-line) !important;
+    background:rgba(255,255,255,.62) !important;
+    color:#5d565c !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.75);
+  }
+  .mobile-state-check.checked {
+    background:color-mix(in srgb, var(--s5) 76%, #fff) !important;
+    border-color:color-mix(in srgb, #608e50 70%, var(--mobile-line)) !important;
+    color:#315126 !important;
+  }
+
+  .mobile-other-summary {
+    border-color:color-mix(in srgb, var(--other-accent) 34%, var(--mobile-line)) !important;
+    background:linear-gradient(180deg,
+      color-mix(in srgb, var(--other-accent) 10%, var(--mobile-surface)) 0%,
+      color-mix(in srgb, var(--other-accent) 5%, var(--mobile-panel)) 100%) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+  }
+  .mobile-other-title {
+    border-bottom-color:color-mix(in srgb, var(--other-accent) 22%, var(--mobile-line-soft)) !important;
+    background:color-mix(in srgb, var(--other-accent) 7%, transparent);
+  }
+  .mobile-other-row { color:#4c454a !important; }
+  .mobile-other-row + .mobile-other-row {
+    border-top-color:color-mix(in srgb, var(--other-accent) 16%, var(--mobile-line-soft)) !important;
+  }
+
+  .mobile-notes-block {
+    border-top-color:var(--mobile-line-soft) !important;
+    background:color-mix(in srgb, var(--variant-bg) 3%, var(--mobile-panel)) !important;
+  }
+  .mobile-notes-block.is-open {
+    background:var(--mobile-surface) !important;
+  }
+  .mobile-notes-toggle { color:#5e575c !important; }
+  body[data-checklist-id="maitre-soumise"] .mobile-notes-toggle { color:#566168 !important; }
+  .mobile-notes-chevron { color:#827a80 !important; }
+  .mobile-notes-editor .person-note-input {
+    border-color:var(--mobile-line) !important;
+    background:#fff !important;
+    box-shadow:inset 0 1px 2px rgba(25,20,23,.045);
+  }
+
+  .mobile-practice-card.row-random-picked {
+    outline-color:color-mix(in srgb, var(--variant-bg) 76%, #252329) !important;
+  }
+}

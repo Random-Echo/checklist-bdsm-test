@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.12";
+const APP_VERSION = "V1.1.15";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2577,7 +2577,6 @@ function renderMobilePracticeCard(item) {
   const togetherLabel = currentLang === "fr" ? "Ensemble" : "Together";
   const wantLabel = currentLang === "fr" ? "Envie" : "Want";
   const afterLabel = currentLang === "fr" ? "Après essai" : "After";
-  const infoLabel = currentLang === "fr" ? "Voir l’explication" : "View explanation";
   const notesOpen = mobileOpenNotes.has(Number(item.id));
   const hasNotes = mobileHasNotes(item);
   const notesLabel = currentLang === "fr" ? (hasNotes ? "Notes" : "Ajouter une note") : (hasNotes ? "Notes" : "Add a note");
@@ -2586,26 +2585,50 @@ function renderMobilePracticeCard(item) {
   const wantRowClass = experienced ? "is-secondary" : "is-primary";
   const afterRowClass = experienced ? "is-primary" : "is-secondary is-disabled";
 
-  return `<article class="mobile-practice-card${item._randomPicked ? ' row-random-picked' : ''}" data-row-id="${item.id}" data-category="${esc(item.category)}">
-    <div class="mobile-practice-heading">
-      <strong class="mobile-practice-name">${esc(localizedPractice(item))}</strong>
-      <button class="mobile-info-btn" type="button" aria-label="${esc(infoLabel)}" title="${esc(localizedExplanation(item))}" data-mobile-info="${item.id}">ⓘ</button>
+  const other = otherRole();
+  const otherFields = roleFields(other);
+  const otherExperienced = hasRoleExperience(item, other);
+  const otherPrior = !!item[otherFields.prior];
+  const otherWantValue = Number.isInteger(item[otherFields.want]) ? item[otherFields.want] : null;
+  const otherAfterValue = otherExperienced && Number.isInteger(item[otherFields.after]) ? item[otherFields.after] : null;
+  const otherWant = scoreButtonLabel(otherWantValue, other);
+  const otherAfter = otherAfterValue === null ? "—" : scoreButtonLabel(otherAfterValue, other);
+  const otherRoleName = roleLabel(other);
+  const otherSummary = showOtherRoleColumns ? `<aside class="mobile-other-summary role-${other}" aria-label="${esc(otherRoleName)}">
+    <div class="mobile-other-title"><span class="mobile-other-dot" aria-hidden="true"></span><span>${esc(otherRoleName)}</span></div>
+    <div class="mobile-other-row mobile-other-want">
+      <span class="mobile-other-label">${wantLabel}</span>
+      <span class="mobile-other-score" title="${esc(scoreDescription(otherWantValue))}">${otherWant}</span>
+      <span class="mobile-other-prior${otherPrior ? ' checked' : ''}"><span>${otherPrior ? '✓' : '□'}</span><span>${beforeLabel}</span></span>
     </div>
-    <div class="mobile-practice-meta">
-      <span class="mobile-practice-meta-left">${level}${risk}${compat}</span>
-      <span class="mobile-practice-meta-right">${pin}</span>
+    <div class="mobile-other-row mobile-other-after${otherExperienced ? '' : ' is-disabled'}">
+      <span class="mobile-other-label">${afterLabel}</span>
+      <span class="mobile-other-score" title="${otherAfterValue === null ? '' : esc(scoreDescription(otherAfterValue))}">${otherAfter}</span>
     </div>
-    <div class="mobile-rating-stack${experienced ? ' is-experienced' : ' is-new'}">
-      <div class="mobile-rating-row mobile-want-row ${wantRowClass}">
-        <span class="mobile-rating-label">${wantLabel}</span>
-        <div class="mobile-score-wrap">${scoreButtons(item,fields.want,true,currentRole)}</div>
-        <button class="mobile-state-check${priorChecked ? ' checked' : ''}" data-action="${fields.prior}" data-id="${item.id}" type="button" ${editableRole ? '' : 'disabled'} aria-pressed="${priorChecked ? 'true' : 'false'}"><span class="mobile-check-box">${priorChecked ? '✓' : '□'}</span><span>${beforeLabel}</span></button>
+  </aside>` : "";
+
+  return `<article class="mobile-practice-card${item._randomPicked ? ' row-random-picked' : ''}${showOtherRoleColumns ? ' shows-other-role' : ''}" data-row-id="${item.id}" data-category="${esc(item.category)}">
+    <div class="mobile-practice-head">
+      <div class="mobile-practice-copy">
+        <strong class="mobile-practice-name">${esc(localizedPractice(item))}</strong>
+        <span class="mobile-practice-explanation">${esc(localizedExplanation(item) || (currentLang === "fr" ? "Aucune explication disponible." : "No explanation available."))}</span>
       </div>
-      <div class="mobile-rating-row mobile-after-row ${afterRowClass}">
-        <span class="mobile-rating-label">${afterLabel}</span>
-        <div class="mobile-score-wrap">${experienced ? scoreButtons(item,fields.after,true,currentRole) : '<span class="mobile-after-placeholder">—</span>'}</div>
-        <button class="mobile-state-check${item.doneTogether ? ' checked' : ''}" data-action="doneTogether" data-id="${item.id}" type="button" ${sharedEditable ? '' : 'disabled'} aria-pressed="${item.doneTogether ? 'true' : 'false'}"><span class="mobile-check-box">${item.doneTogether ? '✓' : '□'}</span><span>${togetherLabel}</span></button>
+      <div class="mobile-practice-meta">${level}${risk}${compat}${pin}</div>
+    </div>
+    <div class="mobile-response-grid${showOtherRoleColumns ? ' has-other' : ''}">
+      <div class="mobile-rating-stack${experienced ? ' is-experienced' : ' is-new'}">
+        <div class="mobile-rating-row mobile-want-row ${wantRowClass}">
+          <span class="mobile-rating-label">${wantLabel}</span>
+          <div class="mobile-score-wrap">${scoreButtons(item,fields.want,true,currentRole)}</div>
+          <button class="mobile-state-check${priorChecked ? ' checked' : ''}" data-action="${fields.prior}" data-id="${item.id}" type="button" ${editableRole ? '' : 'disabled'} aria-pressed="${priorChecked ? 'true' : 'false'}"><span class="mobile-check-box">${priorChecked ? '✓' : '□'}</span><span>${beforeLabel}</span></button>
+        </div>
+        <div class="mobile-rating-row mobile-after-row ${afterRowClass}">
+          <span class="mobile-rating-label">${afterLabel}</span>
+          <div class="mobile-score-wrap">${experienced ? scoreButtons(item,fields.after,true,currentRole) : '<span class="mobile-after-placeholder">—</span>'}</div>
+          <button class="mobile-state-check${item.doneTogether ? ' checked' : ''}" data-action="doneTogether" data-id="${item.id}" type="button" ${sharedEditable ? '' : 'disabled'} aria-pressed="${item.doneTogether ? 'true' : 'false'}"><span class="mobile-check-box">${item.doneTogether ? '✓' : '□'}</span><span>${togetherLabel}</span></button>
+        </div>
       </div>
+      ${otherSummary}
     </div>
     <div class="mobile-notes-block${notesOpen ? ' is-open' : ''}${hasNotes ? ' has-notes' : ''}">
       <button class="mobile-notes-toggle" type="button" data-mobile-notes-toggle="${item.id}" aria-expanded="${notesOpen ? 'true' : 'false'}" aria-label="${esc(notesAria)}">
