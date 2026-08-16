@@ -7370,3 +7370,24 @@ body.first-use-open{overflow:hidden}
     font-size:8.8px;
   }
 }
+
+
+/* =========================================================
+   V1.1.33 — LEGEND CONSISTENCY + CLEAN READING-MODE LINES
+   Restores the same emojis used by the actual score buttons and
+   splits the reading-mode explanation into one idea per line.
+   ========================================================= */
+.reading-legend-card .reading-legend-line {
+  display:block;
+  width:100%;
+}
+.reading-legend-card .reading-legend-subtitle {
+  margin-top:2px;
+  font-weight:800;
+  color:#41494f;
+}
+.reading-legend-card .reading-legend-pin {
+  margin-top:2px;
+  padding-top:4px;
+  border-top:1px solid rgba(59,67,73,.10);
+}
