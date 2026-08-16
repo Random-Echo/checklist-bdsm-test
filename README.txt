@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.33
+CHECKLISTS D/s — V1.1.34
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -75,3 +75,5 @@ V1.1.25 : mode lecture mobile enrichi et compact : titre puis explication, ligne
 
 V1.1.31 : les pictogrammes de risque mobile (! / ⚠) ouvrent désormais au toucher une vraie info-bulle compacte avec l’explication du niveau de risque ; la bulle se ferme au toucher extérieur, au défilement, au redimensionnement ou avec Échap. Le bouton épingle reste fonctionnel en lecture et le desktop est inchangé.
 V1.1.33 : cohérence de la légende « Choix » avec les boutons réels : ajout de ⏳ pour « Pas maintenant » et 😐 pour « Neutre ». L’explication du mode lecture est désormais découpée proprement avec un retour à la ligne par indicateur (Homme, Femme, résultat commun, état non) et une ligne séparée pour l’épingle.
+
+V1.1.34 : correction du bloc de statistiques : une pastille de statistique encore vide n'est plus affichée, ce qui supprime la capsule blanche parasite visible avant « Déjà fait avant ». Elle réapparaît automatiquement dès qu'elle contient une valeur.
