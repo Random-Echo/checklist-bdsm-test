@@ -7098,3 +7098,96 @@ body.first-use-open{overflow:hidden}
     font-size:7px !important;
   }
 }
+
+
+/* =========================================================
+   V1.1.29 — MOBILE: PIN AS STATUS + RISK ONLY WHEN NEEDED
+   - Read-only mobile cards no longer show level.
+   - Risk is shown only for caution/high practices, under the pin.
+   - The pin is now a pure status badge shown only when pinned,
+     which avoids looking like a non-working button.
+   Desktop remains unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
+    grid-template-columns:20px minmax(0,1fr) auto !important;
+    grid-template-areas:"pin copy answers" !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-pinrail {
+    grid-area:pin !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    justify-content:flex-start !important;
+    gap:4px !important;
+    min-width:0 !important;
+    padding-top:1px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-pin {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:18px !important;
+    height:18px !important;
+    border-radius:6px !important;
+    font-size:11px !important;
+    line-height:1 !important;
+    color:#5f4b06 !important;
+    background:color-mix(in srgb, #f4d35e 72%, rgba(255,255,255,.54)) !important;
+    border:1px solid rgba(141,109,14,.28) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35) !important;
+    opacity:1 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-side-risk {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-width:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-side-risk .risk-badge {
+    margin-left:0 !important;
+    min-width:17px !important;
+    width:17px !important;
+    height:17px !important;
+    padding:0 !important;
+    border-radius:999px !important;
+    font-size:9px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-copy {
+    grid-area:copy !important;
+    min-width:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-title-line,
+  body[data-readonly="true"] .mobile-readonly-meta-inline,
+  body[data-readonly="true"] .mobile-readonly-level-badge,
+  body[data-readonly="true"] .mobile-readonly-risk,
+  body[data-readonly="true"] .mobile-readonly-risk-icon,
+  body[data-readonly="true"] .mobile-readonly-risk-text {
+    display:none !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
+    grid-template-columns:18px minmax(0,1fr) auto !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-pin {
+    width:17px !important;
+    height:17px !important;
+    font-size:10px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-side-risk .risk-badge {
+    width:16px !important;
+    min-width:16px !important;
+    height:16px !important;
+    font-size:8px !important;
+  }
+}
