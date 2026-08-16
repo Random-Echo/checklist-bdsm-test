@@ -7747,3 +7747,168 @@ body[data-readonly="true"] #toggleOtherRole[hidden] {
     font-size:14.5px !important;
   }
 }
+
+/* =========================================================
+   V1.1.41 — MOBILE READING: PRECISE HEADER/RESULT ALIGNMENT
+   The sticky category bar now uses the exact same three-column geometry
+   as the read-only result area. Personal results stay compact; the couple
+   result has its own wider visual column and the labels sit directly below.
+   Desktop unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] {
+    --reading-person-col:29px;
+    --reading-common-col:39px;
+    --reading-common-box:35px;
+    --reading-results-gap:3px;
+  }
+
+  body[data-readonly="true"] .mobile-category-bar {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+    align-items:center !important;
+    gap:8px !important;
+    min-height:39px !important;
+    padding:4px 7px 4px 8px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-main {
+    min-width:0 !important;
+    align-self:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide {
+    display:grid !important;
+    grid-template-rows:29px 9px !important;
+    row-gap:1px !important;
+    align-items:start !important;
+    justify-items:stretch !important;
+    width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
+    min-width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-top,
+  body[data-readonly="true"] .mobile-category-guide-bottom,
+  body[data-readonly="true"] .mobile-readonly-answers {
+    display:grid !important;
+    grid-template-columns:var(--reading-person-col) var(--reading-person-col) var(--reading-common-col) !important;
+    column-gap:var(--reading-results-gap) !important;
+    align-items:start !important;
+    justify-content:end !important;
+    width:calc(var(--reading-person-col) * 2 + var(--reading-common-col) + var(--reading-results-gap) * 2) !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-top {
+    height:29px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom {
+    height:9px !important;
+    align-items:center !important;
+    color:#697179 !important;
+    font-size:6.5px !important;
+    font-weight:850 !important;
+    line-height:1 !important;
+    letter-spacing:-.025em !important;
+    text-align:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom > span {
+    display:block !important;
+    min-width:0 !important;
+    overflow:hidden !important;
+    text-overflow:clip !important;
+    white-space:nowrap !important;
+    text-align:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip {
+    align-self:start !important;
+    justify-self:center !important;
+    width:29px !important;
+    min-width:29px !important;
+    height:26px !important;
+    min-height:26px !important;
+    padding:0 !important;
+    border-radius:7px !important;
+    font-size:13px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
+    justify-self:end !important;
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    height:29px !important;
+    min-height:29px !important;
+    border-radius:8px !important;
+    font-size:14px !important;
+  }
+
+  /* Match the practice rows to the exact same header geometry. */
+  body[data-readonly="true"] .mobile-readonly-answers {
+    gap:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack {
+    min-width:var(--reading-person-col) !important;
+    width:var(--reading-person-col) !important;
+    justify-self:center !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common {
+    margin-left:0 !important;
+    min-width:var(--reading-common-box) !important;
+    width:var(--reading-common-box) !important;
+    justify-self:end !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-common {
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    height:29px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-result-stack.common .mobile-readonly-experience-mark {
+    justify-self:center !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] {
+    --reading-person-col:28px;
+    --reading-common-col:36px;
+    --reading-common-box:33px;
+    --reading-results-gap:2px;
+  }
+
+  body[data-readonly="true"] .mobile-category-bar {
+    gap:6px !important;
+    min-height:38px !important;
+    padding-left:6px !important;
+    padding-right:6px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide {
+    grid-template-rows:28px 9px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip {
+    width:28px !important;
+    min-width:28px !important;
+    height:25px !important;
+    min-height:25px !important;
+    font-size:12px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide .guide-chip-couple {
+    width:var(--reading-common-box) !important;
+    min-width:var(--reading-common-box) !important;
+    height:28px !important;
+    min-height:28px !important;
+    font-size:13px !important;
+  }
+
+  body[data-readonly="true"] .mobile-category-guide-bottom {
+    font-size:6.1px !important;
+  }
+}
