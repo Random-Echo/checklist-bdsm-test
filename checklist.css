@@ -6905,3 +6905,196 @@ body.first-use-open{overflow:hidden}
     min-width:28px !important;
   }
 }
+
+/* =========================================================
+   V1.1.28 — MOBILE: TITLE META + LEFT PIN IN READING MODE
+   - Read-only card now shows the pin on the far left.
+   - Practice title keeps level + risk inline, explanation below.
+   - Edit mode keeps the other partner note clearly greyed.
+   Desktop remains unchanged.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body:not([data-readonly="true"]) .mobile-notes-editor .shared-note-row.is-other-person {
+    opacity:.9 !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-editor .shared-note-row.is-other-person .person-note-input {
+    background:#e7eaed !important;
+    border-color:#cdd2d7 !important;
+    color:#6f767c !important;
+    box-shadow:inset 0 1px 1px rgba(40,48,54,.05) !important;
+  }
+
+  body:not([data-readonly="true"]) .mobile-notes-editor .shared-note-row.is-other-person .shared-note-person {
+    color:#80878d !important;
+  }
+
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
+    display:grid !important;
+    grid-template-columns:20px minmax(0,1fr) auto !important;
+    grid-template-areas:"pin copy answers" !important;
+    align-items:start !important;
+    column-gap:6px !important;
+    row-gap:0 !important;
+    padding:6px 7px 5px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-pinrail {
+    grid-area:pin !important;
+    display:flex !important;
+    align-items:flex-start !important;
+    justify-content:flex-start !important;
+    min-width:0 !important;
+    padding-top:1px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-pin {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:18px !important;
+    height:18px !important;
+    border-radius:6px !important;
+    font-size:11px !important;
+    line-height:1 !important;
+    color:#8f8a8e !important;
+    background:rgba(255,255,255,.36) !important;
+    border:1px solid rgba(71,62,67,.12) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35) !important;
+    opacity:.78 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-pin.is-selected {
+    color:#5f4b06 !important;
+    background:color-mix(in srgb, #f4d35e 72%, rgba(255,255,255,.54)) !important;
+    border-color:rgba(141,109,14,.28) !important;
+    opacity:1 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-copy {
+    grid-area:copy !important;
+    min-width:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-title-line {
+    display:flex !important;
+    align-items:flex-start !important;
+    flex-wrap:wrap !important;
+    gap:4px !important;
+    min-width:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-title-line .mobile-readonly-practice {
+    display:inline !important;
+    width:auto !important;
+    min-width:0 !important;
+    margin:0 !important;
+    flex:0 1 auto !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-meta-inline {
+    display:inline-flex !important;
+    align-items:center !important;
+    flex-wrap:wrap !important;
+    gap:4px !important;
+    min-width:0 !important;
+    margin-top:1px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-level-badge {
+    height:18px !important;
+    min-height:18px !important;
+    padding:0 6px !important;
+    border-radius:7px !important;
+    font-size:8px !important;
+    line-height:1 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-risk {
+    display:inline-flex !important;
+    align-items:center !important;
+    gap:3px !important;
+    height:18px !important;
+    min-height:18px !important;
+    padding:0 6px !important;
+    border-radius:7px !important;
+    border:1px solid rgba(71,62,67,.12) !important;
+    background:rgba(255,255,255,.44) !important;
+    color:#4f474b !important;
+    box-sizing:border-box !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.34) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-risk-icon {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:9px !important;
+    line-height:1 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-risk-text {
+    display:inline-block !important;
+    font-size:7.4px !important;
+    font-weight:850 !important;
+    line-height:1 !important;
+    letter-spacing:-.01em !important;
+    white-space:nowrap !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-risk.risk-normal {
+    color:#476240 !important;
+    background:rgba(232,243,228,.72) !important;
+    border-color:rgba(95,130,86,.24) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-risk.risk-caution {
+    color:#7b5a1e !important;
+    background:rgba(255,243,210,.82) !important;
+    border-color:rgba(171,125,31,.26) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-risk.risk-high {
+    color:#7f3f1a !important;
+    background:rgba(252,225,208,.82) !important;
+    border-color:rgba(179,96,43,.28) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-explanation {
+    margin-top:2px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answers {
+    grid-area:answers !important;
+    align-self:start !important;
+    justify-self:end !important;
+    margin:0 !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card .mobile-readonly-main {
+    grid-template-columns:18px minmax(0,1fr) auto !important;
+    column-gap:5px !important;
+    padding-left:6px !important;
+    padding-right:6px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-pin {
+    width:17px !important;
+    height:17px !important;
+    font-size:10px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-meta-inline {
+    gap:3px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-risk {
+    padding:0 5px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-risk-text {
+    font-size:7px !important;
+  }
+}

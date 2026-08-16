@@ -2663,10 +2663,10 @@ function renderMobilePracticeCard(item) {
         ? `${currentLang === "fr" ? "Résultat commun" : "Common result"} : ${scoreDescription(commonVisualScore)}`
         : "");
 
-  // Mobile reading mode: title/explanation on the left and three compact
-  // result columns on the right. The small mark directly below each personal
-  // result means "already done before"; the mark below the common result means
-  // "done together". Existing notes remain static below the card.
+  // Mobile reading mode: pin on the left, title + meta on the middle,
+  // and the three compact result columns on the right. The small mark
+  // directly below each personal result means "already done before";
+  // the mark below the common result means "done together".
   if (readOnly) {
     const maleValue = effectiveRoleScore(item, MALE_ROLE);
     const femaleValue = effectiveRoleScore(item, FEMALE_ROLE);
@@ -2692,10 +2692,27 @@ function renderMobilePracticeCard(item) {
     const staticNotes = hasNotes
       ? `<div class="mobile-readonly-static-notes"><div class="mobile-readonly-static-notes-title"><span aria-hidden="true">💬</span><span>${currentLang === "fr" ? "Notes" : "Notes"}</span></div>${mobileReadOnlyNotesHtml(item)}</div>`
       : "";
+    const levelValue = item.level || 3;
+    const levelMode = levelValue === 1 ? "beginner" : levelValue === 2 ? "confirmed" : "advanced";
+    const readonlyLevel = `<span class="level-badge mobile-readonly-level-badge level-${levelValue}" title="${esc(experienceLabel(levelMode))}" aria-label="${esc(experienceLabel(levelMode))}">${levelShortLabel(levelValue)}</span>`;
+    const riskState = ["normal", "caution", "high"].includes(item.risk) ? item.risk : "normal";
+    const riskIcon = riskState === "high" ? "⚠" : riskState === "caution" ? "!" : "✓";
+    const riskTitle = `${currentLang === "fr" ? "Risque" : "Risk"} : ${riskLabel(riskState)}`;
+    const readonlyRisk = `<span class="mobile-readonly-risk risk-${riskState}" title="${esc(riskTitle)}" aria-label="${esc(riskTitle)}"><span class="mobile-readonly-risk-icon" aria-hidden="true">${riskIcon}</span><span class="mobile-readonly-risk-text">${esc(riskLabel(riskState))}</span></span>`;
+    const pinActive = !!selected;
+    const pinTitle = currentLang === "fr"
+      ? (pinActive ? "Pratique épinglée" : "Pratique non épinglée")
+      : (pinActive ? "Pinned practice" : "Practice not pinned");
     return `<article class="mobile-practice-card mobile-readonly-card${item._randomPicked ? ' row-random-picked' : ''}${commonVisualClass}"${commonVisualStyle} data-row-id="${item.id}" data-category="${esc(item.category)}">
       <div class="mobile-readonly-main">
+        <div class="mobile-readonly-pinrail">
+          <span class="mobile-readonly-pin${pinActive ? ' is-selected' : ''}" title="${esc(pinTitle)}" aria-label="${esc(pinTitle)}">📌</span>
+        </div>
         <div class="mobile-readonly-copy">
-          <strong class="mobile-readonly-practice" title="${esc(localizedPractice(item))}">${esc(localizedPractice(item))}</strong>
+          <div class="mobile-readonly-title-line">
+            <strong class="mobile-readonly-practice" title="${esc(localizedPractice(item))}">${esc(localizedPractice(item))}</strong>
+            <span class="mobile-readonly-meta-inline">${readonlyLevel}${readonlyRisk}</span>
+          </div>
           <span class="mobile-readonly-explanation">${esc(explanation)}</span>
         </div>
         <div class="mobile-readonly-answers" aria-label="${esc(currentLang === "fr" ? "Réponses du couple" : "Couple answers")}">

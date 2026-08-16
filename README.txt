@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.27
+CHECKLISTS D/s — V1.1.28
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -73,4 +73,4 @@ V1.1.24 : finition visuelle du mode lecture mobile : réponses rendues sous form
 V1.1.26 : mode lecture mobile réorganisé : les trois résultats restent alignés à droite du titre/explication, les états « Avant » H/F et « Ensemble » sont toujours visibles (oui/non), et les notes existantes sont affichées directement en bas sans volet dépliable. Coloration par résultat commun conservée. Desktop inchangé.
 V1.1.25 : mode lecture mobile enrichi et compact : titre puis explication, ligne de réponses H/F + résultat commun, indicateurs positifs « Avant » par personne et « Ensemble » commun, coloration exacte selon le résultat commun et notes repliables en lecture seule comme en mode édition. Desktop inchangé.
 
-V1.1.27 : états d’expérience alignés sous les résultats en lecture mobile ; note partenaire grisée en édition mobile. Desktop inchangé.
+V1.1.28 : lecture mobile affinée : épingle déplacée à gauche du bloc titre/explication, niveau et risque ajoutés à la ligne du titre, tout en conservant les résultats à droite ; en édition mobile, la note du partenaire est davantage grisée. Desktop inchangé.
