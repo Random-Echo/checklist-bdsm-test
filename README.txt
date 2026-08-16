@@ -1,4 +1,4 @@
-CHECKLISTS D/s — V1.1.22
+CHECKLISTS D/s — V1.1.24
 
 État du projet
 - 3 pages : index.html, maitresse-soumis.html et maitre-soumise.html.
@@ -66,3 +66,6 @@ V1.1.20 : finalisation de la nouvelle vue mobile en cartes, explications via inf
 V1.1.20 : direction artistique mobile premium : surfaces superposées légèrement teintées, cartes plus distinctes, contraste renforcé entre contenu / préférences / notes, accents bleu-prune plus sobres et résumé de l'autre rôle mieux intégré. Desktop inchangé.
 V1.1.21 : ajustement mobile portrait de la barre « Outils & options » : décalée légèrement vers le bas pour équilibrer l’espace vertical, sans modifier la vue desktop.
 V1.1.22 : correction propre du rendu mobile quand le panneau de l’autre rôle est masqué : espacement resserré entre les 7 choix, boutons Avant / Ensemble élargis et coches agrandies ; le mode avec partenaire reste compact et le desktop est inchangé.
+V1.1.24 : nouveau mode lecture mobile compact : une seule ligne par pratique avec réponse Homme, réponse Femme et résultat commun ; les contrôles d’édition, explication, niveau, risque et épingle ne sont plus rendus dans ce mode ; les notes existantes H/F apparaissent directement sous la ligne. Desktop inchangé.
+
+V1.1.24 : finition visuelle du mode lecture mobile : réponses rendues sous forme de trois puces emoji uniquement (Homme bleu, Femme prune, résultat commun), davantage de largeur rendue au nom de pratique, rythme vertical resserré et notes légèrement plus lisibles. Desktop inchangé.

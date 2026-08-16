@@ -8,7 +8,7 @@ for (let i = 0; i < initialItems.length; i++) {
 }
 const catalogIdSet = new Set(initialItems.map(item => Number(item.id)));
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.22";
+const APP_VERSION = "V1.1.24";
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -2514,6 +2514,18 @@ function mobileHasNotes(item) {
   return !!((item.noteFemale || "").trim() || (item.noteMale || "").trim());
 }
 
+function mobileReadOnlyNotesHtml(item) {
+  const notes = [
+    { person:"male", field:"noteMale" },
+    { person:"female", field:"noteFemale" }
+  ].map(({person, field}) => ({ person, text:(item[field] || "").trim() })).filter(entry => entry.text);
+  if (!notes.length) return "";
+  const notesLabel = currentLang === "fr" ? "Notes" : "Notes";
+  return `<div class="mobile-readonly-notes" aria-label="${notesLabel}">
+    ${notes.map(({person, text}) => `<div class="mobile-readonly-note person-${person}"><span class="mobile-readonly-note-person">${personShortLabel(person)}</span><span class="mobile-readonly-note-text">${esc(text)}</span></div>`).join("")}
+  </div>`;
+}
+
 function ensureMobilePracticeInfoModal() {
   let modal = document.getElementById("mobilePracticeInfoModal");
   if (modal) return modal;
@@ -2635,6 +2647,32 @@ function renderMobilePracticeCard(item) {
     : (commonVisualScore !== null
         ? `${currentLang === "fr" ? "Résultat commun" : "Common result"} : ${scoreDescription(commonVisualScore)}`
         : "");
+
+  // Mobile reading mode is intentionally a separate compact presentation:
+  // one practice line, male answer, female answer, common result, then notes only if present.
+  // No editing controls are rendered here, which keeps read mode genuinely minimal and
+  // avoids CSS-only hiding of the editable card structure. Desktop keeps its historic table.
+  if (readOnly) {
+    const maleValue = effectiveRoleScore(item, MALE_ROLE);
+    const femaleValue = effectiveRoleScore(item, FEMALE_ROLE);
+    const maleEmoji = scoreButtonLabel(maleValue, MALE_ROLE);
+    const femaleEmoji = scoreButtonLabel(femaleValue, FEMALE_ROLE);
+    const maleTitle = `${personShortLabel("male")} · ${roleLabel(MALE_ROLE)} · ${scoreDescription(maleValue)}`;
+    const femaleTitle = `${personShortLabel("female")} · ${roleLabel(FEMALE_ROLE)} · ${scoreDescription(femaleValue)}`;
+    const commonEmoji = commonVisualEmoji || "?";
+    const commonTitle = commonVisualTitle || (currentLang === "fr" ? "Résultat commun non renseigné" : "Common result not rated");
+    return `<article class="mobile-practice-card mobile-readonly-card${item._randomPicked ? ' row-random-picked' : ''}${commonVisualClass}"${commonVisualStyle} data-row-id="${item.id}" data-category="${esc(item.category)}">
+      <div class="mobile-readonly-line">
+        <strong class="mobile-readonly-practice" title="${esc(localizedPractice(item))}">${esc(localizedPractice(item))}</strong>
+        <div class="mobile-readonly-answers" aria-label="${esc(currentLang === "fr" ? "Réponses du couple" : "Couple answers")}">
+          <span class="mobile-readonly-answer person-male" title="${esc(maleTitle)}" aria-label="${esc(maleTitle)}"><span class="mobile-readonly-score">${maleEmoji}</span></span>
+          <span class="mobile-readonly-answer person-female" title="${esc(femaleTitle)}" aria-label="${esc(femaleTitle)}"><span class="mobile-readonly-score">${femaleEmoji}</span></span>
+          <span class="mobile-readonly-common${commonVisualEmoji ? ' has-value' : ''}" title="${esc(commonTitle)}" aria-label="${esc(commonTitle)}"><span class="mobile-readonly-score">${commonEmoji}</span></span>
+        </div>
+      </div>
+      ${mobileReadOnlyNotesHtml(item)}
+    </article>`;
+  }
 
   const otherSummary = showOtherRoleColumns ? `<aside class="mobile-other-summary role-${other}" aria-label="${esc(otherRoleName)}">
     <div class="mobile-other-title"><span class="mobile-other-dot" aria-hidden="true"></span><span>${esc(otherRoleName)}</span></div>

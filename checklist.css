@@ -6139,3 +6139,279 @@ body.first-use-open{overflow:hidden}
     transform:translateY(3px) !important;
   }
 }
+
+/* =========================================================
+   V1.1.23 — MOBILE READING MODE: ONE-LINE COMPACT CARDS
+   Read mode gets its own minimal markup: practice + H/F answers +
+   common result on one line, with existing notes directly below.
+   Desktop is intentionally untouched.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card {
+    overflow:hidden !important;
+    border-radius:10px !important;
+    min-height:0 !important;
+    padding:0 !important;
+  }
+
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card.has-common-result {
+    background:color-mix(in srgb, var(--mobile-common-color) 38%, var(--mobile-surface)) !important;
+    border-color:color-mix(in srgb, var(--mobile-common-color) 60%, var(--mobile-line)) !important;
+    box-shadow:0 2px 7px color-mix(in srgb, var(--mobile-common-color) 16%, rgba(35,27,32,.10)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-line {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+    align-items:center !important;
+    gap:6px !important;
+    min-width:0 !important;
+    min-height:34px !important;
+    padding:4px 6px 4px 8px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-practice {
+    display:block !important;
+    min-width:0 !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+    color:var(--mobile-ink) !important;
+    font-size:11.5px !important;
+    font-weight:850 !important;
+    line-height:1.05 !important;
+    letter-spacing:-.012em !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answers {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-end !important;
+    gap:3px !important;
+    flex:0 0 auto !important;
+    white-space:nowrap !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answer,
+  body[data-readonly="true"] .mobile-readonly-common {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:2px !important;
+    min-width:34px !important;
+    height:25px !important;
+    padding:0 4px !important;
+    border:1px solid rgba(70,61,67,.12) !important;
+    border-radius:7px !important;
+    box-sizing:border-box !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answer.person-male {
+    background:color-mix(in srgb, var(--male-color,#2f7395) 22%, rgba(255,255,255,.78)) !important;
+    border-color:color-mix(in srgb, var(--male-color,#2f7395) 45%, rgba(70,61,67,.12)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answer.person-female {
+    background:color-mix(in srgb, var(--female-color,#8b316e) 22%, rgba(255,255,255,.78)) !important;
+    border-color:color-mix(in srgb, var(--female-color,#8b316e) 45%, rgba(70,61,67,.12)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-common {
+    min-width:35px !important;
+    background:rgba(255,255,255,.55) !important;
+    border-color:color-mix(in srgb, var(--mobile-common-color,#8f878c) 48%, rgba(70,61,67,.14)) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-person,
+  body[data-readonly="true"] .mobile-readonly-common-mark {
+    font-size:7px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    color:#51494e !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-score {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-width:13px !important;
+    font-size:13px !important;
+    line-height:1 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-notes {
+    display:grid !important;
+    gap:2px !important;
+    padding:3px 7px 5px !important;
+    border-top:1px solid color-mix(in srgb, var(--mobile-common-color,#8f878c) 20%, var(--mobile-line-soft)) !important;
+    background:rgba(255,255,255,.36) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-note {
+    display:grid !important;
+    grid-template-columns:18px minmax(0,1fr) !important;
+    align-items:start !important;
+    gap:4px !important;
+    min-width:0 !important;
+    font-size:8px !important;
+    line-height:1.2 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-note-person {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:18px !important;
+    min-height:16px !important;
+    border-radius:5px !important;
+    font-size:7px !important;
+    font-weight:900 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-note.person-male .mobile-readonly-note-person {
+    background:color-mix(in srgb, var(--male-color,#2f7395) 24%, #fff) !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-note.person-female .mobile-readonly-note-person {
+    background:color-mix(in srgb, var(--female-color,#8b316e) 24%, #fff) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-note-text {
+    min-width:0 !important;
+    color:#4e474b !important;
+    overflow-wrap:anywhere !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] .mobile-readonly-line {
+    gap:4px !important;
+    padding-left:6px !important;
+    padding-right:5px !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-practice {
+    font-size:10.8px !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-answer,
+  body[data-readonly="true"] .mobile-readonly-common {
+    min-width:31px !important;
+    height:24px !important;
+    padding-left:3px !important;
+    padding-right:3px !important;
+  }
+  body[data-readonly="true"] .mobile-readonly-answers {
+    gap:2px !important;
+  }
+}
+
+  body[data-readonly="true"] .mobile-readonly-note-text {
+    white-space:pre-wrap !important;
+  }
+
+
+/* =========================================================
+   V1.1.24 — MOBILE READING MODE: VISUAL POLISH
+   Emoji-only answer chips, more room for the practice title,
+   tighter rhythm and clearer notes. Desktop remains untouched.
+   ========================================================= */
+@media (max-width:650px), (orientation:landscape) and (max-height:520px) and (max-width:1100px) {
+  body[data-readonly="true"] .mobile-practice-card.mobile-readonly-card {
+    border-radius:9px !important;
+    margin-bottom:4px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-line {
+    grid-template-columns:minmax(0,1fr) auto !important;
+    gap:7px !important;
+    min-height:32px !important;
+    padding:3px 5px 3px 8px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-practice {
+    font-size:12px !important;
+    font-weight:850 !important;
+    line-height:1.08 !important;
+    letter-spacing:-.015em !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answers {
+    gap:3px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answer,
+  body[data-readonly="true"] .mobile-readonly-common {
+    width:28px !important;
+    min-width:28px !important;
+    height:26px !important;
+    padding:0 !important;
+    gap:0 !important;
+    border-radius:7px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-common {
+    width:30px !important;
+    min-width:30px !important;
+    background:rgba(255,255,255,.52) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-score {
+    min-width:0 !important;
+    font-size:14px !important;
+    line-height:1 !important;
+  }
+
+  /* Role identity is intentionally encoded only by the permanent blue/prune
+     chip styling; no extra M/F glyphs consume horizontal room in read mode. */
+  body[data-readonly="true"] .mobile-readonly-person,
+  body[data-readonly="true"] .mobile-readonly-common-mark {
+    display:none !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-notes {
+    gap:2px !important;
+    padding:4px 7px 5px !important;
+    background:rgba(255,255,255,.30) !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-note {
+    grid-template-columns:19px minmax(0,1fr) !important;
+    gap:5px !important;
+    font-size:8.7px !important;
+    line-height:1.22 !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-note-person {
+    width:19px !important;
+    min-height:17px !important;
+    border-radius:5px !important;
+    font-size:7.4px !important;
+  }
+}
+
+@media (max-width:360px) {
+  body[data-readonly="true"] .mobile-readonly-line {
+    gap:5px !important;
+    padding-left:6px !important;
+    padding-right:4px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-practice {
+    font-size:11.4px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-answer,
+  body[data-readonly="true"] .mobile-readonly-common {
+    width:26px !important;
+    min-width:26px !important;
+    height:25px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-common {
+    width:28px !important;
+    min-width:28px !important;
+  }
+
+  body[data-readonly="true"] .mobile-readonly-score {
+    font-size:13.5px !important;
+  }
+}
