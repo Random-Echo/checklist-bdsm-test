@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.72";
+const APP_VERSION = "V1.1.73";
 const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1070,7 +1070,7 @@ function renderEditorSlot(entity,person,slot,profile) {
       <div class="individual-score-row">${editorScoreButtons(entity.id,slot,state)}</div>
       <div class="individual-slot-tools">
         <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${currentLang==="fr"?"Déjà essayé":"Already tried"}"><span>${state.prior?'✓':'□'}</span><span class="individual-prior-text">${currentLang==="fr"?"Essayé":"Tried"}</span></button>
-        <button class="individual-note-toggle${hasNote?' has-note':''}" data-personal-note-toggle type="button" aria-expanded="false" title="${esc(noteTitle)}"><span aria-hidden="true">📝</span>${hasNote?'<i aria-hidden="true"></i>':''}<span class="sr-only">${esc(noteTitle)}</span></button>
+        <button class="individual-note-toggle${hasNote?' has-note':''}" data-personal-note-toggle type="button" aria-expanded="false" aria-label="${esc(noteTitle)}" title="${esc(noteTitle)}"><span aria-hidden="true">📝</span>${hasNote?'<i aria-hidden="true"></i>':''}</button>
       </div>
     </div>
     ${showAfter?`<div class="individual-after"><span class="individual-field-label">${currentLang==="fr"?"Après":"After"}</span><div class="individual-score-row">${editorAfterButtons(entity.id,slot,state)}</div></div>`:""}

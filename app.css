@@ -3051,7 +3051,7 @@ header .role-choice {
 .individual-slot-tools { display:flex; align-items:center; gap:3px; }
 .individual-prior { display:inline-flex; align-items:center; justify-content:center; gap:2px; min-height:28px; border:1px solid #d6d6d6; border-radius:6px; background:#fff; padding:3px 6px; color:#686868; font-size:.62rem; font-weight:750; white-space:nowrap; cursor:pointer; }
 .individual-prior.checked { border-color:#7aa47a; background:#f1f8f1; color:#356435; }
-.individual-note-toggle { position:relative; display:inline-flex; align-items:center; justify-content:center; width:28px; min-width:28px; height:28px; padding:0; border:1px solid #d6d6d6; border-radius:6px; background:#fff; color:#666; font-size:.72rem; cursor:pointer; }
+.individual-note-toggle { position:relative; display:inline-flex; align-items:center; justify-content:center; width:28px; min-width:28px; height:28px; padding:0; overflow:hidden; border:1px solid #d6d6d6; border-radius:6px; background:#fff; color:#666; font-size:.72rem; cursor:pointer; }
 .individual-note-toggle:hover,
 .individual-note-toggle.is-open { border-color:#8ba4bd; background:#f3f7fb; }
 .individual-note-toggle.has-note { border-color:#9d88a0; background:#faf5fa; }
@@ -3100,7 +3100,8 @@ header .role-choice {
   .individual-score-row .score-btn.semantic-score-btn,
   .individual-score-row .score-btn.semantic-score-btn[data-score] { height:29px; min-height:29px; border-radius:5px; font-size:10.5px; }
   .individual-slot-tools { gap:2px; }
-  .individual-prior { min-height:29px; height:29px; padding:0 4px; border-radius:5px; font-size:.57rem; }
+  .individual-prior { width:29px; min-width:29px; min-height:29px; height:29px; padding:0; border-radius:5px; font-size:.57rem; }
+  .individual-prior-text { display:none; }
   .individual-note-toggle { width:29px; min-width:29px; height:29px; border-radius:5px; font-size:.68rem; }
   .individual-after { grid-template-columns:34px minmax(0,1fr); gap:3px; margin-top:3px; padding-top:3px; }
   .individual-after .individual-score-row .score-btn,
@@ -3114,8 +3115,6 @@ header .role-choice {
 
 @media (max-width:430px) {
   .individual-slot-main { grid-template-columns:47px minmax(0,1fr) auto; }
-  .individual-prior { width:29px; min-width:29px; padding:0; }
-  .individual-prior-text { display:none; }
   .individual-slot-label { font-size:.52rem; }
   .individual-score-row .score-btn,
   .individual-score-row .score-btn.semantic-score-btn,
@@ -3247,7 +3246,7 @@ header .role-choice {
 }
 
 /* ========================================================================== 
-   V1.1.72 — UNIFIED UX
+   V1.1.73 — UNIFIED UX
    One page: individual editing + couple reading. Couple tools live in Reading.
 */
 .mode-switch{display:inline-flex;align-items:center;gap:4px;padding:4px;border:1px solid #ddd;border-radius:12px;background:#f4f4f4}
@@ -3291,7 +3290,7 @@ body[data-view-mode="read"] .safety-tool-section{display:block!important}
 body[data-view-mode="read"] .role-switch{display:none!important}
 
 /* ========================================================================== 
-   V1.1.72 — MOBILE HEADER
+   V1.1.73 — MOBILE HEADER
    Keep the compact header readable: primary controls on row 1, Edit/Reading
    navigation on its own row, then Tools & options below without overlap.
 */
@@ -3545,7 +3544,7 @@ body[data-view-mode="read"] #coupleReader {
   }
 }
 
-/* V1.1.72 — final responsive density */
+/* V1.1.73 — final responsive density */
 @media (max-width:760px) {
   body[data-view-mode="edit"] main,
   body[data-view-mode="read"] main {
