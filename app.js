@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.75";
+const APP_VERSION = "V1.1.77";
 const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -378,12 +378,15 @@ const category = document.getElementById("category");
 const status = document.getElementById("status");
 const minFilterScore = document.getElementById("minFilterScore");
 const readerDsFilter = document.getElementById("readerDsFilter");
+const readerMinOne = document.getElementById("readerMinOne");
+const readerMinTwo = document.getElementById("readerMinTwo");
 const readerIncludeFantasy = document.getElementById("readerIncludeFantasy");
 const readerFilterDock = document.getElementById("readerFilterDock");
 const readerFilterSummary = document.getElementById("readerFilterSummary");
 const readerDsFilterGroup = document.getElementById("readerDsFilterGroup");
 const readerDsChips = document.getElementById("readerDsChips");
-const readerMinimumChips = document.getElementById("readerMinimumChips");
+const readerMinimumOneChips = document.getElementById("readerMinimumOneChips");
+const readerMinimumTwoChips = document.getElementById("readerMinimumTwoChips");
 const readerAdvancedFilters = document.getElementById("readerAdvancedFilters");
 const riskFilter = document.getElementById("riskFilter");
 const minRandomOne = document.getElementById("minRandomOne");
@@ -432,6 +435,8 @@ let randomDrawHistory = (() => {
 })();
 
 if (readerDsFilter) readerDsFilter.value = INTERACTION_MODEL.normalizeReaderDsFilter(V2_STORAGE.getDisplay("readerDsFilter", "both"));
+if (readerMinOne) readerMinOne.value = String(V2_STORAGE.getDisplay("readerMinOne", "") ?? "");
+if (readerMinTwo) readerMinTwo.value = String(V2_STORAGE.getDisplay("readerMinTwo", "") ?? "");
 if (readerIncludeFantasy) readerIncludeFantasy.checked = V2_STORAGE.getDisplay("readerIncludeFantasy", false) === true;
 
 function getRandomPreferences() {
@@ -1171,6 +1176,23 @@ function readerVariantLabel(entity,variant,names=readerNames()) {
   if(variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return currentLang==="fr"?`${names.personB} en position dominante ↔ ${names.personA} en position soumise`:`${names.personB} dominant → ${names.personA} submissive`;
   return currentLang==="fr"?"Intérêt partagé":"Shared interest";
 }
+function readerCompactFlowLabel(entity,variant,names=readerNames()) {
+  if(variant===INTERACTION_MODEL.VARIANT.A_TO_B || variant===INTERACTION_MODEL.VARIANT.A_DOMINANT) return `${names.personA} → ${names.personB}`;
+  if(variant===INTERACTION_MODEL.VARIANT.B_TO_A || variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return `${names.personB} → ${names.personA}`;
+  return `${names.personA} + ${names.personB}`;
+}
+function readerDisplayParticipants(pair,names=readerNames()) {
+  const a={key:"personA",name:names.personA,personClass:"person-a",slot:pair.personA.slot,state:pair.personA.state};
+  const b={key:"personB",name:names.personB,personClass:"person-b",slot:pair.personB.slot,state:pair.personB.state};
+  if(pair.variant===INTERACTION_MODEL.VARIANT.B_TO_A || pair.variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return [b,a];
+  return [a,b];
+}
+function readerAxisShortLabel(entity) {
+  const axis=INTERACTION_MODEL.axisOf(entity);
+  if(axis===INTERACTION_MODEL.AXIS.DIRECTION) return "D/R";
+  if(axis===INTERACTION_MODEL.AXIS.ROLE) return "D/s";
+  return currentLang==="fr"?"Commun":"Shared";
+}
 function legacyBlockForVariant(entity,variant) {
   for(const [scenarioName,key] of [["a-dom","aDom"],["b-dom","bDom"]]) {
     if(INTERACTION_MODEL.variantForLegacyScenario(entity,scenarioName)===variant && entity?.scenarios?.[key]) return {block:entity.scenarios[key],legacySourceKey:key};
@@ -1214,18 +1236,32 @@ function readerPersonPanel(personName,personClass,slot,state) {
     ${state?.note?`<div class="couple-person-note">💬 ${esc(state.note)}</div>`:""}
   </div>`;
 }
-function readerResultPanel(entity,pair) {
+function readerCompatibilityCompact(status) {
+  if(currentLang==="fr") return ({excellent:["★","Excellent"],strong:["🔥","Très bon"],compatible:["✓","Compatible"],later:["⏳","Plus tard"],fantasy:["💭","Fantasme"],limit:["🚫","Limite"],incomplete:["?","Incomplet"]})[status]||["?","Incomplet"];
+  return ({excellent:["★","Excellent"],strong:["🔥","Strong"],compatible:["✓","Compatible"],later:["⏳","Later"],fantasy:["💭","Fantasy"],limit:["🚫","Limit"],incomplete:["?","Incomplete"]})[status]||["?","Incomplete"];
+}
+function readerResultPanel(entity,pair,names=readerNames()) {
   const c=pair.compatibility||{status:"incomplete",scoreA:null,scoreB:null};
-  const aRole=readerScoreRole(pair.personA.slot), bRole=readerScoreRole(pair.personB.slot);
-  const a=scoreButtonLabel(c.scoreA,aRole), b=scoreButtonLabel(c.scoreB,bRole);
+  const display=readerDisplayParticipants(pair,names);
+  const scoreFor=p=>{
+    const role=readerScoreRole(p.slot), effective=readerEffectiveState(p.state);
+    return scoreButtonLabel(effective.score,role);
+  };
+  const firstScore=scoreFor(display[0]), secondScore=scoreFor(display[1]);
+  const [resultIcon,resultText]=readerCompatibilityCompact(c.status);
   const done=pair.common?.doneTogether===true, inSession=isVariantInSession(entity.id,pair.variant);
   const blocked=c.status==="limit", fantasy=c.status==="fantasy";
-  return `<div class="couple-result" data-result="${esc(c.status)}">
-    <span class="couple-result-badge">${esc(readerCompatibilityLabel(c.status))}</span>
-    <span class="couple-result-scores">${a} + ${b}</span>
+  const togetherLabel=done?(currentLang==="fr"?"Déjà fait ensemble":"Already done together"):(currentLang==="fr"?"Marquer fait ensemble":"Mark done together");
+  const sessionLabel=blocked?t('sessionLimitWarning'):(inSession?t('removeSession'):t('addSession'));
+  const hasNote=display.some(p=>String(p.state?.note||"").trim());
+  const detailsLabel=currentLang==="fr"?"Afficher les détails, notes, avant et après":"Show details, notes, before and after";
+  return `<div class="couple-compact-result" data-result="${esc(c.status)}">
+    <span class="couple-compact-scores" title="${esc(`${display[0].name} · ${readerSlotLabel(display[0].slot)} : ${firstScore} | ${display[1].name} · ${readerSlotLabel(display[1].slot)} : ${secondScore}`)}"><span>${firstScore}</span><b aria-hidden="true">+</b><span>${secondScore}</span></span>
+    <span class="couple-compact-status" title="${esc(readerCompatibilityLabel(c.status))}"><span class="couple-compact-status-icon" aria-hidden="true">${esc(resultIcon)}</span><span class="couple-compact-status-text">${esc(resultText)}</span></span>
     <div class="couple-result-actions">
-      <button class="couple-together-btn${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):'')}">${done?(currentLang==="fr"?"✓ Fait ensemble":"✓ Done together"):(currentLang==="fr"?"○ Fait ensemble":"○ Done together")}</button>
-      <button class="couple-session-btn${inSession?' is-selected':''}" data-couple-action="session" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked?'disabled':''} title="${esc(blocked?t('sessionLimitWarning'):(inSession?t('removeSession'):t('addSession')))}">${inSession?'📌 ✓':'📌'}</button>
+      <button class="couple-together-btn${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} aria-label="${esc(togetherLabel)}" title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):togetherLabel)}">${done?'✓':'○'}</button>
+      <button class="couple-session-btn${inSession?' is-selected':''}" data-couple-action="session" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked?'disabled':''} aria-label="${esc(sessionLabel)}" title="${esc(sessionLabel)}">📌</button>
+      <button class="couple-details-btn${hasNote?' has-note':''}" data-couple-details type="button" aria-expanded="false" aria-label="${esc(detailsLabel)}" title="${esc(detailsLabel)}"><span aria-hidden="true">⌄</span>${hasNote?'<i aria-hidden="true"></i>':''}</button>
     </div>
   </div>`;
 }
@@ -1243,11 +1279,11 @@ function readerStatusMatches(pair,statusValue) {
 function readerMinimumLabels(counts={}) {
   const fr=currentLang==="fr";
   return [
-    ["",fr?"Minimum commun : tous":"Common minimum: all",counts.all],
-    ["1",fr?"⏳ Pas maintenant ou mieux":"⏳ Not now or better",counts[1]],
-    ["2",fr?"🙂 Neutre ou mieux":"🙂 Neutral or better",counts[2]],
-    ["3",fr?"🔥 Envie ou favori":"🔥 Want or favorite",counts[3]],
-    ["4",fr?"⭐ Favori des deux":"⭐ Favorite for both",counts[4]]
+    ["",fr?"Tous":"All",counts.all],
+    ["1",fr?"⏳ Pas maintenant":"⏳ Not now",counts[1]],
+    ["2",fr?"🙂 Neutre":"🙂 Neutral",counts[2]],
+    ["3",fr?"🔥 Envie":"🔥 Want",counts[3]],
+    ["4",fr?"⭐ Favori":"⭐ Favorite",counts[4]]
   ];
 }
 function readerDsChipLabel(value,names) {
@@ -1258,22 +1294,38 @@ function readerDsChipLabel(value,names) {
 function readerMinimumChipLabel(value) {
   const fr=currentLang === "fr";
   return ({
-    "": fr ? "Toutes" : "All",
-    "1": "⏳+",
-    "2": "🙂+",
-    "3": "🔥+",
+    "": fr ? "Tous" : "All",
+    "1": "⏳",
+    "2": "🙂",
+    "3": "🔥",
     "4": "⭐"
-  })[String(value)] || (fr ? "Toutes" : "All");
+  })[String(value)] || (fr ? "Tous" : "All");
 }
 function readerMinimumChipTitle(value) {
   const item=readerMinimumLabels({}).find(([v])=>String(v)===String(value));
   return item ? item[1] : "";
 }
-function renderReaderFilterDock(profile,names,counters={ds:{},minimum:{}}) {
+function readerMinimumSummary(value) {
+  return value ? readerMinimumChipLabel(value) : (currentLang==='fr'?'Tous':'All');
+}
+function renderReaderMinimumChips(container,source,counters,side) {
+  if (!container || !source) return;
+  const current=String(source.value||"");
+  const minimum=counters||{};
+  const values=["","1","2","3","4"];
+  container.innerHTML=values.map(value=>{
+    const active=value===current;
+    const count=value===""?minimum.all:minimum[value];
+    const title=`${currentLang==='fr'?'Minimum':'Minimum'} ${side} · ${readerMinimumChipTitle(value)}`;
+    return `<button class="reader-filter-chip reader-min-chip${active?' is-active':''}" type="button" data-reader-min-side="${side}" data-reader-min="${value}" aria-pressed="${active?'true':'false'}" title="${esc(title)}"><span class="reader-filter-chip-text">${esc(readerMinimumChipLabel(value))}</span>${Number.isInteger(count)?`<span class="reader-filter-chip-count">${count}</span>`:""}</button>`;
+  }).join("");
+}
+function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},minimumTwo:{}}) {
   if (!readerFilterDock) return;
   const fixed=profile?.dynamic?.mode && profile.dynamic.mode !== "switch";
   const dsValue=INTERACTION_MODEL.normalizeReaderDsFilter(readerDsFilter?.value||"both");
-  const minValue=minFilterScore?.value||"";
+  const minOne=readerMinOne?.value||"";
+  const minTwo=readerMinTwo?.value||"";
   const includeFantasy=readerIncludeFantasy?.checked===true;
   if (readerDsFilterGroup) readerDsFilterGroup.hidden=!!fixed;
   if (readerDsChips) {
@@ -1285,19 +1337,13 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimum:{}}) {
       return `<button class="reader-filter-chip${active?' is-active':''}" type="button" data-reader-ds="${value}" aria-pressed="${active?'true':'false'}"><span class="reader-filter-chip-text">${esc(readerDsChipLabel(value,names))}</span>${Number.isInteger(count)?`<span class="reader-filter-chip-count">${count}</span>`:""}</button>`;
     }).join("");
   }
-  if (readerMinimumChips) {
-    const minimum=counters.minimum||{};
-    const values=["","1","2","3","4"];
-    readerMinimumChips.innerHTML=values.map(value=>{
-      const active=String(value)===String(minValue);
-      const count=value===""?minimum.all:minimum[value];
-      return `<button class="reader-filter-chip reader-min-chip${active?' is-active':''}" type="button" data-reader-min="${value}" aria-pressed="${active?'true':'false'}" title="${esc(readerMinimumChipTitle(value))}"><span class="reader-filter-chip-text">${esc(readerMinimumChipLabel(value))}</span>${Number.isInteger(count)?`<span class="reader-filter-chip-count">${count}</span>`:""}</button>`;
-    }).join("");
-  }
+  renderReaderMinimumChips(readerMinimumOneChips,readerMinOne,counters.minimumOne||{},1);
+  renderReaderMinimumChips(readerMinimumTwoChips,readerMinTwo,counters.minimumTwo||{},2);
   if (readerFilterSummary) {
     const parts=[];
     if (!fixed) parts.push(readerDsChipLabel(dsValue,names));
-    parts.push(minValue ? readerMinimumChipTitle(minValue).replace(/^.*? /,'') : (currentLang==='fr'?'Toutes':'All'));
+    if (minOne || minTwo) parts.push(`${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}`);
+    else parts.push(currentLang==='fr'?'Tous':'All');
     if (includeFantasy) parts.push('💭');
     readerFilterSummary.textContent=parts.join(' · ');
   }
@@ -1306,7 +1352,7 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimum:{}}) {
     try { if (window.matchMedia?.("(max-width: 700px)")?.matches) readerFilterDock.open=false; } catch (_) {}
   }
 }
-function configureReaderLogicControls(profile,names,counters={ds:{},minimum:{}}) {
+function configureReaderLogicControls(profile,names,counters={ds:{},minimumOne:{},minimumTwo:{}}) {
   if(readerDsFilter){
     const previous=INTERACTION_MODEL.normalizeReaderDsFilter(readerDsFilter.value);
     const fixed=profile?.dynamic?.mode&&profile.dynamic.mode!=="switch";
@@ -1323,15 +1369,18 @@ function configureReaderLogicControls(profile,names,counters={ds:{},minimum:{}})
   }
   if(readerIncludeFantasy){
     const span=readerIncludeFantasy.closest("label")?.querySelector("span");
-    if(span) span.textContent=currentLang==="fr"?"💭 Inclure les fantasmes avec le minimum":"💭 Include fantasies with minimum";
+    if(span) span.textContent=currentLang==="fr"?"💭 Inclure les fantasmes avec les minima":"💭 Include fantasies with the minimums";
   }
-  if(minFilterScore){
-    const previous=minFilterScore.value;
-    const opts=readerMinimumLabels(counters.minimum||{});
-    minFilterScore.innerHTML=opts.map(([value,label,count])=>`<option value="${value}">${esc(label)}${Number.isInteger(count)?` · ${count}`:""}</option>`).join("");
-    minFilterScore.value=opts.some(([value])=>value===previous)?previous:"";
-    minFilterScore.setAttribute("aria-label",currentLang==="fr"?"Préférence minimale des deux personnes":"Minimum preference for both people");
-  }
+  const configureMinSource=(source,counts,label)=>{
+    if(!source) return;
+    const previous=String(source.value||"");
+    const opts=readerMinimumLabels(counts||{});
+    source.innerHTML=opts.map(([value,text,count])=>`<option value="${value}">${esc(text)}${Number.isInteger(count)?` · ${count}`:""}</option>`).join("");
+    source.value=opts.some(([value])=>String(value)===previous)?previous:"";
+    source.setAttribute("aria-label",label);
+  };
+  configureMinSource(readerMinOne,counters.minimumOne,currentLang==="fr"?"Premier minimum de préférence, ordre indifférent":"First preference minimum, order independent");
+  configureMinSource(readerMinTwo,counters.minimumTwo,currentLang==="fr"?"Second minimum de préférence, ordre indifférent":"Second preference minimum, order independent");
   renderReaderFilterDock(profile,names,counters);
 }
 function configureEditorMinimumOptions(){
@@ -1371,7 +1420,7 @@ function renderCoupleReader() {
   coupleReaderIntro.textContent=currentLang==="fr"?"Chaque résultat croise uniquement les réponses complémentaires : donner avec recevoir, dominant avec soumis, ou intérêt partagé.":"Each result matches only complementary answers: give with receive, dominant with submissive, or shared interest.";
   coupleReaderLegend.innerHTML=currentLang==="fr"?`<strong>Lecture :</strong> les réponses restent personnelles. Le résultat au centre est calculé pour chaque configuration réellement possible. 🚫 reste une limite prioritaire ; 💭 reste un fantasme et n’est jamais transformé en consentement réel.`:`<strong>Reading:</strong> answers remain personal. The center result is calculated for each actually possible configuration. 🚫 remains a priority limit; 💭 remains a fantasy and is never converted into real-world consent.`;
   const q=search.value.trim().toLowerCase(), maxLevel=experienceMaxLevel(), selectedCategory=category.value, selectedRisk=riskFilter.value;
-  const minRaw=minFilterScore.value, minScore=minRaw===""?null:Number(minRaw);
+  const minOne=readerMinOne?.value||"", minTwo=readerMinTwo?.value||"";
   const dsFilter=INTERACTION_MODEL.normalizeReaderDsFilter(readerDsFilter?.value||"both");
   const includeFantasy=readerIncludeFantasy?.checked===true;
   const prepared=[];
@@ -1395,17 +1444,17 @@ function renderCoupleReader() {
   }
 
   const baseEntries=prepared.flatMap(({entity,variants})=>variants.map(({pair})=>({entity,pair})));
-  const dsCounterSource=baseEntries.filter(({pair})=>INTERACTION_MODEL.readerMinimumMatches(pair,minScore,includeFantasy));
+  const dsCounterSource=baseEntries.filter(({pair})=>INTERACTION_MODEL.readerMinimumMatches(pair,minOne,minTwo,includeFantasy));
   const minCounterSource=baseEntries.filter(({entity,pair})=>INTERACTION_MODEL.readerDsFilterMatches(entity,pair,profile,dsFilter));
-  const dsCounters=INTERACTION_MODEL.readerFilterCounters(dsCounterSource,profile,includeFantasy).ds;
-  const minimumCounters=INTERACTION_MODEL.readerFilterCounters(minCounterSource,profile,includeFantasy).minimum;
-  configureReaderLogicControls(profile,names,{ds:dsCounters,minimum:minimumCounters});
+  const dsCounters=INTERACTION_MODEL.readerFilterCounters(dsCounterSource,profile,includeFantasy,minOne,minTwo).ds;
+  const minimumCounters=INTERACTION_MODEL.readerFilterCounters(minCounterSource,profile,includeFantasy,minOne,minTwo);
+  configureReaderLogicControls(profile,names,{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo});
 
   const grouped=new Map(); let visiblePractices=0,visibleVariants=0,completeVariants=0,compatible=0,strong=0,fantasies=0,limits=0,done=0;
   for(const {entity,variants} of prepared) {
     const candidates=variants.filter(({pair})=>
       INTERACTION_MODEL.readerDsFilterMatches(entity,pair,profile,dsFilter) &&
-      INTERACTION_MODEL.readerMinimumMatches(pair,minScore,includeFantasy)
+      INTERACTION_MODEL.readerMinimumMatches(pair,minOne,minTwo,includeFantasy)
     );
     if(!candidates.length) continue;
     const categoryName=candidates[0].info.category||"Autres";
@@ -1428,12 +1477,20 @@ function renderCoupleReader() {
       const base=variants[0].info, axis=readerAxisLabel(entity);
       const variantHtml=variants.map(({pair,info})=>{
         const context=info.title&&info.title!==base.title?info.title:"";
+        const display=readerDisplayParticipants(pair,names);
+        const detailContext=[context,info.explanation].filter(Boolean).join(" — ");
         return `<section class="couple-variant" data-reader-variant="${esc(pair.variant)}" data-result="${esc(pair.compatibility?.status||'incomplete')}">
-          <div class="couple-variant-head"><span class="couple-variant-flow">${esc(readerVariantLabel(entity,pair.variant,names))}</span>${context?`<span class="couple-variant-context">${esc(context)}</span>`:""}</div>
-          <div class="couple-match-grid">${readerPersonPanel(names.personA,"person-a",pair.personA.slot,pair.personA.state)}${readerResultPanel(entity,pair)}${readerPersonPanel(names.personB,"person-b",pair.personB.slot,pair.personB.state)}</div>
+          <div class="couple-compact-row">
+            <span class="couple-variant-flow" title="${esc(readerVariantLabel(entity,pair.variant,names))}">${esc(readerCompactFlowLabel(entity,pair.variant,names))}</span>
+            ${readerResultPanel(entity,pair,names)}
+          </div>
+          <div class="couple-variant-details" hidden>
+            ${detailContext?`<div class="couple-variant-detail-context">${esc(detailContext)}</div>`:""}
+            <div class="couple-variant-detail-grid">${readerPersonPanel(display[0].name,display[0].personClass,display[0].slot,display[0].state)}${readerPersonPanel(display[1].name,display[1].personClass,display[1].slot,display[1].state)}</div>
+          </div>
         </section>`;
       }).join("");
-      return `<article class="couple-practice" data-v2-id="${esc(entity.id)}"><div class="couple-practice-head"><div class="couple-practice-title"><strong>${esc(base.title||entity.id)}</strong>${base.explanation?`<p>${esc(base.explanation)}</p>`:""}</div><div class="couple-practice-meta"><span class="couple-reader-axis">${esc(axis)}</span><span class="level-badge level-${base.level}" title="${esc(experienceLabel(base.level===1?'beginner':base.level===2?'confirmed':'advanced'))}">${esc(levelShortLabel(base.level))}</span>${base.risk!=="normal"?riskBadge({risk:base.risk}):""}</div></div><div class="couple-variant-list">${variantHtml}</div></article>`;
+      return `<article class="couple-practice" data-v2-id="${esc(entity.id)}"><div class="couple-practice-head"><div class="couple-practice-title" title="${esc(base.explanation||base.title||entity.id)}"><strong>${esc(base.title||entity.id)}</strong></div><div class="couple-practice-meta"><span class="couple-reader-axis"><span class="couple-axis-full">${esc(axis)}</span><span class="couple-axis-short">${esc(readerAxisShortLabel(entity))}</span></span><span class="level-badge level-${base.level}" title="${esc(experienceLabel(base.level===1?'beginner':base.level===2?'confirmed':'advanced'))}">${esc(levelShortLabel(base.level))}</span>${base.risk!=="normal"?riskBadge({risk:base.risk}):""}</div></div><div class="couple-variant-list">${variantHtml}</div></article>`;
     }).join("");
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span></button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
@@ -1448,9 +1505,15 @@ function renderCoupleReader() {
   if(statModeEl) statModeEl.textContent=currentLang==="fr"?"Mode : Lecture du couple":"Mode: Couple reading";
   compatIndicator.textContent=currentLang==="fr"?`${compatible} compatibilités · ${completeVariants} résultats complets`:`${compatible} matches · ${completeVariants} complete results`;
   compatIndicator.removeAttribute("role"); compatIndicator.removeAttribute("tabindex"); compatIndicator.title="";
-  return {visiblePractices,visibleVariants,completeVariants,compatible,strong,fantasies,limits,done,filterCounters:{ds:dsCounters,minimum:minimumCounters}};
+  return {visiblePractices,visibleVariants,completeVariants,compatible,strong,fantasies,limits,done,filterCounters:{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo}};
 }
 if(coupleReaderList) coupleReaderList.addEventListener("click",e=>{
+  const detailsBtn=e.target.closest("button[data-couple-details]");
+  if(detailsBtn){
+    const variant=detailsBtn.closest(".couple-variant"), panel=variant?.querySelector(".couple-variant-details");
+    if(panel){const opening=panel.hidden;panel.hidden=!opening;detailsBtn.setAttribute("aria-expanded",opening?"true":"false");detailsBtn.classList.toggle("is-open",opening);}
+    return;
+  }
   const action=e.target.closest("button[data-couple-action]");
   if(action){
     const id=action.dataset.v2Id,variant=action.dataset.variant;
@@ -1624,7 +1687,7 @@ function pickRandomPractice() {
   const picked=eligible[Math.floor(Math.random()*eligible.length)];
   randomPickedId=picked.key;
   if(randomNoRepeat.checked){randomDrawHistory.add(picked.key);saveRandomHistory();invalidateRandomSnapshot();}
-  search.value='';category.value='';status.value='';minFilterScore.value='';riskFilter.value='';if(readerDsFilter)readerDsFilter.value='both';if(readerIncludeFantasy)readerIncludeFantasy.checked=false;sessionOnlyFilter=false;render();
+  search.value='';category.value='';status.value='';minFilterScore.value='';riskFilter.value='';if(readerMinOne)readerMinOne.value='';if(readerMinTwo)readerMinTwo.value='';if(readerDsFilter)readerDsFilter.value='both';if(readerIncludeFantasy)readerIncludeFantasy.checked=false;sessionOnlyFilter=false;render();
   const card=coupleReaderList?.querySelector(`[data-v2-id="${CSS.escape(picked.entity.id)}"]`); if(card)card.scrollIntoView({behavior:'smooth',block:'center'});
   const already=isVariantInSession(picked.entity.id,picked.pair.variant), blocked=picked.pair.compatibility?.status==='limit';
   const fantasy=picked.pair.compatibility?.status==='fantasy';
@@ -1690,6 +1753,10 @@ search.addEventListener("input", () => {
   searchRenderTimer = setTimeout(render, 100);
 });
 [category, status, minFilterScore, riskFilter].forEach(el => el.addEventListener("input", render));
+[readerMinOne,readerMinTwo].filter(Boolean).forEach(el=>el.addEventListener("input",()=>{
+  V2_STORAGE.setDisplay(el===readerMinOne?"readerMinOne":"readerMinTwo",el.value||"");
+  render();
+}));
 if(readerDsFilter) readerDsFilter.addEventListener("input",()=>{V2_STORAGE.setDisplay("readerDsFilter",INTERACTION_MODEL.normalizeReaderDsFilter(readerDsFilter.value));render();});
 if(readerIncludeFantasy) readerIncludeFantasy.addEventListener("input",()=>{V2_STORAGE.setDisplay("readerIncludeFantasy",readerIncludeFantasy.checked===true);render();});
 if(readerDsChips) readerDsChips.addEventListener("click",e=>{
@@ -1697,10 +1764,13 @@ if(readerDsChips) readerDsChips.addEventListener("click",e=>{
   readerDsFilter.value=INTERACTION_MODEL.normalizeReaderDsFilter(btn.dataset.readerDs);
   V2_STORAGE.setDisplay("readerDsFilter",readerDsFilter.value); render();
 });
-if(readerMinimumChips) readerMinimumChips.addEventListener("click",e=>{
-  const btn=e.target.closest?.("[data-reader-min]"); if(!btn||!minFilterScore) return;
-  minFilterScore.value=btn.dataset.readerMin||""; render();
-});
+[readerMinimumOneChips,readerMinimumTwoChips].filter(Boolean).forEach(container=>container.addEventListener("click",e=>{
+  const btn=e.target.closest?.("[data-reader-min]"); if(!btn) return;
+  const source=btn.dataset.readerMinSide==="2"?readerMinTwo:readerMinOne; if(!source) return;
+  source.value=btn.dataset.readerMin||"";
+  V2_STORAGE.setDisplay(source===readerMinOne?"readerMinOne":"readerMinTwo",source.value);
+  render();
+}));
 if(readerAdvancedFilters) readerAdvancedFilters.addEventListener("click",()=>{
   if(allTools) allTools.open=true;
   const target=document.querySelector(".filters-backup-section");
@@ -1711,6 +1781,7 @@ showSessionBtn.addEventListener("click", () => {
   if (!isReadingMode) setViewMode("read");
   sessionOnlyFilter = !sessionOnlyFilter;
   search.value = ""; category.value = ""; status.value = ""; minFilterScore.value = "";
+  if(readerMinOne) readerMinOne.value=""; if(readerMinTwo) readerMinTwo.value="";
   if(readerDsFilter) readerDsFilter.value="both"; if(readerIncludeFantasy) readerIncludeFantasy.checked=false;
   showSessionBtn.classList.toggle("active", sessionOnlyFilter);
   showSessionBtn.textContent = sessionOnlyFilter ? (currentLang==="fr"?"📌 Afficher tout":"📌 Show all") : t("showSession");
@@ -1917,6 +1988,8 @@ resetChecklistBtn.addEventListener("click", () => {
   category.value = "";
   status.value = "";
   minFilterScore.value = "";
+  if(readerMinOne) readerMinOne.value = "";
+  if(readerMinTwo) readerMinTwo.value = "";
   riskFilter.value = "";
   
   randomResult.innerHTML = currentLang === "fr"

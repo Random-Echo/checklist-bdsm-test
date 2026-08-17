@@ -233,42 +233,63 @@
     return true;
   }
 
-  function readerMinimumMatches(pair, rawMinimum, includeFantasy=false) {
-    if (rawMinimum === null || rawMinimum === undefined || rawMinimum === '') return true;
-    const minimum = Number(rawMinimum);
-    if (!Number.isInteger(minimum) || minimum < 1 || minimum > 4) return true;
+  function normalizeReaderMinimum(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const minimum = Number(value);
+    return Number.isInteger(minimum) && minimum >= 1 && minimum <= 4 ? minimum : null;
+  }
+
+  function readerMinimumMatches(pair, rawMinimumOne, rawMinimumTwo, includeFantasy=false) {
+    const minimumOne = normalizeReaderMinimum(rawMinimumOne);
+    const minimumTwo = normalizeReaderMinimum(rawMinimumTwo);
+    if (minimumOne === null && minimumTwo === null) return true;
+
     const a = score(pair?.compatibility?.scoreA);
     const b = score(pair?.compatibility?.scoreB);
     if (a === null || b === null) return false;
-    // A limit never satisfies a positive minimum.
+    // Dès qu'un minimum positif est demandé, une limite ne peut jamais passer.
     if (a === 0 || b === 0) return false;
-    // Fantasy is intentionally outside the consent/preference scale. It may be
-    // included explicitly, but the other person's real preference must still
-    // meet the selected minimum.
+
+    // Les deux minima ne sont liés ni à A ni à B. On compare le meilleur score
+    // au seuil le plus haut, et l'autre score au seuil le plus bas.
+    const thresholds = [minimumOne ?? 0, minimumTwo ?? 0].sort((x,y)=>x-y);
+    const lowMinimum = thresholds[0], highMinimum = thresholds[1];
     const aFantasy = a === 5, bFantasy = b === 5;
+
+    // 💭 reste hors de l'échelle de préférence réelle. Si les fantasmes sont
+    // explicitement inclus, le fantasme peut occuper le seuil le plus haut ;
+    // l'autre personne doit tout de même satisfaire le seuil le plus bas.
     if (aFantasy || bFantasy) {
       if (!includeFantasy) return false;
-      const realScores = [a,b].filter(v => v !== 5);
-      return realScores.length === 0 || realScores.every(v => v >= minimum);
+      if (aFantasy && bFantasy) return true;
+      const realScore = aFantasy ? b : a;
+      return realScore >= lowMinimum;
     }
-    return a >= minimum && b >= minimum;
+
+    const lowScore = Math.min(a,b), highScore = Math.max(a,b);
+    return highScore >= highMinimum && lowScore >= lowMinimum;
   }
 
-  function readerFilterCounters(entries, profile, includeFantasy=false) {
+  function readerFilterCounters(entries, profile, includeFantasy=false, rawMinimumOne='', rawMinimumTwo='') {
     const list = Array.isArray(entries) ? entries : [];
     const ds = { both:0, 'a-dominant':0, 'b-dominant':0 };
-    const minimum = { all:list.length, 1:0, 2:0, 3:0, 4:0 };
+    const minimumOne = { all:0, 1:0, 2:0, 3:0, 4:0 };
+    const minimumTwo = { all:0, 1:0, 2:0, 3:0, 4:0 };
     let fantasies = 0;
+    const choices = ['',1,2,3,4];
     for (const entry of list) {
       const entity = entry?.entity, pair = entry?.pair;
       if (!entity || !pair) continue;
       ds.both++;
       if (readerDsFilterMatches(entity,pair,profile,READER_DS_FILTER.A_DOMINANT)) ds['a-dominant']++;
       if (readerDsFilterMatches(entity,pair,profile,READER_DS_FILTER.B_DOMINANT)) ds['b-dominant']++;
-      for (const threshold of [1,2,3,4]) if (readerMinimumMatches(pair,threshold,includeFantasy)) minimum[threshold]++;
+      for (const threshold of choices) {
+        if (readerMinimumMatches(pair,threshold,rawMinimumTwo,includeFantasy)) minimumOne[threshold === '' ? 'all' : threshold]++;
+        if (readerMinimumMatches(pair,rawMinimumOne,threshold,includeFantasy)) minimumTwo[threshold === '' ? 'all' : threshold]++;
+      }
       if (pair?.compatibility?.status === 'fantasy') fantasies++;
     }
-    return { ds, minimum, fantasies };
+    return { ds, minimumOne, minimumTwo, fantasies };
   }
 
   function readingPair(entity, variant, practiceResponse, profile) {
@@ -294,7 +315,7 @@
     normalizePersonalState, emptyPersonalResponses, emptyPracticeResponse,
     effectiveScore, evaluateSlot, visibleSlots, pairForVariant, editingView,
     variantApplicability, variantAllowedByDynamic, visibleVariants,
-    compatibilityForStates, normalizeReaderDsFilter, readerDsFilterMatches, readerMinimumMatches, readerFilterCounters, readingPair, readingView,
+    compatibilityForStates, normalizeReaderDsFilter, readerDsFilterMatches, normalizeReaderMinimum, readerMinimumMatches, readerFilterCounters, readingPair, readingView,
     otherPerson
   });
 })();
