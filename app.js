@@ -1,17 +1,12 @@
 
-const CHECKLIST_SCENARIO = window.CHECKLIST_SCENARIO;
 const CHECKLIST_DATA = window.CHECKLIST_DATA;
 const V2_STORAGE = window.CHECKLIST_V2_STORAGE;
 const INTERACTION_MODEL = window.CHECKLIST_INTERACTION_MODEL;
 const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
-const CURRENT_SCENARIO = window.CHECKLIST_UNIFIED?.scenario || "a-dom";
-if (!CHECKLIST_SCENARIO || !CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist V2 configuration missing.");
-const initialItems = CHECKLIST_DATA.items;
-for (let i = 0; i < initialItems.length; i++) {
-  if (!Number.isInteger(initialItems[i].displayIndex)) initialItems[i].displayIndex = i + 1;
-}
+if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
+const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.68";
+const APP_VERSION = "V1.1.69";
 const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -209,10 +204,6 @@ function setLanguage(lang, persist = true) {
   render();
 }
 
-// Les rôles visuels sont dérivés du scénario courant ; le stockage reste lié aux Personnes A/B.
-const PERSON_A_ROLE = CHECKLIST_SCENARIO.personARole;
-const PERSON_B_ROLE = CHECKLIST_SCENARIO.personBRole;
-
 const FAVORITE_SCORE = 4;
 const FANTASY_SCORE = 5;
 const SCORE_BUTTON_ORDER = [0,1,FANTASY_SCORE,2,3,FAVORITE_SCORE];
@@ -292,7 +283,6 @@ let derivedDataRevision = 0;
 let statsSnapshotCache = { revision:-1, value:null };
 let randomSnapshotCache = { revision:-1, value:null };
 let categoryStateCache = new Map();
-let quickProgressCache = new Map();
 let randomStateRevision = 0;
 function invalidateRandomSnapshot() {
   randomStateRevision++;
@@ -302,7 +292,6 @@ function invalidateDerivedData() {
   derivedDataRevision++;
   statsSnapshotCache.revision = -1;
   categoryStateCache.clear();
-  quickProgressCache.clear();
   invalidateRandomSnapshot();
 }
 
@@ -315,8 +304,7 @@ let variantSessionKeySet = new Set(variantSessionOrder.map(entry => `${entry.pra
 let sessionOnlyFilter = false;
 
 let activeEditPerson = V2_STORAGE.getDisplay("activeEditPerson", "person-a", false) === "person-b" ? "person-b" : "person-a";
-let currentRole = activeEditPerson === "person-a" ? PERSON_A_ROLE : PERSON_B_ROLE;
-let readOnly = V2_STORAGE.getDisplay("readOnly", false, false) === true;
+let isReadingMode = V2_STORAGE.getDisplay("readOnly", false, false) === true;
 
 let experienceMode = (() => {
   const saved = V2_STORAGE.getDisplay("experienceMode", "beginner", false);
@@ -352,9 +340,13 @@ function levelShortLabel(level) {
   return level === 1 ? "Beg." : level === 2 ? "Exp." : "Adv.";
 }
 
+function catalogEntityLevel(entity) {
+  const levels = Object.values(entity?.scenarios || {}).map(block => Number(block?.level || 3)).filter(level => level >= 1 && level <= 3);
+  return levels.length ? Math.min(...levels) : 3;
+}
 const catalogCumulativeLevelCounts = (() => {
   const exact = {1:0, 2:0, 3:0};
-  for (const item of initialItems) exact[Number(item.level || 3)]++;
+  for (const entity of CATALOG_ENTITIES) exact[catalogEntityLevel(entity)]++;
   return {1:exact[1], 2:exact[1] + exact[2], 3:exact[1] + exact[2] + exact[3]};
 })();
 
@@ -369,7 +361,7 @@ function renderExperienceModeUI() {
     const mode = btn.dataset.experienceMode;
     const tuple = modes.find(x => x[0] === mode);
     const max = tuple ? tuple[1] : 3;
-    const count = catalogCumulativeLevelCounts[max] || initialItems.length;
+    const count = catalogCumulativeLevelCounts[max] || CATALOG_ENTITIES.length;
     btn.textContent = `${experienceLabel(mode)} · ${count}`;
     const active = experienceMode === mode;
     btn.classList.toggle("active", active);
@@ -380,9 +372,6 @@ function renderExperienceModeUI() {
     currentLang === "fr" ? "Niveau d’exploration" : "Exploration level"
   );
 }
-
-document.body.dataset.role = currentRole;
-document.body.dataset.readonly = readOnly ? "true" : "false";
 
 const search = document.getElementById("search");
 const category = document.getElementById("category");
@@ -426,7 +415,6 @@ const statModeEl = document.getElementById("statMode");
 const safetyFields = [...document.querySelectorAll(".safety input,.safety select,.safety textarea")];
 // une seule colonne fixe (Pratique), sans colonne Catégorie.
 const roleButtons = [...document.querySelectorAll("[data-person-choice]")];
-const roleSwitchEl = document.querySelector(".role-switch");
 
 let randomDrawHistory = (() => {
   try {
@@ -497,40 +485,15 @@ const helpKicker = document.getElementById("helpKicker");
 const adultGate = document.getElementById("adultGate");
 const adultGateDialog = adultGate ? adultGate.querySelector(".adult-gate-dialog") : null;
 const infoModal = document.getElementById("infoModal");
-const infoModalBody = document.getElementById("infoModalBody");
 const infoModalTitle = document.getElementById("infoModalTitle");
 const closeInfoModalBtn = document.getElementById("closeInfoModal");
 let lastInfoOpener = null;
-const toggleOtherRole = document.getElementById("toggleOtherRole");
-const toggleReadOnly = document.getElementById("toggleReadOnly");
 const modeEditBtn = document.getElementById("modeEdit");
 const modeReadBtn = document.getElementById("modeRead");
-const sessionToggleReadOnly = document.getElementById("sessionToggleReadOnly");
 const experienceSwitch = document.getElementById("experienceSwitch");
 const allTools = document.getElementById("allTools");
 
-let modifiedScopes = { sub:"", dom:"", common:"" };
-try {
-  const savedScopes = V2_STORAGE.getModifiedScopesLegacy();
-  if (savedScopes && typeof savedScopes === "object") {
-    for (const k of ["sub","dom","common"]) if (typeof savedScopes[k] === "string") modifiedScopes[k] = savedScopes[k];
-  }
-} catch (_) {}
-
-let lastModifiedAt = V2_STORAGE.getLastModified() || "";
 let lastExchange = V2_STORAGE.getLastExchange() || null;
-
-if (lastModifiedAt) {
-  let changed = false;
-  for (const scope of ["sub","dom","common"]) {
-    if (!modifiedScopes[scope]) {
-      modifiedScopes[scope] = lastModifiedAt;
-      changed = true;
-    }
-  }
-  if (changed) saveModifiedScopes();
-}
-
 
 function backupTypeLabel(type) {
   if (type === "male" || type === "person-a") return currentLang === "fr" ? "Personne A" : "Person A";
@@ -547,21 +510,21 @@ function globalBackupConfirmationText(type, payload, inspection=null) {
   let message;
   if (currentLang === "fr") {
     if (normalized === "full") {
-      message = `Sauvegarde COMPLÈTE${legacy ? " V1.1.55" : " V2"}.\n\nElle remplacera le stockage complet : profils, réponses individuelles des deux personnes, données « Fait ensemble », notes, sécurité, séances, affichage et historique.${legacy ? "\n\nLa sauvegarde V1.1.55 sera convertie automatiquement vers le nouveau modèle individuel." : ""}`;
+      message = `Sauvegarde COMPLÈTE${legacy ? " V1.1.55" : " actuelle"}.\n\nElle remplacera le stockage complet : profils, réponses individuelles des deux personnes, données « Fait ensemble », notes, sécurité, séances, affichage et historique.${legacy ? "\n\nLa sauvegarde V1.1.55 sera convertie automatiquement vers le nouveau modèle individuel." : ""}`;
     } else {
       const who = normalized === "person-a" ? "Personne A" : "Personne B";
       const other = normalized === "person-a" ? "Personne B" : "Personne A";
-      message = `Sauvegarde ${who.toUpperCase()}${legacy ? " V1.1.55" : " V2"}.\n\nElle remplacera uniquement les réponses personnelles de ${who}. Les réponses de ${other} resteront intactes. Les données communes restent additives et la sécurité est fusionnée prudemment.`;
+      message = `Sauvegarde ${who.toUpperCase()}${legacy ? " V1.1.55" : " actuelle"}.\n\nElle remplacera uniquement les réponses personnelles de ${who}. Les réponses de ${other} resteront intactes. Les données communes restent additives et la sécurité est fusionnée prudemment.`;
     }
     if (older) message += `\n\n⚠️ Ce fichier semble plus ancien que les données locales.`;
     return message + `\n\nContinuer ?`;
   }
   if (normalized === "full") {
-    message = `FULL ${legacy ? "V1.1.55" : "V2"} BACKUP.\n\nIt will replace the complete V2 storage: both people's individual answers, couple data, notes, safety, sessions, display settings and history.${legacy ? "\n\nThe V1.1.55 backup will be converted automatically to the new individual model." : ""}`;
+    message = `FULL ${legacy ? "V1.1.55" : "CURRENT"} BACKUP.\n\nIt will replace the complete current storage: both people's individual answers, couple data, notes, safety, sessions, display settings and history.${legacy ? "\n\nThe V1.1.55 backup will be converted automatically to the new individual model." : ""}`;
   } else {
     const who = normalized === "person-a" ? "Person A" : "Person B";
     const other = normalized === "person-a" ? "Person B" : "Person A";
-    message = `${who.toUpperCase()} ${legacy ? "V1.1.55" : "V2"} BACKUP.\n\nIt will replace only ${who}'s answers across both D/s orientations. ${other}'s answers remain intact. Done together remains additive and safety is merged conservatively.`;
+    message = `${who.toUpperCase()} ${legacy ? "V1.1.55" : "CURRENT"} BACKUP.\n\nIt will replace only ${who}'s personal answers for all applicable directions and D/s roles. ${other}'s answers remain intact. Done together remains additive and safety is merged conservatively.`;
   }
   if (older) message += `\n\n⚠️ This file appears older than the local data.`;
   return message + `\n\nContinue?`;
@@ -596,11 +559,11 @@ function renderExchangeInfo() {
   exchangeInfo.textContent = `${action} · ${backupLabel} · ${t("modified")} ${modified} · ${version}`;
 }
 
-function applyReadOnlyToSafety() {
+function applyModeToSharedTools() {
   // "Lecture" locks personal answers, not shared couple tools.
   safetyFields.forEach(el => { el.disabled = false; });
   importJsonBtn.disabled = false; importJsonBtn.title = "";
-  resetChecklistBtn.disabled = readOnly; resetChecklistBtn.title = readOnly ? (currentLang === "fr" ? "Passez en Édition pour réinitialiser toutes les données." : "Switch to Edit to reset all data.") : "";
+  resetChecklistBtn.disabled = isReadingMode; resetChecklistBtn.title = isReadingMode ? (currentLang === "fr" ? "Passez en Édition pour réinitialiser toutes les données." : "Switch to Edit to reset all data.") : "";
   resetSessionBtn.disabled = variantSessionOrder.length === 0; resetSessionBtn.title = "";
 }
 
@@ -797,8 +760,6 @@ function renderRoleChoiceLabel(btn) {
 }
 
 function renderRoleUI() {
-  document.body.dataset.role = currentRole;
-  document.body.dataset.readonly = readOnly ? "true" : "false";
 
   for (const btn of roleButtons) {
     const active = btn.dataset.personChoice === activeEditPerson;
@@ -807,31 +768,26 @@ function renderRoleUI() {
     renderRoleChoiceLabel(btn);
   }
 
-  if (toggleOtherRole) {
-    toggleOtherRole.hidden = true;
-    toggleOtherRole.disabled = true;
-    toggleOtherRole.setAttribute("aria-hidden", "true");
-  }
 
-  document.body.dataset.viewMode = readOnly ? "read" : "edit";
+  document.body.dataset.viewMode = isReadingMode ? "read" : "edit";
   if (modeEditBtn) {
     modeEditBtn.textContent = currentLang === "fr" ? "✏️ Édition" : "✏️ Edit";
-    modeEditBtn.classList.toggle("active", !readOnly);
-    modeEditBtn.setAttribute("aria-pressed", !readOnly ? "true" : "false");
+    modeEditBtn.classList.toggle("active", !isReadingMode);
+    modeEditBtn.setAttribute("aria-pressed", !isReadingMode ? "true" : "false");
   }
   if (modeReadBtn) {
     modeReadBtn.textContent = currentLang === "fr" ? "👁 Lecture" : "👁 Reading";
-    modeReadBtn.classList.toggle("active", readOnly);
-    modeReadBtn.setAttribute("aria-pressed", readOnly ? "true" : "false");
+    modeReadBtn.classList.toggle("active", isReadingMode);
+    modeReadBtn.setAttribute("aria-pressed", isReadingMode ? "true" : "false");
   }
 
   if (statModeEl) {
     const profile = window.CHECKLIST_PROFILE_API?.get?.();
     const name = activeEditPerson === "person-a" ? profile?.personA?.name : profile?.personB?.name;
-    statModeEl.textContent = readOnly ? `${t("mode")} : ${t("readOnlySuffix")}` : `${t("mode")} : ${name || (activeEditPerson === "person-a" ? "A" : "B")}`;
+    statModeEl.textContent = isReadingMode ? `${t("mode")} : ${t("readOnlySuffix")}` : `${t("mode")} : ${name || (activeEditPerson === "person-a" ? "A" : "B")}`;
   }
 
-  applyReadOnlyToSafety();
+  applyModeToSharedTools();
   renderSessionPanel();
 }
 
@@ -839,9 +795,7 @@ function setActivePerson(person) {
   const normalized = person === "person-b" ? "person-b" : "person-a";
   if (normalized === activeEditPerson) return;
   activeEditPerson = normalized;
-  currentRole = activeEditPerson === "person-a" ? PERSON_A_ROLE : PERSON_B_ROLE;
   V2_STORAGE.setDisplay("activeEditPerson", activeEditPerson, false);
-  V2_STORAGE.setActiveRole(currentRole);
   renderRoleUI();
   render();
 }
@@ -923,24 +877,20 @@ document.addEventListener("keydown", (e) => {
 
 function setViewMode(mode) {
   const next = mode === "read";
-  if (next === readOnly) return;
-  readOnly = next;
-  V2_STORAGE.setDisplay("readOnly", readOnly, false);
+  if (next === isReadingMode) return;
+  isReadingMode = next;
+  V2_STORAGE.setDisplay("readOnly", isReadingMode, false);
   sessionOnlyFilter = false;
   status.dataset.readerLang = "";
   renderRoleUI(); render();
   if (sessionMode && !sessionMode.hidden) renderSessionMode();
 }
-function toggleReadOnlyMode() { setViewMode(readOnly ? "edit" : "read"); }
-if (toggleReadOnly) toggleReadOnly.addEventListener("click", toggleReadOnlyMode);
 if (modeEditBtn) modeEditBtn.addEventListener("click",()=>setViewMode("edit"));
 if (modeReadBtn) modeReadBtn.addEventListener("click",()=>setViewMode("read"));
-if (sessionToggleReadOnly) sessionToggleReadOnly.addEventListener("click", toggleReadOnlyMode);
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
-const categoryTextColorCache = new Map();
 function variantEntryKey(entryOrPracticeId, variant=null) {
   if (typeof entryOrPracticeId === "object" && entryOrPracticeId) return `${entryOrPracticeId.practiceId}|${entryOrPracticeId.variant}`;
   return `${entryOrPracticeId}|${variant}`;
@@ -951,7 +901,6 @@ function refreshVariantSessionSet() {
 function saveVariantSessionOrder() {
   refreshVariantSessionSet();
   V2_STORAGE.setSessionEntries?.(variantSessionOrder);
-  markModified("common");
 }
 function isVariantInSession(practiceId, variant) {
   return variantSessionKeySet.has(variantEntryKey(practiceId,variant));
@@ -1026,25 +975,6 @@ function openSessionMode(){if(!variantSessionOrder.length)return;sessionModePrev
 function closeSessionMode(){sessionMode.hidden=true;sessionMode.setAttribute("aria-hidden","true");document.body.classList.remove("session-mode-open");setAppBackgroundInert(false);render();if(sessionModePreviousFocus&&document.contains(sessionModePreviousFocus))sessionModePreviousFocus.focus();sessionModePreviousFocus=null;}
 function toggleSessionVariant(practiceId,variant){const key=variantEntryKey(practiceId,variant),index=variantSessionOrder.findIndex(entry=>variantEntryKey(entry)===key);if(index>=0)variantSessionOrder.splice(index,1);else variantSessionOrder.push({practiceId,variant});saveVariantSessionOrder();renderSessionPanel(true);}
 function moveSessionEntry(index,direction){const target=direction==="up"?index-1:index+1;if(index<0||target<0||index>=variantSessionOrder.length||target>=variantSessionOrder.length)return;[variantSessionOrder[index],variantSessionOrder[target]]=[variantSessionOrder[target],variantSessionOrder[index]];saveVariantSessionOrder();renderSessionPanel(true);}
-function saveModifiedScopes() {
-  V2_STORAGE.setModifiedScopesLegacy(modifiedScopes, lastModifiedAt);
-}
-
-function persistModifiedMetadata() {
-  V2_STORAGE.setModifiedScopesLegacy(modifiedScopes, lastModifiedAt);
-}
-
-function markModified(scopes = null, persist = true) {
-  const now = new Date().toISOString();
-  lastModifiedAt = now;
-
-  const list = Array.isArray(scopes) ? scopes : (scopes ? [scopes] : []);
-  for (const scope of list) {
-    if (["sub","dom","common"].includes(scope)) modifiedScopes[scope] = now;
-  }
-  if (persist) persistModifiedMetadata();
-}
-
 const scoreUiCache = new Map();
 function cachedScoreUi(value, role=null) {
   const key = `${currentLang}|${role || "none"}|${value}`;
@@ -1080,17 +1010,17 @@ function editorProfileName(person=modelPersonKey()) {
   const p=window.CHECKLIST_PROFILE_API?.get?.();
   return person === "personA" ? (p?.personA?.name || (currentLang==="fr"?"Personne A":"Person A")) : (p?.personB?.name || (currentLang==="fr"?"Personne B":"Person B"));
 }
-function scenarioBlockForEditor(entity, person, slot) {
-  for (const [scenarioKey,scenarioName] of [["aDom","a-dom"],["bDom","b-dom"]]) {
-    if (INTERACTION_MODEL.slotForLegacyPerson(entity,scenarioName,person) === slot && entity?.scenarios?.[scenarioKey]) return {block:entity.scenarios[scenarioKey],scenarioKey};
+function legacyBlockForEditorSlot(entity, person, slot) {
+  for (const [legacySourceKey,scenarioName] of [["aDom","a-dom"],["bDom","b-dom"]]) {
+    if (INTERACTION_MODEL.slotForLegacyPerson(entity,scenarioName,person) === slot && entity?.scenarios?.[legacySourceKey]) return {block:entity.scenarios[legacySourceKey],legacySourceKey};
   }
   const firstKey = entity?.scenarios?.aDom ? "aDom" : entity?.scenarios?.bDom ? "bDom" : null;
-  return firstKey ? {block:entity.scenarios[firstKey],scenarioKey:firstKey} : {block:null,scenarioKey:null};
+  return firstKey ? {block:entity.scenarios[firstKey],legacySourceKey:firstKey} : {block:null,legacySourceKey:null};
 }
-function personalizeLegacyText(text, scenarioKey) {
+function personalizeLegacyText(text, legacySourceKey) {
   let out=String(text||""); const p=window.CHECKLIST_PROFILE_API?.get?.(); if(!p) return out;
   const a=p.personA?.name||"A", b=p.personB?.name||"B";
-  const dom=scenarioKey==="bDom"?b:a, sub=scenarioKey==="bDom"?a:b;
+  const dom=legacySourceKey==="bDom"?b:a, sub=legacySourceKey==="bDom"?a:b;
   const replacements=[
     [/\b(?:le |la )?Ma[iî]tre(?:sse)?\b/gi,dom],[/\b(?:du |de la )Ma[iî]tre(?:sse)?\b/gi,dom],
     [/\b(?:le |la )?Soumis(?:e)?\b/gi,sub],[/\b(?:du |de la )Soumis(?:e)?\b/gi,sub],
@@ -1117,9 +1047,9 @@ function editorSlotsForEntity(entity, person, profile) {
   return slots;
 }
 function editorEntityInfo(entity, person, slots) {
-  const preferred=scenarioBlockForEditor(entity,person,slots[0]||INTERACTION_MODEL.slotsForEntity(entity)[0]);
+  const preferred=legacyBlockForEditorSlot(entity,person,slots[0]||INTERACTION_MODEL.slotsForEntity(entity)[0]);
   const block=preferred.block||{};
-  return {title:personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),preferred.scenarioKey), explanation:personalizeLegacyText(currentLang==="en"?(block.explanationEn||block.explanation):(block.explanation||block.explanationEn),preferred.scenarioKey), category:block.category||"Autres", level:Number.isInteger(block.level)?block.level:3, risk:["normal","caution","high"].includes(block.risk)?block.risk:"normal"};
+  return {title:personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),preferred.legacySourceKey), explanation:personalizeLegacyText(currentLang==="en"?(block.explanationEn||block.explanation):(block.explanation||block.explanationEn),preferred.legacySourceKey), category:block.category||"Autres", level:Number.isInteger(block.level)?block.level:3, risk:["normal","caution","high"].includes(block.risk)?block.risk:"normal"};
 }
 function editorScoreButtons(v2Id,slot,state) {
   const role = slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
@@ -1135,8 +1065,8 @@ function editorAfterButtons(v2Id,slot,state) {
 function renderEditorSlot(entity,person,slot,profile) {
   const state=V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{};
   const applicability=INTERACTION_MODEL.evaluateSlot(entity,person,slot,profile);
-  const source=scenarioBlockForEditor(entity,person,slot); const block=source.block||{};
-  const contextualTitle=personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),source.scenarioKey);
+  const source=legacyBlockForEditorSlot(entity,person,slot); const block=source.block||{};
+  const contextualTitle=personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),source.legacySourceKey);
   const incompatible=applicability.status==="notApplicable";
   return `<section class="individual-slot${incompatible?' is-incompatible':''}" data-editor-slot="${slot}">
     <div class="individual-slot-head"><div><strong>${esc(editorSlotLabel(slot))}</strong><small>${esc(editorSlotHint(slot))}</small>${contextualTitle?`<span class="individual-slot-context">${esc(contextualTitle)}</span>`:""}</div>${incompatible?`<span class="individual-applicability">${currentLang==="fr"?"Anatomie non compatible":"Anatomy not compatible"}</span>`:""}</div>
@@ -1205,7 +1135,7 @@ function readerNames() {
   };
 }
 function readerSlotLabel(slot) {
-  if(currentLang==="fr") return ({interest:"Intérêt",give:"Donner",receive:"Recevoir",dominant:"Dominant",submissive:"Soumis"})[slot]||slot;
+  if(currentLang==="fr") return ({interest:"Intérêt",give:"Donner",receive:"Recevoir",dominant:"Position dominante",submissive:"Position soumise"})[slot]||slot;
   return ({interest:"Interest",give:"Give",receive:"Receive",dominant:"Dominant",submissive:"Submissive"})[slot]||slot;
 }
 function readerAxisLabel(entity) {
@@ -1216,22 +1146,22 @@ function readerAxisLabel(entity) {
 function readerVariantLabel(entity,variant,names=readerNames()) {
   if(variant===INTERACTION_MODEL.VARIANT.A_TO_B) return currentLang==="fr"?`${names.personA} donne → ${names.personB} reçoit`:`${names.personA} gives → ${names.personB} receives`;
   if(variant===INTERACTION_MODEL.VARIANT.B_TO_A) return currentLang==="fr"?`${names.personB} donne → ${names.personA} reçoit`:`${names.personB} gives → ${names.personA} receives`;
-  if(variant===INTERACTION_MODEL.VARIANT.A_DOMINANT) return currentLang==="fr"?`${names.personA} dominant → ${names.personB} soumis`:`${names.personA} dominant → ${names.personB} submissive`;
-  if(variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return currentLang==="fr"?`${names.personB} dominant → ${names.personA} soumis`:`${names.personB} dominant → ${names.personA} submissive`;
+  if(variant===INTERACTION_MODEL.VARIANT.A_DOMINANT) return currentLang==="fr"?`${names.personA} en position dominante ↔ ${names.personB} en position soumise`:`${names.personA} dominant → ${names.personB} submissive`;
+  if(variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return currentLang==="fr"?`${names.personB} en position dominante ↔ ${names.personA} en position soumise`:`${names.personB} dominant → ${names.personA} submissive`;
   return currentLang==="fr"?"Intérêt partagé":"Shared interest";
 }
-function readerScenarioSource(entity,variant) {
+function legacyBlockForVariant(entity,variant) {
   for(const [scenarioName,key] of [["a-dom","aDom"],["b-dom","bDom"]]) {
-    if(INTERACTION_MODEL.variantForLegacyScenario(entity,scenarioName)===variant && entity?.scenarios?.[key]) return {block:entity.scenarios[key],scenarioKey:key};
+    if(INTERACTION_MODEL.variantForLegacyScenario(entity,scenarioName)===variant && entity?.scenarios?.[key]) return {block:entity.scenarios[key],legacySourceKey:key};
   }
   const key=entity?.scenarios?.aDom?"aDom":entity?.scenarios?.bDom?"bDom":null;
-  return key?{block:entity.scenarios[key],scenarioKey:key}:{block:{},scenarioKey:null};
+  return key?{block:entity.scenarios[key],legacySourceKey:key}:{block:{},legacySourceKey:null};
 }
 function readerVariantInfo(entity,variant) {
-  const source=readerScenarioSource(entity,variant), block=source.block||{};
+  const source=legacyBlockForVariant(entity,variant), block=source.block||{};
   return {
-    title:personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),source.scenarioKey),
-    explanation:personalizeLegacyText(currentLang==="en"?(block.explanationEn||block.explanation):(block.explanation||block.explanationEn),source.scenarioKey),
+    title:personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),source.legacySourceKey),
+    explanation:personalizeLegacyText(currentLang==="en"?(block.explanationEn||block.explanation):(block.explanation||block.explanationEn),source.legacySourceKey),
     category:block.category||"Autres",
     level:Number.isInteger(block.level)?block.level:3,
     risk:["normal","caution","high"].includes(block.risk)?block.risk:"normal"
@@ -1385,7 +1315,7 @@ if(coupleReaderList) coupleReaderList.addEventListener("click",e=>{
       const entity=UNIFIED_ENTITY_BY_ID.get(id),pair=entity?INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(id),window.CHECKLIST_PROFILE_API?.get?.()||{}):null;
       if(!pair||["limit","fantasy"].includes(pair.compatibility?.status)) return;
       V2_STORAGE.setVariantCommonState(id,variant,{doneTogether:pair.common?.doneTogether!==true});
-      markModified("common"); invalidateRandomSnapshot();
+      invalidateRandomSnapshot();
     }
     renderSessionPanel(true); renderCoupleReader(); return;
   }
@@ -1393,7 +1323,7 @@ if(coupleReaderList) coupleReaderList.addEventListener("click",e=>{
 });
 
 function render() {
-  if (readOnly) {
+  if (isReadingMode) {
     hideIndividualEditor();
     renderCoupleReader();
   } else {
@@ -1470,7 +1400,7 @@ function getRandomEligibilitySnapshot() {
 
 let lastCompatibilitySignature = "";
 function updateCompatibilityIndicator() {
-  if(!readOnly) {
+  if(!isReadingMode) {
     if(compatIndicator) compatIndicator.textContent=currentLang==='fr'?'Édition individuelle':'Individual editing';
     if(compatDetails) compatDetails.innerHTML='';
     if(randomCandidateInfo) randomCandidateInfo.textContent='';
@@ -1515,7 +1445,7 @@ let lastStatsSignature = "";
 let lastVisibleStatCount = null;
 function updateStats(visibleCount = null) {
   if(visibleCount!==null) lastVisibleStatCount=visibleCount;
-  if(!readOnly) {
+  if(!isReadingMode) {
     const person=modelPersonKey(), summary=V2_STORAGE.getPersonalSummary(person), name=editorProfileName(person);
     if(statVisibleEl) statVisibleEl.textContent=currentLang==='fr'?`${lastVisibleStatCount??summary.practicesTouched} pratiques visibles`:`${lastVisibleStatCount??summary.practicesTouched} visible practices`;
     if(statDoneEl) statDoneEl.textContent='';
@@ -1540,7 +1470,7 @@ function updateStats(visibleCount = null) {
 
 let randomPickedId = null;
 function pickRandomPractice() {
-  if(!readOnly) setViewMode('read');
+  if(!isReadingMode) setViewMode('read');
   const snapshot=getRandomEligibilitySnapshot(); let eligible=snapshot.eligible, cycleRestarted=false;
   if(!snapshot.baseEligible.length){
     randomResult.innerHTML=currentLang==='fr'?'Aucune configuration ne correspond aux critères actuels.':'No variant matches the current criteria.';
@@ -1596,7 +1526,6 @@ function flushSafetySave() {
   safetySaveTimer = null;
   if (!safetyDirty) return;
   safetyDirty = false;
-  markModified("common");
   V2_STORAGE.setSafety(getSafety());
 }
 function scheduleSafetySave() {
@@ -1619,7 +1548,7 @@ search.addEventListener("input", () => {
 [category, status, minFilterScore, riskFilter].forEach(el => el.addEventListener("input", render));
 
 showSessionBtn.addEventListener("click", () => {
-  if (!readOnly) setViewMode("read");
+  if (!isReadingMode) setViewMode("read");
   sessionOnlyFilter = !sessionOnlyFilter;
   search.value = ""; category.value = ""; status.value = ""; minFilterScore.value = "";
   showSessionBtn.classList.toggle("active", sessionOnlyFilter);
@@ -1647,7 +1576,7 @@ sessionModeList.addEventListener("change", (e) => {
   const checkbox=e.target.closest("input[data-session-mode-together]"); if(!checkbox)return;
   const id=checkbox.dataset.practiceId,variant=checkbox.dataset.variant,entity=UNIFIED_ENTITY_BY_ID.get(id); if(!entity)return;
   const pair=INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(id),window.CHECKLIST_PROFILE_API?.get?.()||{}); if(!pair||["limit","fantasy"].includes(pair.compatibility?.status))return;
-  V2_STORAGE.setVariantCommonState(id,variant,{doneTogether:!!checkbox.checked}); markModified("common"); renderSessionPanel(true); render();
+  V2_STORAGE.setVariantCommonState(id,variant,{doneTogether:!!checkbox.checked}); renderSessionPanel(true); render();
 });
 
 resetSessionBtn.addEventListener("click", () => {
@@ -1726,7 +1655,7 @@ function importGlobalBackup(payload) {
 }
 
 importJsonBtn.addEventListener("click", () => {
-  if (readOnly) {
+  if (isReadingMode) {
     randomResult.innerHTML = `<strong>${t("readOnlyActive")}</strong> ${t("disableRestore")}`;
     return;
   }
@@ -1735,7 +1664,7 @@ importJsonBtn.addEventListener("click", () => {
 });
 
 importJsonFile.addEventListener("change", async () => {
-  if (readOnly) return;
+  if (isReadingMode) return;
   const file = importJsonFile.files && importJsonFile.files[0];
   if (!file) return;
   flushSafetySave();
@@ -1794,7 +1723,7 @@ function clearSafetyForm() {
 
 
 resetChecklistBtn.addEventListener("click", () => {
-  if (readOnly) {
+  if (isReadingMode) {
     randomResult.innerHTML = `<strong>${t("readOnlyActive")}</strong> ${t("disableReset")}`;
     return;
   }
@@ -1816,8 +1745,6 @@ resetChecklistBtn.addEventListener("click", () => {
   lastSessionPanelSignature = "";
   lastStatsSignature = "";
   lastVisibleStatCount = null;
-  modifiedScopes = V2_STORAGE.getModifiedScopesLegacy();
-  lastModifiedAt = V2_STORAGE.getLastModified();
   lastExchange = null;
   clearSafetyForm();
 

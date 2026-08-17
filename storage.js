@@ -2,9 +2,8 @@
   'use strict';
 
   const CATALOG = window.CHECKLIST_CATALOG;
-  const UNIFIED = window.CHECKLIST_UNIFIED;
   const INTERACTION = window.CHECKLIST_INTERACTION_MODEL;
-  if (!CATALOG || !UNIFIED || !INTERACTION) throw new Error('Checklist storage requires catalog, runtime and interaction model.');
+  if (!CATALOG || !INTERACTION) throw new Error('Checklist storage requires catalog and interaction model.');
 
   const SCHEMA_VERSION = 4;
   const SITE_BACKUP_ID = 'bdsm-checklists-couple-v2';
@@ -195,11 +194,7 @@
 
   function getDisplay(name,fallback){const d=loadDisplay();return Object.prototype.hasOwnProperty.call(d.common,name)?clone(d.common[name]):clone(fallback);}
   function setDisplay(name,value){const d=loadDisplay();if(value===undefined)delete d.common[name];else d.common[name]=clone(value);saveDisplay(d);}
-  function getActiveRole(){const active=getDisplay('activePerson','personA');return roleForPerson(UNIFIED.scenario,active==='personB'?'personB':'personA');}
-  function setActiveRole(role){setDisplay('activePerson',personForRole(UNIFIED.scenario,role));}
 
-  function getModifiedScopesLegacy(){const m=getMeta(),scenario=UNIFIED.scenario;return{sub:m.modifiedAt[personForRole(scenario,'sub')]||'',dom:m.modifiedAt[personForRole(scenario,'dom')]||'',common:m.modifiedAt.common||''};}
-  function setModifiedScopesLegacy(scopes,lastModifiedAt){const m=getMeta(),scenario=UNIFIED.scenario;for(const role of ['sub','dom'])if(typeof scopes?.[role]==='string')m.modifiedAt[personForRole(scenario,role)]=scopes[role];if(typeof scopes?.common==='string')m.modifiedAt.common=scopes.common;if(typeof lastModifiedAt==='string')m.lastModifiedAt=lastModifiedAt;m.initialized=true;setMeta(m);}
   function getLastModified(){return getMeta().lastModifiedAt||'';}
   function getLastExchange(){return getMeta().lastExchange||null;}
   function setLastExchange(info){const m=getMeta();m.lastExchange=clone(info);m.initialized=true;setMeta(m);}
@@ -290,15 +285,13 @@
 
   window.CHECKLIST_V2_STORAGE=Object.freeze({
     schemaVersion:SCHEMA_VERSION,siteBackupId:SITE_BACKUP_ID,keys:KEYS,migration,
-    getScenarioItems,saveScenarioItems,
     getSafety,setSafety,
-    getScenarioSessionLegacyIds,setScenarioSessionLegacyIds,getAllSessionEntries,setSessionEntries,
-    getRandomHistoryLegacyIds,setRandomHistoryLegacyIds,getRandomHistoryEntries,setRandomHistoryEntries,getRandomPreferences,setRandomPreferences,
-    getDisplay,setDisplay,getActiveRole,setActiveRole,
-    getModifiedScopesLegacy,setModifiedScopesLegacy,getLastModified,getLastExchange,setLastExchange,
-    getScenarioSummary,
+    getAllSessionEntries,setSessionEntries,
+    getRandomHistoryEntries,setRandomHistoryEntries,getRandomPreferences,setRandomPreferences,
+    getDisplay,setDisplay,getLastModified,getLastExchange,setLastExchange,
     getPersonalSlotState,setPersonalSlotState,getPersonalPractice,getVariantCommonState,setVariantCommonState,getReaderPractice,getPersonalSummary,
     buildBackup,inspectBackup,importBackup,resetAllUserData,
+    _legacy:{getScenarioItems,saveScenarioItems,getScenarioSessionLegacyIds,setScenarioSessionLegacyIds,getRandomHistoryLegacyIds,setRandomHistoryLegacyIds,getScenarioSummary},
     _debug:{loadPersonalResponses,loadCoupleState,loadSessions,loadRandom,projectLegacyResponsesToPersonal,projectLegacyResponsesToCouple,convertScenarioDataToActive,mergeLegacyFullSnapshots,v2ByScenarioLegacy,entityByV2,legacyActiveKeys:LEGACY_ACTIVE_KEYS,loadLegacyArchive:()=>normalizeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive()))}
   });
 })();

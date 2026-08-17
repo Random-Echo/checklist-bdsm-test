@@ -25,47 +25,17 @@
     p.showIncompatible=raw.showIncompatible!==false;
     return p;
   }
-  function load(){ try{return normalize(JSON.parse(localStorage.getItem(KEY)||'null'));}catch(_){return clone(DEFAULT);} }
+  function load(){ try{return normalize(JSON.parse(localStorage.getItem(KEY)||'null'));}catch(_){return normalize(null);} }
   let profile=load();
   function save(next){ profile=normalize(next); localStorage.setItem(KEY,JSON.stringify(profile)); return profile; }
-  function personForRole(scenarioDef, role){
-    if(scenarioDef.personARole===role) return profile.personA;
-    return profile.personB;
-  }
-  const RULES = [
-    { key:'testicles', re:/\b(testicule|testicules|couilles?|scrotum|bourses?|ball\s?busting|ball\s?stretch|ball\s?crush|ball\s?slap|cock\s?and\s?ball|cbt)\b/i },
-    { key:'prostate', re:/\b(prostate|prostatique|prostatic)\b/i },
-    { key:'vagina', re:/\b(vagin|vaginal(?:e|es)?|vaginally|vagina)\b/i },
-    { key:'vulva', re:/\b(vulve|vulvaire|vulvar|clitoris|clitorid|clit\b)/i },
-    { key:'breasts', re:/\b(seins?|poitrine|mamelons?|tétons?|tetons?|breasts?|nipples?)\b/i },
-    { key:'penis', re:/\b(pénis|penis|gland|verge|cock\b)\b/i }
-  ];
-  function inferRequirements(block){
-    const title=String(block.practice||''); const expl=String(block.explanation||''); const en=`${block.practiceEn||''} ${block.explanationEn||''}`;
-    const text=`${title} ${expl} ${en}`;
-    const found=RULES.filter(r=>r.re.test(text)).map(r=>r.key);
-    if(!found.length) return [];
-    const lower=`${title} ${expl}`.toLowerCase();
-    // Determine whose anatomy is targeted only when wording gives a strong D/s cue.
-    let role='sub';
-    if(/ma[iî]tre|ma[iî]tresse|dominant(?:e)?/.test(lower) && !/soumis|soumise|submissive/.test(lower)) role='dom';
-    else if(/soumis|soumise|submissive/.test(lower)) role='sub';
-    return [...new Set(found)].map(anatomy=>({role,anatomy}));
-  }
-  function evaluate(block, scenarioDef){
-    const requirements=Array.isArray(block?.anatomyRequirements) ? block.anatomyRequirements : inferRequirements(block);
-    if(!profile.anatomyConfigured) return {status:'unknown',requirements};
-    if(!requirements.length) return {status:'applicable',requirements};
-    const missing=requirements.filter(r=>!personForRole(scenarioDef,r.role).anatomy[r.anatomy]);
-    return {status:missing.length?'notApplicable':'applicable',requirements,missing};
-  }
-  window.CHECKLIST_PROFILE_API={ key:KEY, get:()=>profile, save, normalize, evaluate, inferRequirements, open:()=>renderModal(true) };
+  window.CHECKLIST_PROFILE_API={ key:KEY, get:()=>profile, save, normalize, open:()=>renderModal(true) };
+
 
   function labels(lang){ const fr=lang!=='en'; return {
     title:fr?'Configurer votre couple':'Configure your couple', sub:fr?'Ces informations servent uniquement à adapter la checklist. Aucun genre ni pronom n’est demandé.':'These details are only used to adapt the checklist. No gender or pronouns are requested.',
     nameA:fr?'Pseudo — Personne A':'Name — Person A', nameB:fr?'Pseudo — Personne B':'Name — Person B',
     anatomy:fr?'Anatomie pertinente':'Relevant anatomy', dynamic:fr?'Dynamique D/s':'D/s dynamic',
-    aDom:fr?'A domine principalement B':'A mainly dominates B', bDom:fr?'B domine principalement A':'B mainly dominates A', sw:fr?'Switch — les deux orientations':'Switch — both orientations',
+    aDom:fr?'A domine principalement B':'A mainly dominates B', bDom:fr?'B domine principalement A':'B mainly dominates A', sw:fr?'Switch — les deux rôles possibles':'Switch — both roles available',
     other:fr?'Afficher aussi les pratiques nécessitant une autre anatomie':'Also show practices requiring other anatomy',
     save:fr?'Enregistrer et ouvrir la checklist':'Save and open checklist', edit:fr?'⚙ Profils':'⚙ Profiles',
     penis:fr?'Pénis':'Penis', testicles:fr?'Testicules':'Testicles', vulva:fr?'Vulve':'Vulva', vagina:fr?'Vagin':'Vagina', breasts:fr?'Poitrine / seins':'Chest / breasts', prostate:'Prostate'
@@ -85,7 +55,7 @@
       const next=clone(p); next.personA.name=safeName(modal.querySelector('#profileNameA').value,'Personne A'); next.personB.name=safeName(modal.querySelector('#profileNameB').value,'Personne B');
       modal.querySelectorAll('[data-anatomy]').forEach(el=>{const [side,k]=el.dataset.anatomy.split(':'); next[side].anatomy[k]=el.checked;});
       next.dynamic.mode=modal.querySelector('input[name="profileDynamic"]:checked')?.value||'switch'; next.anatomyConfigured=true; next.showIncompatible=modal.querySelector('#profileShowIncompatible').checked; save(next);
-      const url=new URL(location.href); url.searchParams.delete('scenario'); location.href=url.href;
+      location.reload();
     });
   }
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
