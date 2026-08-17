@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.73";
+const APP_VERSION = "V1.1.75";
 const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -377,6 +377,14 @@ const search = document.getElementById("search");
 const category = document.getElementById("category");
 const status = document.getElementById("status");
 const minFilterScore = document.getElementById("minFilterScore");
+const readerDsFilter = document.getElementById("readerDsFilter");
+const readerIncludeFantasy = document.getElementById("readerIncludeFantasy");
+const readerFilterDock = document.getElementById("readerFilterDock");
+const readerFilterSummary = document.getElementById("readerFilterSummary");
+const readerDsFilterGroup = document.getElementById("readerDsFilterGroup");
+const readerDsChips = document.getElementById("readerDsChips");
+const readerMinimumChips = document.getElementById("readerMinimumChips");
+const readerAdvancedFilters = document.getElementById("readerAdvancedFilters");
 const riskFilter = document.getElementById("riskFilter");
 const minRandomOne = document.getElementById("minRandomOne");
 const minRandomOther = document.getElementById("minRandomOther");
@@ -422,6 +430,9 @@ let randomDrawHistory = (() => {
     return new Set((Array.isArray(raw) ? raw : []).map(entry => `${entry.practiceId}|${entry.variant}`));
   } catch (_) { return new Set(); }
 })();
+
+if (readerDsFilter) readerDsFilter.value = INTERACTION_MODEL.normalizeReaderDsFilter(V2_STORAGE.getDisplay("readerDsFilter", "both"));
+if (readerIncludeFantasy) readerIncludeFantasy.checked = V2_STORAGE.getDisplay("readerIncludeFantasy", false) === true;
 
 function getRandomPreferences() {
   return {
@@ -1092,6 +1103,7 @@ function renderIndividualEditor() {
   if(!individualEditor||!individualEditorList) return;
   individualEditor.hidden=false;
   configureEditorStatusOptions();
+  configureEditorMinimumOptions();
   const profile=window.CHECKLIST_PROFILE_API?.get?.()||{}; const person=modelPersonKey(),name=editorProfileName(person);
   individualEditorTitle.textContent=currentLang==="fr"?`Réponses de ${name}`:`${name}'s answers`;
   individualEditorIntro.textContent=currentLang==="fr"?`Vous modifiez uniquement les choix de ${name}. Les réponses de l’autre personne ne sont jamais affichées ici.`:`You are editing only ${name}'s choices. The other person's answers are never shown here.`;
@@ -1217,17 +1229,121 @@ function readerResultPanel(entity,pair) {
     </div>
   </div>`;
 }
-function readerVariantMatches(pair,state) {
+function readerStatusMatches(pair,statusValue) {
   const c=pair.compatibility||{};
-  if(state.status==="coupleCompatible" && !["compatible","strong","excellent"].includes(c.status)) return false;
-  if(state.status==="coupleStrong" && !["strong","excellent"].includes(c.status)) return false;
-  if(state.status==="coupleLimit" && c.status!=="limit") return false;
-  if(state.status==="coupleFantasy" && c.status!=="fantasy") return false;
-  if(state.status==="coupleIncomplete" && c.status!=="incomplete") return false;
-  if(state.status==="together" && pair.common?.doneTogether!==true) return false;
-  if(state.status==="notTogether" && pair.common?.doneTogether===true) return false;
-  if(state.minScore!==null && !(Number.isInteger(c.score)&&c.score>=state.minScore)) return false;
+  if(statusValue==="coupleCompatible" && !["compatible","strong","excellent"].includes(c.status)) return false;
+  if(statusValue==="coupleStrong" && !["strong","excellent"].includes(c.status)) return false;
+  if(statusValue==="coupleLimit" && c.status!=="limit") return false;
+  if(statusValue==="coupleFantasy" && c.status!=="fantasy") return false;
+  if(statusValue==="coupleIncomplete" && c.status!=="incomplete") return false;
+  if(statusValue==="together" && pair.common?.doneTogether!==true) return false;
+  if(statusValue==="notTogether" && pair.common?.doneTogether===true) return false;
   return true;
+}
+function readerMinimumLabels(counts={}) {
+  const fr=currentLang==="fr";
+  return [
+    ["",fr?"Minimum commun : tous":"Common minimum: all",counts.all],
+    ["1",fr?"⏳ Pas maintenant ou mieux":"⏳ Not now or better",counts[1]],
+    ["2",fr?"🙂 Neutre ou mieux":"🙂 Neutral or better",counts[2]],
+    ["3",fr?"🔥 Envie ou favori":"🔥 Want or favorite",counts[3]],
+    ["4",fr?"⭐ Favori des deux":"⭐ Favorite for both",counts[4]]
+  ];
+}
+function readerDsChipLabel(value,names) {
+  if (value === "a-dominant") return currentLang === "fr" ? `${names.personA} domine` : `${names.personA} dominant`;
+  if (value === "b-dominant") return currentLang === "fr" ? `${names.personB} domine` : `${names.personB} dominant`;
+  return currentLang === "fr" ? "Les deux" : "Both";
+}
+function readerMinimumChipLabel(value) {
+  const fr=currentLang === "fr";
+  return ({
+    "": fr ? "Toutes" : "All",
+    "1": "⏳+",
+    "2": "🙂+",
+    "3": "🔥+",
+    "4": "⭐"
+  })[String(value)] || (fr ? "Toutes" : "All");
+}
+function readerMinimumChipTitle(value) {
+  const item=readerMinimumLabels({}).find(([v])=>String(v)===String(value));
+  return item ? item[1] : "";
+}
+function renderReaderFilterDock(profile,names,counters={ds:{},minimum:{}}) {
+  if (!readerFilterDock) return;
+  const fixed=profile?.dynamic?.mode && profile.dynamic.mode !== "switch";
+  const dsValue=INTERACTION_MODEL.normalizeReaderDsFilter(readerDsFilter?.value||"both");
+  const minValue=minFilterScore?.value||"";
+  const includeFantasy=readerIncludeFantasy?.checked===true;
+  if (readerDsFilterGroup) readerDsFilterGroup.hidden=!!fixed;
+  if (readerDsChips) {
+    const ds=counters.ds||{};
+    const values=["both","a-dominant","b-dominant"];
+    readerDsChips.innerHTML=values.map(value=>{
+      const active=value===dsValue;
+      const count=ds[value];
+      return `<button class="reader-filter-chip${active?' is-active':''}" type="button" data-reader-ds="${value}" aria-pressed="${active?'true':'false'}"><span class="reader-filter-chip-text">${esc(readerDsChipLabel(value,names))}</span>${Number.isInteger(count)?`<span class="reader-filter-chip-count">${count}</span>`:""}</button>`;
+    }).join("");
+  }
+  if (readerMinimumChips) {
+    const minimum=counters.minimum||{};
+    const values=["","1","2","3","4"];
+    readerMinimumChips.innerHTML=values.map(value=>{
+      const active=String(value)===String(minValue);
+      const count=value===""?minimum.all:minimum[value];
+      return `<button class="reader-filter-chip reader-min-chip${active?' is-active':''}" type="button" data-reader-min="${value}" aria-pressed="${active?'true':'false'}" title="${esc(readerMinimumChipTitle(value))}"><span class="reader-filter-chip-text">${esc(readerMinimumChipLabel(value))}</span>${Number.isInteger(count)?`<span class="reader-filter-chip-count">${count}</span>`:""}</button>`;
+    }).join("");
+  }
+  if (readerFilterSummary) {
+    const parts=[];
+    if (!fixed) parts.push(readerDsChipLabel(dsValue,names));
+    parts.push(minValue ? readerMinimumChipTitle(minValue).replace(/^.*? /,'') : (currentLang==='fr'?'Toutes':'All'));
+    if (includeFantasy) parts.push('💭');
+    readerFilterSummary.textContent=parts.join(' · ');
+  }
+  if (!readerFilterDock.dataset.initialized) {
+    readerFilterDock.dataset.initialized="true";
+    try { if (window.matchMedia?.("(max-width: 700px)")?.matches) readerFilterDock.open=false; } catch (_) {}
+  }
+}
+function configureReaderLogicControls(profile,names,counters={ds:{},minimum:{}}) {
+  if(readerDsFilter){
+    const previous=INTERACTION_MODEL.normalizeReaderDsFilter(readerDsFilter.value);
+    const fixed=profile?.dynamic?.mode&&profile.dynamic.mode!=="switch";
+    const ds=counters.ds||{};
+    const opts=[
+      ["both",currentLang==="fr"?"D/s : les deux":"D/s: both",ds.both],
+      ["a-dominant",currentLang==="fr"?`${names.personA} domine`:`${names.personA} dominant`,ds["a-dominant"]],
+      ["b-dominant",currentLang==="fr"?`${names.personB} domine`:`${names.personB} dominant`,ds["b-dominant"]]
+    ];
+    readerDsFilter.innerHTML=opts.map(([value,label,count])=>`<option value="${value}">${esc(label)}${Number.isInteger(count)?` · ${count}`:""}</option>`).join("");
+    readerDsFilter.value=previous;
+    readerDsFilter.disabled=!!fixed;
+    readerDsFilter.title=fixed?(currentLang==="fr"?"La dynamique D/s est fixe dans les profils.":"The D/s dynamic is fixed in profiles."):"";
+  }
+  if(readerIncludeFantasy){
+    const span=readerIncludeFantasy.closest("label")?.querySelector("span");
+    if(span) span.textContent=currentLang==="fr"?"💭 Inclure les fantasmes avec le minimum":"💭 Include fantasies with minimum";
+  }
+  if(minFilterScore){
+    const previous=minFilterScore.value;
+    const opts=readerMinimumLabels(counters.minimum||{});
+    minFilterScore.innerHTML=opts.map(([value,label,count])=>`<option value="${value}">${esc(label)}${Number.isInteger(count)?` · ${count}`:""}</option>`).join("");
+    minFilterScore.value=opts.some(([value])=>value===previous)?previous:"";
+    minFilterScore.setAttribute("aria-label",currentLang==="fr"?"Préférence minimale des deux personnes":"Minimum preference for both people");
+  }
+  renderReaderFilterDock(profile,names,counters);
+}
+function configureEditorMinimumOptions(){
+  if(!minFilterScore) return;
+  const previous=minFilterScore.value;
+  const opts=currentLang==="fr"?[
+    ["","Niveau minimum : tous"],["1","Pas maintenant ou mieux"],["2","Neutre ou mieux"],["3","🔥 Envie ou favori"],["4","⭐/👑 Favori"]
+  ]:[
+    ["","Minimum level: all"],["1","Not now or better"],["2","Neutral or better"],["3","🔥 Want or favorite"],["4","⭐/👑 Favorite"]
+  ];
+  minFilterScore.innerHTML=opts.map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join("");
+  minFilterScore.value=opts.some(([value])=>value===previous)?previous:"";
 }
 function configureReaderStatusOptions() {
   const langKey=currentLang;
@@ -1255,24 +1371,43 @@ function renderCoupleReader() {
   coupleReaderIntro.textContent=currentLang==="fr"?"Chaque résultat croise uniquement les réponses complémentaires : donner avec recevoir, dominant avec soumis, ou intérêt partagé.":"Each result matches only complementary answers: give with receive, dominant with submissive, or shared interest.";
   coupleReaderLegend.innerHTML=currentLang==="fr"?`<strong>Lecture :</strong> les réponses restent personnelles. Le résultat au centre est calculé pour chaque configuration réellement possible. 🚫 reste une limite prioritaire ; 💭 reste un fantasme et n’est jamais transformé en consentement réel.`:`<strong>Reading:</strong> answers remain personal. The center result is calculated for each actually possible configuration. 🚫 remains a priority limit; 💭 remains a fantasy and is never converted into real-world consent.`;
   const q=search.value.trim().toLowerCase(), maxLevel=experienceMaxLevel(), selectedCategory=category.value, selectedRisk=riskFilter.value;
-  const minRaw=minFilterScore.value; const filter={status:status.value,minScore:minRaw===""?null:Number(minRaw)};
-  const grouped=new Map(); let visiblePractices=0,visibleVariants=0,completeVariants=0,compatible=0,strong=0,fantasies=0,limits=0,done=0;
+  const minRaw=minFilterScore.value, minScore=minRaw===""?null:Number(minRaw);
+  const dsFilter=INTERACTION_MODEL.normalizeReaderDsFilter(readerDsFilter?.value||"both");
+  const includeFantasy=readerIncludeFantasy?.checked===true;
+  const prepared=[];
   for(const entity of UNIFIED_CATALOG.entities||[]) {
     const practiceResponse=V2_STORAGE.getReaderPractice(entity.id); if(!practiceResponse) continue;
     const allPairs=INTERACTION_MODEL.readingView(entity,practiceResponse,profile)||[];
-    const candidates=[];
+    const base=[];
     for(const pair of allPairs) {
       const info=readerVariantInfo(entity,pair.variant);
       if(info.level>maxLevel) continue;
       if(selectedCategory&&info.category!==selectedCategory) continue;
       if(selectedRisk&&info.risk!==selectedRisk) continue;
       if(sessionOnlyFilter&&!isVariantInSession(entity.id,pair.variant)) continue;
-      if(!readerVariantMatches(pair,filter)) continue;
-      candidates.push({pair,info});
+      if(!readerStatusMatches(pair,status.value)) continue;
+      base.push({pair,info});
     }
-    if(!candidates.length) continue;
-    const searchText=candidates.map(({pair,info})=>`${info.title} ${info.explanation} ${info.category} ${pair.personA.state?.note||""} ${pair.personB.state?.note||""}`).join(" ").toLowerCase();
+    if(!base.length) continue;
+    const searchText=base.map(({pair,info})=>`${info.title} ${info.explanation} ${info.category} ${pair.personA.state?.note||""} ${pair.personB.state?.note||""}`).join(" ").toLowerCase();
     if(q&&!searchText.includes(q)) continue;
+    prepared.push({entity,variants:base});
+  }
+
+  const baseEntries=prepared.flatMap(({entity,variants})=>variants.map(({pair})=>({entity,pair})));
+  const dsCounterSource=baseEntries.filter(({pair})=>INTERACTION_MODEL.readerMinimumMatches(pair,minScore,includeFantasy));
+  const minCounterSource=baseEntries.filter(({entity,pair})=>INTERACTION_MODEL.readerDsFilterMatches(entity,pair,profile,dsFilter));
+  const dsCounters=INTERACTION_MODEL.readerFilterCounters(dsCounterSource,profile,includeFantasy).ds;
+  const minimumCounters=INTERACTION_MODEL.readerFilterCounters(minCounterSource,profile,includeFantasy).minimum;
+  configureReaderLogicControls(profile,names,{ds:dsCounters,minimum:minimumCounters});
+
+  const grouped=new Map(); let visiblePractices=0,visibleVariants=0,completeVariants=0,compatible=0,strong=0,fantasies=0,limits=0,done=0;
+  for(const {entity,variants} of prepared) {
+    const candidates=variants.filter(({pair})=>
+      INTERACTION_MODEL.readerDsFilterMatches(entity,pair,profile,dsFilter) &&
+      INTERACTION_MODEL.readerMinimumMatches(pair,minScore,includeFantasy)
+    );
+    if(!candidates.length) continue;
     const categoryName=candidates[0].info.category||"Autres";
     if(!grouped.has(categoryName)) grouped.set(categoryName,[]);
     grouped.get(categoryName).push({entity,variants:candidates}); visiblePractices++; visibleVariants+=candidates.length;
@@ -1313,7 +1448,7 @@ function renderCoupleReader() {
   if(statModeEl) statModeEl.textContent=currentLang==="fr"?"Mode : Lecture du couple":"Mode: Couple reading";
   compatIndicator.textContent=currentLang==="fr"?`${compatible} compatibilités · ${completeVariants} résultats complets`:`${compatible} matches · ${completeVariants} complete results`;
   compatIndicator.removeAttribute("role"); compatIndicator.removeAttribute("tabindex"); compatIndicator.title="";
-  return {visiblePractices,visibleVariants,completeVariants,compatible,strong,fantasies,limits,done};
+  return {visiblePractices,visibleVariants,completeVariants,compatible,strong,fantasies,limits,done,filterCounters:{ds:dsCounters,minimum:minimumCounters}};
 }
 if(coupleReaderList) coupleReaderList.addEventListener("click",e=>{
   const action=e.target.closest("button[data-couple-action]");
@@ -1489,7 +1624,7 @@ function pickRandomPractice() {
   const picked=eligible[Math.floor(Math.random()*eligible.length)];
   randomPickedId=picked.key;
   if(randomNoRepeat.checked){randomDrawHistory.add(picked.key);saveRandomHistory();invalidateRandomSnapshot();}
-  search.value='';category.value='';status.value='';minFilterScore.value='';riskFilter.value='';sessionOnlyFilter=false;render();
+  search.value='';category.value='';status.value='';minFilterScore.value='';riskFilter.value='';if(readerDsFilter)readerDsFilter.value='both';if(readerIncludeFantasy)readerIncludeFantasy.checked=false;sessionOnlyFilter=false;render();
   const card=coupleReaderList?.querySelector(`[data-v2-id="${CSS.escape(picked.entity.id)}"]`); if(card)card.scrollIntoView({behavior:'smooth',block:'center'});
   const already=isVariantInSession(picked.entity.id,picked.pair.variant), blocked=picked.pair.compatibility?.status==='limit';
   const fantasy=picked.pair.compatibility?.status==='fantasy';
@@ -1555,11 +1690,28 @@ search.addEventListener("input", () => {
   searchRenderTimer = setTimeout(render, 100);
 });
 [category, status, minFilterScore, riskFilter].forEach(el => el.addEventListener("input", render));
+if(readerDsFilter) readerDsFilter.addEventListener("input",()=>{V2_STORAGE.setDisplay("readerDsFilter",INTERACTION_MODEL.normalizeReaderDsFilter(readerDsFilter.value));render();});
+if(readerIncludeFantasy) readerIncludeFantasy.addEventListener("input",()=>{V2_STORAGE.setDisplay("readerIncludeFantasy",readerIncludeFantasy.checked===true);render();});
+if(readerDsChips) readerDsChips.addEventListener("click",e=>{
+  const btn=e.target.closest?.("[data-reader-ds]"); if(!btn||!readerDsFilter||readerDsFilter.disabled) return;
+  readerDsFilter.value=INTERACTION_MODEL.normalizeReaderDsFilter(btn.dataset.readerDs);
+  V2_STORAGE.setDisplay("readerDsFilter",readerDsFilter.value); render();
+});
+if(readerMinimumChips) readerMinimumChips.addEventListener("click",e=>{
+  const btn=e.target.closest?.("[data-reader-min]"); if(!btn||!minFilterScore) return;
+  minFilterScore.value=btn.dataset.readerMin||""; render();
+});
+if(readerAdvancedFilters) readerAdvancedFilters.addEventListener("click",()=>{
+  if(allTools) allTools.open=true;
+  const target=document.querySelector(".filters-backup-section");
+  if(target) requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"start"}));
+});
 
 showSessionBtn.addEventListener("click", () => {
   if (!isReadingMode) setViewMode("read");
   sessionOnlyFilter = !sessionOnlyFilter;
   search.value = ""; category.value = ""; status.value = ""; minFilterScore.value = "";
+  if(readerDsFilter) readerDsFilter.value="both"; if(readerIncludeFantasy) readerIncludeFantasy.checked=false;
   showSessionBtn.classList.toggle("active", sessionOnlyFilter);
   showSessionBtn.textContent = sessionOnlyFilter ? (currentLang==="fr"?"📌 Afficher tout":"📌 Show all") : t("showSession");
   render();

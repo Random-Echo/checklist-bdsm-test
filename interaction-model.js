@@ -22,6 +22,11 @@
     A_DOMINANT: 'a-dominant',
     B_DOMINANT: 'b-dominant'
   });
+  const READER_DS_FILTER = Object.freeze({
+    BOTH: 'both',
+    A_DOMINANT: 'a-dominant',
+    B_DOMINANT: 'b-dominant'
+  });
 
   const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
   const isPerson = value => value === 'personA' || value === 'personB';
@@ -214,6 +219,58 @@
     return { ...base, score:4, status:'excellent' };
   }
 
+  function normalizeReaderDsFilter(value) {
+    return Object.values(READER_DS_FILTER).includes(value) ? value : READER_DS_FILTER.BOTH;
+  }
+
+  function readerDsFilterMatches(entity, pair, profile, rawFilter) {
+    if (axisOf(entity) !== AXIS.ROLE) return true;
+    // A fixed D/s profile already exposes only its configured role variant.
+    if (profile?.dynamic?.mode && profile.dynamic.mode !== 'switch') return true;
+    const filter = normalizeReaderDsFilter(rawFilter);
+    if (filter === READER_DS_FILTER.A_DOMINANT) return pair?.variant === VARIANT.A_DOMINANT;
+    if (filter === READER_DS_FILTER.B_DOMINANT) return pair?.variant === VARIANT.B_DOMINANT;
+    return true;
+  }
+
+  function readerMinimumMatches(pair, rawMinimum, includeFantasy=false) {
+    if (rawMinimum === null || rawMinimum === undefined || rawMinimum === '') return true;
+    const minimum = Number(rawMinimum);
+    if (!Number.isInteger(minimum) || minimum < 1 || minimum > 4) return true;
+    const a = score(pair?.compatibility?.scoreA);
+    const b = score(pair?.compatibility?.scoreB);
+    if (a === null || b === null) return false;
+    // A limit never satisfies a positive minimum.
+    if (a === 0 || b === 0) return false;
+    // Fantasy is intentionally outside the consent/preference scale. It may be
+    // included explicitly, but the other person's real preference must still
+    // meet the selected minimum.
+    const aFantasy = a === 5, bFantasy = b === 5;
+    if (aFantasy || bFantasy) {
+      if (!includeFantasy) return false;
+      const realScores = [a,b].filter(v => v !== 5);
+      return realScores.length === 0 || realScores.every(v => v >= minimum);
+    }
+    return a >= minimum && b >= minimum;
+  }
+
+  function readerFilterCounters(entries, profile, includeFantasy=false) {
+    const list = Array.isArray(entries) ? entries : [];
+    const ds = { both:0, 'a-dominant':0, 'b-dominant':0 };
+    const minimum = { all:list.length, 1:0, 2:0, 3:0, 4:0 };
+    let fantasies = 0;
+    for (const entry of list) {
+      const entity = entry?.entity, pair = entry?.pair;
+      if (!entity || !pair) continue;
+      ds.both++;
+      if (readerDsFilterMatches(entity,pair,profile,READER_DS_FILTER.A_DOMINANT)) ds['a-dominant']++;
+      if (readerDsFilterMatches(entity,pair,profile,READER_DS_FILTER.B_DOMINANT)) ds['b-dominant']++;
+      for (const threshold of [1,2,3,4]) if (readerMinimumMatches(pair,threshold,includeFantasy)) minimum[threshold]++;
+      if (pair?.compatibility?.status === 'fantasy') fantasies++;
+    }
+    return { ds, minimum, fantasies };
+  }
+
   function readingPair(entity, variant, practiceResponse, profile) {
     const pair = pairForVariant(entity, variant, practiceResponse);
     if (!pair) return null;
@@ -231,13 +288,13 @@
   window.CHECKLIST_INTERACTION_MODEL = Object.freeze({
     modelSchemaVersion:MODEL_SCHEMA_VERSION,
     responseSchemaVersion:RESPONSE_SCHEMA_VERSION,
-    AXIS, SLOT, VARIANT,
+    AXIS, SLOT, VARIANT, READER_DS_FILTER,
     axisOf, slotsForEntity, variantsForEntity, participantSlotsForVariant,
     variantForLegacyScenario, slotForLegacyPerson,
     normalizePersonalState, emptyPersonalResponses, emptyPracticeResponse,
     effectiveScore, evaluateSlot, visibleSlots, pairForVariant, editingView,
     variantApplicability, variantAllowedByDynamic, visibleVariants,
-    compatibilityForStates, readingPair, readingView,
+    compatibilityForStates, normalizeReaderDsFilter, readerDsFilterMatches, readerMinimumMatches, readerFilterCounters, readingPair, readingView,
     otherPerson
   });
 })();
