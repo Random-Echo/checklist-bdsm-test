@@ -1,0 +1,1817 @@
+
+const CHECKLIST_SCENARIO = window.CHECKLIST_SCENARIO;
+const CHECKLIST_DATA = window.CHECKLIST_DATA;
+const V2_STORAGE = window.CHECKLIST_V2_STORAGE;
+const INTERACTION_MODEL = window.CHECKLIST_INTERACTION_MODEL;
+const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
+const CURRENT_SCENARIO = window.CHECKLIST_UNIFIED?.scenario || "a-dom";
+if (!CHECKLIST_SCENARIO || !CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist V2 configuration missing.");
+const initialItems = CHECKLIST_DATA.items;
+for (let i = 0; i < initialItems.length; i++) {
+  if (!Number.isInteger(initialItems[i].displayIndex)) initialItems[i].displayIndex = i + 1;
+}
+const categoryColors = CHECKLIST_DATA.categoryColors;
+const APP_VERSION = "V1.1.64";
+const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
+
+const LANG_KEY = window.CHECKLIST_SITE.languageKey;
+const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
+const I18N = CHECKLIST_DATA.i18n;
+const ONBOARDING_KEY = window.CHECKLIST_SITE.onboardingKey || "bdsmChecklistSite_firstUseGuide_v1";
+const MERGE_REVIEW_KEY = "bdsmChecklistSite_mergeReviewPending_v1";
+let onboardingModal = null;
+let onboardingDialog = null;
+let mergeReviewBanner = null;
+let currentLang = (() => {
+  const saved = localStorage.getItem(LANG_KEY);
+  if (saved === "fr" || saved === "en") return saved;
+  const systemLang = String(navigator.language || "").toLowerCase();
+  return systemLang.startsWith("fr") ? "fr" : "en";
+})();
+
+function t(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) ?? I18N.fr[key] ?? key;
+}
+
+function localizedCategory(categoryName) {
+  return currentLang === "en" ? (CATEGORY_EN[categoryName] || categoryName) : categoryName;
+}
+
+function applyStaticLanguage() {
+  document.documentElement.lang = currentLang;
+  document.title = `${t("appTitle")} ${APP_VERSION}`;
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+    el.textContent = t(key);
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => {
+    const key = el.dataset.i18nHtml;
+    el.innerHTML = t(key);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach(el => {
+    el.setAttribute("aria-label", t(el.dataset.i18nAriaLabel));
+  });
+  applyProfileLabels();
+
+}
+function applyProfileLabels() {
+  const p = window.CHECKLIST_PROFILE_API?.get?.();
+  if (!p) return;
+  const nameA = p.personA?.name || (currentLang === "fr" ? "Personne A" : "Person A");
+  const nameB = p.personB?.name || (currentLang === "fr" ? "Personne B" : "Person B");
+  const a = document.getElementById("exportPersonA"), b = document.getElementById("exportPersonB");
+  if (a) a.textContent = `🔵 ${nameA}`;
+  if (b) b.textContent = `🟣 ${nameB}`;
+}
+
+
+function renderLanguageButtons() {
+  document.querySelectorAll("[data-lang-choice]").forEach(btn => {
+    const active = btn.dataset.langChoice === currentLang;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+}
+
+
+function updateHelpLanguage() {
+  if (!helpModal) return;
+
+  document.querySelectorAll("[data-help-lang]").forEach(block => {
+    block.hidden = block.dataset.helpLang !== currentLang;
+  });
+
+  if (currentLang === "fr") {
+    helpKicker.textContent = "Mode d’emploi";
+    helpTitle.textContent = "Mode d’emploi complet";
+    openHelpBtn.setAttribute("aria-label", "Aide");
+    openHelpBtn.title = "Aide";
+    closeHelpBtn.setAttribute("aria-label", "Fermer");
+    closeHelpBtn.title = "Fermer";
+  } else {
+    helpKicker.textContent = "User guide";
+    helpTitle.textContent = "Complete user guide";
+    openHelpBtn.setAttribute("aria-label", "Help");
+    openHelpBtn.title = "Help";
+    closeHelpBtn.setAttribute("aria-label", "Close");
+    closeHelpBtn.title = "Close";
+  }
+}
+
+
+function updateAdultInfoLanguage() {
+  const fr = currentLang === "fr";
+  if (adultGate) adultGate.setAttribute("aria-labelledby", fr ? "adultGateTitleFr" : "adultGateTitleEn");
+  if (infoModalTitle) infoModalTitle.textContent = fr ? "Informations" : "Information";
+  if (closeInfoModalBtn) {
+    closeInfoModalBtn.setAttribute("aria-label", fr ? "Fermer" : "Close");
+    closeInfoModalBtn.title = fr ? "Fermer" : "Close";
+  }
+}
+
+function focusTrapIn(container, event) {
+  if (!container || event.key !== "Tab") return;
+  const focusable = [...container.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+    .filter(el => !el.hidden && el.offsetParent !== null);
+  if (!focusable.length) return;
+  const first = focusable[0], last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+}
+
+function acceptAdultGate() {
+  try {
+    localStorage.setItem(window.CHECKLIST_SITE.adultKey, "true");
+  } catch (_) {}
+  document.documentElement.classList.remove("adult-gate-required");
+  if (adultGate) adultGate.setAttribute("aria-hidden", "true");
+  setAppBackgroundInert(false);
+  requestAnimationFrame(showFirstUseGuideIfNeeded);
+}
+
+function leaveAdultGate() {
+  if (history.length > 1) {
+    history.back();
+    setTimeout(() => { try { window.location.replace("about:blank"); } catch (_) {} }, 250);
+  } else {
+    try { window.location.replace("about:blank"); } catch (_) {}
+  }
+}
+
+function openInfoModal(section="adult", opener=null) {
+  if (!infoModal) return;
+  lastInfoOpener = opener || document.activeElement;
+  updateAdultInfoLanguage();
+  infoModal.hidden = false;
+  infoModal.setAttribute("aria-hidden", "false");
+  setAppBackgroundInert(true);
+  requestAnimationFrame(() => {
+    const suffix = currentLang === "fr" ? "Fr" : "En";
+    const target = document.getElementById(`info${section.charAt(0).toUpperCase()+section.slice(1)}${suffix}`);
+    if (target) target.scrollIntoView({block:"start"});
+    if (closeInfoModalBtn) closeInfoModalBtn.focus();
+  });
+}
+
+function closeInfoModal() {
+  if (!infoModal) return;
+  infoModal.hidden = true;
+  infoModal.setAttribute("aria-hidden", "true");
+  setAppBackgroundInert(false);
+  if (lastInfoOpener && typeof lastInfoOpener.focus === "function") lastInfoOpener.focus();
+}
+
+function setAppBackgroundInert(active) {
+  for (const el of [document.querySelector("header"), document.querySelector("main"), document.querySelector("footer.site-footer"), document.querySelector(".merge-review-banner")]) {
+    if (el && "inert" in el) el.inert = !!active;
+  }
+}
+
+function openHelpModal() {
+  updateHelpLanguage();
+  helpModal.hidden = false;
+  helpModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("help-open");
+  setAppBackgroundInert(true);
+  helpBody.scrollTop = 0;
+  requestAnimationFrame(() => closeHelpBtn.focus());
+}
+
+function closeHelpModal() {
+  helpModal.hidden = true;
+  helpModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("help-open");
+  setAppBackgroundInert(false);
+  if (openHelpBtn) openHelpBtn.focus();
+}
+
+function setLanguage(lang, persist = true) {
+  const next = lang === "fr" ? "fr" : "en";
+  currentLang = next;
+  if (persist) {
+    localStorage.setItem(LANG_KEY, currentLang);
+  }
+
+  applyStaticLanguage();
+  renderLanguageButtons();
+  updateHelpLanguage();
+  updateAdultInfoLanguage();
+  updateFirstUseGuideLanguage();
+  updateMergeReviewBannerLanguage();
+  renderCategoryControls();
+  renderExperienceModeUI();
+  renderRoleUI();
+  renderExchangeInfo();
+  render();
+}
+
+// Les rôles visuels sont dérivés du scénario courant ; le stockage reste lié aux Personnes A/B.
+const PERSON_A_ROLE = CHECKLIST_SCENARIO.personARole;
+const PERSON_B_ROLE = CHECKLIST_SCENARIO.personBRole;
+
+const FAVORITE_SCORE = 4;
+const FANTASY_SCORE = 5;
+const SCORE_BUTTON_ORDER = [0,1,FANTASY_SCORE,2,3,FAVORITE_SCORE];
+
+// Caches de données dérivées : un changement de réponse les invalide une seule fois.
+// Les statistiques et le tirage ne reparcourent ainsi pas les 600 pratiques plusieurs fois par cycle UI.
+let derivedDataRevision = 0;
+let statsSnapshotCache = { revision:-1, value:null };
+let randomSnapshotCache = { revision:-1, value:null };
+let categoryStateCache = new Map();
+let quickProgressCache = new Map();
+let randomStateRevision = 0;
+function invalidateRandomSnapshot() {
+  randomStateRevision++;
+  randomSnapshotCache.revision = -1;
+}
+function invalidateDerivedData() {
+  derivedDataRevision++;
+  statsSnapshotCache.revision = -1;
+  categoryStateCache.clear();
+  quickProgressCache.clear();
+  invalidateRandomSnapshot();
+}
+
+// Legacy numeric session state is no longer active. Sessions are stored as practice + logical variant.
+let variantSessionOrder = (() => {
+  try { return Array.isArray(V2_STORAGE.getAllSessionEntries?.()) ? V2_STORAGE.getAllSessionEntries() : []; }
+  catch (_) { return []; }
+})();
+let variantSessionKeySet = new Set(variantSessionOrder.map(entry => `${entry.practiceId}|${entry.variant}`));
+let sessionOnlyFilter = false;
+
+let activeEditPerson = V2_STORAGE.getDisplay("activeEditPerson", "person-a", false) === "person-b" ? "person-b" : "person-a";
+let currentRole = activeEditPerson === "person-a" ? PERSON_A_ROLE : PERSON_B_ROLE;
+let readOnly = V2_STORAGE.getDisplay("readOnly", false, false) === true;
+
+let experienceMode = (() => {
+  const saved = V2_STORAGE.getDisplay("experienceMode", "beginner", false);
+  return ["beginner","confirmed","advanced"].includes(saved) ? saved : "beginner";
+})();
+
+const allCatalogCategories = [...new Set((UNIFIED_CATALOG.entities || []).flatMap(entity => Object.values(entity.scenarios || {}).map(block => block?.category).filter(Boolean)))];
+let collapsedCategories = (() => {
+  const raw = V2_STORAGE.getDisplay("collapsedCategories", null, true);
+  if (raw === null) return new Set(allCatalogCategories);
+  if (Array.isArray(raw)) return new Set(raw.filter(x => allCatalogCategories.includes(x)));
+  return new Set();
+})();
+
+function saveCollapsedCategories() {
+  V2_STORAGE.setDisplay("collapsedCategories", [...collapsedCategories], true);
+}
+
+function experienceMaxLevel() {
+  if (experienceMode === "beginner") return 1;
+  if (experienceMode === "confirmed") return 2;
+  return 3;
+}
+
+function experienceLabel(mode = experienceMode) {
+  if (mode === "beginner") return t("beginner");
+  if (mode === "confirmed") return t("confirmed");
+  return t("advanced");
+}
+
+function levelShortLabel(level) {
+  if (currentLang === "fr") return level === 1 ? "Déb." : level === 2 ? "Conf." : "Av.";
+  return level === 1 ? "Beg." : level === 2 ? "Exp." : "Adv.";
+}
+
+const catalogCumulativeLevelCounts = (() => {
+  const exact = {1:0, 2:0, 3:0};
+  for (const item of initialItems) exact[Number(item.level || 3)]++;
+  return {1:exact[1], 2:exact[1] + exact[2], 3:exact[1] + exact[2] + exact[3]};
+})();
+
+function renderExperienceModeUI() {
+  if (!experienceSwitch) return;
+  const modes = [
+    ["beginner", 1],
+    ["confirmed", 2],
+    ["advanced", 3],
+  ];
+  experienceSwitch.querySelectorAll("[data-experience-mode]").forEach(btn => {
+    const mode = btn.dataset.experienceMode;
+    const tuple = modes.find(x => x[0] === mode);
+    const max = tuple ? tuple[1] : 3;
+    const count = catalogCumulativeLevelCounts[max] || initialItems.length;
+    btn.textContent = `${experienceLabel(mode)} · ${count}`;
+    const active = experienceMode === mode;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+  experienceSwitch.setAttribute(
+    "aria-label",
+    currentLang === "fr" ? "Niveau d’exploration" : "Exploration level"
+  );
+}
+
+document.body.dataset.role = currentRole;
+document.body.dataset.readonly = readOnly ? "true" : "false";
+
+const search = document.getElementById("search");
+const category = document.getElementById("category");
+const status = document.getElementById("status");
+const minFilterScore = document.getElementById("minFilterScore");
+const riskFilter = document.getElementById("riskFilter");
+const minRandomOne = document.getElementById("minRandomOne");
+const minRandomOther = document.getElementById("minRandomOther");
+const randomOnlyNew = document.getElementById("randomOnlyNew");
+const randomIncludeNeutralNeutral = document.getElementById("randomIncludeNeutralNeutral");
+const randomExcludeHighRisk = document.getElementById("randomExcludeHighRisk");
+const randomNoRepeat = document.getElementById("randomNoRepeat");
+const resetRandomCycleBtn = document.getElementById("resetRandomCycle");
+const compatIndicator = document.getElementById("compatIndicator");
+const compatDetails = document.getElementById("compatDetails");
+const randomCandidateInfo = document.getElementById("randomCandidateInfo");
+const exchangeInfo = document.getElementById("exchangeInfo");
+const showSessionBtn = document.getElementById("showSession");
+const openSessionModeBtn = document.getElementById("openSessionMode");
+const resetSessionBtn = document.getElementById("resetSession");
+const sessionMode = document.getElementById("sessionMode");
+const closeSessionModeBtn = document.getElementById("closeSessionMode");
+const sessionModeList = document.getElementById("sessionModeList");
+const sessionSafetySummary = document.getElementById("sessionSafetySummary");
+const sessionSummary = document.getElementById("sessionSummary");
+const sessionList = document.getElementById("sessionList");
+const randomBtn = document.getElementById("randomBtn");
+const randomResult = document.getElementById("randomResult");
+const importJsonBtn = document.getElementById("importJson");
+const importJsonFile = document.getElementById("importJsonFile");
+const exportFullBtn = document.getElementById("exportFull");
+const exportPersonABtn = document.getElementById("exportPersonA");
+const exportPersonBBtn = document.getElementById("exportPersonB");
+const resetChecklistBtn = document.getElementById("resetChecklist");
+const statVisibleEl = document.getElementById("statVisible");
+const statDoneEl = document.getElementById("statDone");
+const statTogetherEl = document.getElementById("statTogether");
+const statRatedEl = document.getElementById("statRated");
+const statStarredEl = document.getElementById("statStarred");
+const statModeEl = document.getElementById("statMode");
+const safetyFields = [...document.querySelectorAll(".safety input,.safety select,.safety textarea")];
+// une seule colonne fixe (Pratique), sans colonne Catégorie.
+const roleButtons = [...document.querySelectorAll("[data-person-choice]")];
+const roleSwitchEl = document.querySelector(".role-switch");
+
+let randomDrawHistory = (() => {
+  try {
+    const raw = V2_STORAGE.getRandomHistoryEntries?.() || [];
+    return new Set((Array.isArray(raw) ? raw : []).map(entry => `${entry.practiceId}|${entry.variant}`));
+  } catch (_) { return new Set(); }
+})();
+
+function getRandomPreferences() {
+  return {
+    minOne:minRandomOne.value,
+    minOther:minRandomOther.value,
+    includeNeutralNeutral:!!randomIncludeNeutralNeutral.checked,
+    onlyNew:!!randomOnlyNew.checked,
+    excludeHighRisk:!!randomExcludeHighRisk.checked,
+    noRepeat:!!randomNoRepeat.checked
+  };
+}
+
+function normalizeRandomThreshold(value, fallback) {
+  return ["fantasy","neutral","want","favorite"].includes(value) ? value : fallback;
+}
+
+function applyRandomPreferences(prefs, persist=false) {
+  const p = prefs && typeof prefs === "object" ? prefs : {};
+  minRandomOne.value = normalizeRandomThreshold(p.minOne, "want");
+  minRandomOther.value = normalizeRandomThreshold(p.minOther, "neutral");
+  randomIncludeNeutralNeutral.checked = p.includeNeutralNeutral === true;
+  if (typeof p.onlyNew === "boolean") randomOnlyNew.checked = p.onlyNew;
+  if (typeof p.excludeHighRisk === "boolean") randomExcludeHighRisk.checked = p.excludeHighRisk;
+  if (typeof p.noRepeat === "boolean") randomNoRepeat.checked = p.noRepeat;
+  invalidateRandomSnapshot();
+  if (persist) V2_STORAGE.setRandomPreferences(getRandomPreferences());
+}
+
+function loadRandomPreferences() {
+  try {
+    const saved = V2_STORAGE.getRandomPreferences();
+    if (saved && typeof saved === "object") applyRandomPreferences(saved, false);
+  } catch (_) {}
+}
+
+function saveRandomPreferences() {
+  V2_STORAGE.setRandomPreferences(getRandomPreferences());
+}
+
+function saveRandomHistory() {
+  const entries=[...randomDrawHistory].map(key=>{const i=key.lastIndexOf("|");return {practiceId:key.slice(0,i),variant:key.slice(i+1)}}).filter(e=>e.practiceId&&e.variant);
+  V2_STORAGE.setRandomHistoryEntries?.(entries);
+}
+
+function clearRandomHistory(showMessage=true) {
+  randomDrawHistory.clear();
+  invalidateRandomSnapshot();
+  saveRandomHistory();
+  updateCompatibilityIndicator();
+  if (showMessage) randomResult.innerHTML = `<strong>${t("randomCycleReset")}</strong>`;
+}
+
+loadRandomPreferences();
+const languageButtons = [...document.querySelectorAll("[data-lang-choice]")];
+const openHelpBtn = document.getElementById("openHelp");
+const helpModal = document.getElementById("helpModal");
+const helpBody = document.getElementById("helpBody");
+const closeHelpBtn = document.getElementById("closeHelp");
+const helpTitle = document.getElementById("helpTitle");
+const helpKicker = document.getElementById("helpKicker");
+const adultGate = document.getElementById("adultGate");
+const adultGateDialog = adultGate ? adultGate.querySelector(".adult-gate-dialog") : null;
+const infoModal = document.getElementById("infoModal");
+const infoModalBody = document.getElementById("infoModalBody");
+const infoModalTitle = document.getElementById("infoModalTitle");
+const closeInfoModalBtn = document.getElementById("closeInfoModal");
+let lastInfoOpener = null;
+const toggleOtherRole = document.getElementById("toggleOtherRole");
+const toggleReadOnly = document.getElementById("toggleReadOnly");
+const modeEditBtn = document.getElementById("modeEdit");
+const modeReadBtn = document.getElementById("modeRead");
+const sessionToggleReadOnly = document.getElementById("sessionToggleReadOnly");
+const experienceSwitch = document.getElementById("experienceSwitch");
+const allTools = document.getElementById("allTools");
+
+let modifiedScopes = { sub:"", dom:"", common:"" };
+try {
+  const savedScopes = V2_STORAGE.getModifiedScopesLegacy();
+  if (savedScopes && typeof savedScopes === "object") {
+    for (const k of ["sub","dom","common"]) if (typeof savedScopes[k] === "string") modifiedScopes[k] = savedScopes[k];
+  }
+} catch (_) {}
+
+let lastModifiedAt = V2_STORAGE.getLastModified() || "";
+let lastExchange = V2_STORAGE.getLastExchange() || null;
+
+if (lastModifiedAt) {
+  let changed = false;
+  for (const scope of ["sub","dom","common"]) {
+    if (!modifiedScopes[scope]) {
+      modifiedScopes[scope] = lastModifiedAt;
+      changed = true;
+    }
+  }
+  if (changed) saveModifiedScopes();
+}
+
+
+function backupTypeLabel(type) {
+  if (type === "male" || type === "person-a") return currentLang === "fr" ? "Personne A" : "Person A";
+  if (type === "female" || type === "person-b") return currentLang === "fr" ? "Personne B" : "Person B";
+  return currentLang === "fr" ? "Complète" : "Full";
+}
+
+function globalBackupConfirmationText(type, payload, inspection=null) {
+  const normalized = type === "male" ? "person-a" : type === "female" ? "person-b" : type;
+  const legacy = inspection?.format === "legacy-v2";
+  const exportedAt = typeof payload?.exportedAt === "string" ? payload.exportedAt : "";
+  const localAt = V2_STORAGE.getLastModified() || "";
+  const older = normalized !== "full" && Number.isFinite(new Date(exportedAt).getTime()) && Number.isFinite(new Date(localAt).getTime()) && new Date(exportedAt).getTime() < new Date(localAt).getTime();
+  let message;
+  if (currentLang === "fr") {
+    if (normalized === "full") {
+      message = `Sauvegarde COMPLÈTE${legacy ? " V1.1.55" : " V2"}.\n\nElle remplacera le stockage complet : profils, réponses individuelles des deux personnes, données « Fait ensemble », notes, sécurité, séances, affichage et historique.${legacy ? "\n\nLa sauvegarde V1.1.55 sera convertie automatiquement vers le nouveau modèle individuel." : ""}`;
+    } else {
+      const who = normalized === "person-a" ? "Personne A" : "Personne B";
+      const other = normalized === "person-a" ? "Personne B" : "Personne A";
+      message = `Sauvegarde ${who.toUpperCase()}${legacy ? " V1.1.55" : " V2"}.\n\nElle remplacera uniquement les réponses personnelles de ${who}. Les réponses de ${other} resteront intactes. Les données communes restent additives et la sécurité est fusionnée prudemment.`;
+    }
+    if (older) message += `\n\n⚠️ Ce fichier semble plus ancien que les données locales.`;
+    return message + `\n\nContinuer ?`;
+  }
+  if (normalized === "full") {
+    message = `FULL ${legacy ? "V1.1.55" : "V2"} BACKUP.\n\nIt will replace the complete V2 storage: both people's individual answers, couple data, notes, safety, sessions, display settings and history.${legacy ? "\n\nThe V1.1.55 backup will be converted automatically to the new individual model." : ""}`;
+  } else {
+    const who = normalized === "person-a" ? "Person A" : "Person B";
+    const other = normalized === "person-a" ? "Person B" : "Person A";
+    message = `${who.toUpperCase()} ${legacy ? "V1.1.55" : "V2"} BACKUP.\n\nIt will replace only ${who}'s answers across both D/s orientations. ${other}'s answers remain intact. Done together remains additive and safety is merged conservatively.`;
+  }
+  if (older) message += `\n\n⚠️ This file appears older than the local data.`;
+  return message + `\n\nContinue?`;
+}
+
+function formatDateTime(iso) {
+  if (!iso) return t("dateUnknown");
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return t("dateUnknown");
+  const locale = currentLang === "fr" ? "fr-FR" : "en-GB";
+  try {
+    return d.toLocaleString(locale, {
+      day:"2-digit", month:"2-digit", year:"numeric",
+      hour:"2-digit", minute:"2-digit"
+    });
+  } catch (_) {
+    return d.toLocaleString(locale);
+  }
+}
+
+
+function renderExchangeInfo() {
+  if (!exchangeInfo) return;
+  if (!lastExchange || typeof lastExchange !== "object") {
+    exchangeInfo.textContent = t("lastExchangeNone");
+    return;
+  }
+  const action = lastExchange.type === "import" ? "Import" : "Export";
+  const backupLabel = backupTypeLabel(lastExchange.backupType || "full");
+  const version = lastExchange.appVersion || t("versionUnknown");
+  const modified = formatDateTime(lastExchange.lastModifiedAt || lastExchange.exportedAt);
+  exchangeInfo.textContent = `${action} · ${backupLabel} · ${t("modified")} ${modified} · ${version}`;
+}
+
+function applyReadOnlyToSafety() {
+  // "Lecture" locks personal answers, not shared couple tools.
+  safetyFields.forEach(el => { el.disabled = false; });
+  importJsonBtn.disabled = false; importJsonBtn.title = "";
+  resetChecklistBtn.disabled = readOnly; resetChecklistBtn.title = readOnly ? (currentLang === "fr" ? "Passez en Édition pour réinitialiser toutes les données." : "Switch to Edit to reset all data.") : "";
+  resetSessionBtn.disabled = variantSessionOrder.length === 0; resetSessionBtn.title = "";
+}
+
+
+function firstUseGuideCopy() {
+  if (currentLang === "fr") {
+    return {
+      kicker:"Première utilisation",
+      title:"Remplissez d’abord séparément, puis fusionnez",
+      intro:"Pour limiter l’influence des réponses de l’autre, chaque personne peut remplir sa partie de son côté, idéalement sur son propre appareil.",
+      cards:[
+        ["1 · Chacun de son côté","La Personne A et la Personne B renseignent chacune leurs propres choix sans voir ceux de l’autre : intérêt, donner/recevoir ou rôle D/s selon la pratique."],
+        ["2 · Édition vraiment individuelle","Le mode Édition n’affiche que les choix de la personne active. Passez ensuite en Lecture pour croiser les réponses et renseigner les données communes."],
+        ["3 · Fusionnez avec les sauvegardes","Exportez 🔵 Personne A ou 🟣 Personne B, envoyez le JSON à l’autre appareil puis utilisez 📂 Restaurer. L’import remplace uniquement les réponses personnelles de la personne concernée."],
+        ["4 · Vérifiez ensemble avant une séance","En mode Lecture, relisez les résultats, marquez les configurations déjà faites, préparez la séance et vérifiez surtout Sécurité / limites / aftercare."]
+      ],
+      local:"Séance, ordre de séance, niveau d’exploration, affichage et réglages du tirage restent locaux lors d’un échange Personne A/B. Une sauvegarde 💾 Complète permet ensuite d’aligner entièrement deux appareils.",
+      understand:"J’ai compris",
+      guide:"Lire le mode d’emploi complet",
+      once:"Ce message n’apparaît automatiquement qu’une fois sur cet appareil. Le mode d’emploi reste accessible avec « ? »."
+    };
+  }
+  return {
+    kicker:"First use",
+    title:"Fill your answers separately first, then merge",
+    intro:"To reduce influence from the other person’s answers, each person can fill their own part separately, preferably on their own device.",
+    cards:[
+      ["1 · Fill separately","Person A and Person B each fill only their own interest, give/receive or D/s-role answers, depending on the practice."],
+      ["2 · Truly individual editing","Edit mode shows only the active person’s answers. Then switch to Reading to compare answers and manage shared couple data."],
+      ["3 · Merge with backups","Export 🔵 Person A or 🟣 Person B, send the JSON file to the other device, then use 📂 Restore. The import replaces only that person’s personal answers."],
+      ["4 · Review together before a session","In Reading mode, review the results, mark configurations already done, prepare the session, and especially verify Safety / limits / aftercare."]
+    ],
+    local:"Session selection/order, exploration level, display and random-draw settings remain local during Person A/B exchanges. A 💾 Full backup can then be used to align both devices completely.",
+    understand:"Got it",
+    guide:"Read the complete user guide",
+    once:"This message is shown automatically only once on this device. The complete guide remains available from “?”."
+  };
+}
+
+function ensureFirstUseGuide() {
+  if (onboardingModal) return;
+  const wrap = document.createElement("div");
+  wrap.className = "first-use-modal";
+  wrap.hidden = true;
+  wrap.setAttribute("aria-hidden", "true");
+  wrap.innerHTML = `<div class="first-use-backdrop"></div>
+    <section class="first-use-dialog" role="dialog" aria-modal="true" aria-labelledby="firstUseTitle">
+      <div class="first-use-kicker" data-first-use-kicker></div>
+      <h2 id="firstUseTitle" data-first-use-title></h2>
+      <p class="first-use-intro" data-first-use-intro></p>
+      <div class="first-use-grid" data-first-use-grid></div>
+      <p class="first-use-local" data-first-use-local></p>
+      <div class="first-use-actions">
+        <button class="first-use-primary" type="button" data-first-use-understand></button>
+        <button class="first-use-secondary" type="button" data-first-use-guide></button>
+      </div>
+      <p class="first-use-once" data-first-use-once></p>
+    </section>`;
+  document.body.appendChild(wrap);
+  onboardingModal = wrap;
+  onboardingDialog = wrap.querySelector(".first-use-dialog");
+
+  wrap.querySelector("[data-first-use-understand]").addEventListener("click", () => closeFirstUseGuide(true));
+  wrap.querySelector("[data-first-use-guide]").addEventListener("click", () => {
+    closeFirstUseGuide(true, false);
+    openHelpModal();
+  });
+  updateFirstUseGuideLanguage();
+}
+
+function updateFirstUseGuideLanguage() {
+  if (!onboardingModal) return;
+  const c = firstUseGuideCopy();
+  onboardingModal.querySelector("[data-first-use-kicker]").textContent = c.kicker;
+  onboardingModal.querySelector("[data-first-use-title]").textContent = c.title;
+  onboardingModal.querySelector("[data-first-use-intro]").textContent = c.intro;
+  onboardingModal.querySelector("[data-first-use-local]").textContent = c.local;
+  onboardingModal.querySelector("[data-first-use-understand]").textContent = c.understand;
+  onboardingModal.querySelector("[data-first-use-guide]").textContent = c.guide;
+  onboardingModal.querySelector("[data-first-use-once]").textContent = c.once;
+  onboardingModal.querySelector("[data-first-use-grid]").innerHTML = c.cards.map(([title,text]) =>
+    `<div class="first-use-card"><strong>${esc(title)}</strong><span>${esc(text)}</span></div>`
+  ).join("");
+}
+
+function markFirstUseSeen() {
+  try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch (_) {}
+}
+
+function closeFirstUseGuide(markSeen=true, restoreFocus=true) {
+  if (!onboardingModal || onboardingModal.hidden) return;
+  if (markSeen) markFirstUseSeen();
+  onboardingModal.hidden = true;
+  onboardingModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("first-use-open");
+  setAppBackgroundInert(false);
+  if (restoreFocus && openHelpBtn) openHelpBtn.focus();
+}
+
+function showFirstUseGuideIfNeeded() {
+  if (document.documentElement.classList.contains("adult-gate-required")) return;
+  const profile = window.CHECKLIST_PROFILE_API?.get?.();
+  if (profile && profile.anatomyConfigured !== true) return;
+  let seen = false;
+  try { seen = localStorage.getItem(ONBOARDING_KEY) === "true"; } catch (_) {}
+  if (seen) return;
+  ensureFirstUseGuide();
+  updateFirstUseGuideLanguage();
+  onboardingModal.hidden = false;
+  onboardingModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("first-use-open");
+  setAppBackgroundInert(true);
+  requestAnimationFrame(() => {
+    const btn = onboardingModal.querySelector("[data-first-use-understand]");
+    if (btn) btn.focus();
+  });
+}
+
+function mergeReviewCopy(type) {
+  const whoFr = (type === "male" || type === "person-a") ? "Personne A" : "Personne B";
+  const whoEn = (type === "male" || type === "person-a") ? "Person A" : "Person B";
+  return currentLang === "fr" ? {
+    title:`✓ Réponses ${whoFr} fusionnées`,
+    text:"Avant de préparer une séance, vérifiez ensemble « Fait ensemble », les notes A:/B: et surtout Sécurité / limites / aftercare.",
+    open:"Vérifier la sécurité",
+    close:"Fermer"
+  } : {
+    title:`✓ ${whoEn} answers merged`,
+    text:"Before preparing a session, review Done together, A:/B: notes and especially Safety / limits / aftercare together.",
+    open:"Review safety",
+    close:"Dismiss"
+  };
+}
+
+function readPendingMergeReview() {
+  try {
+    const raw = sessionStorage.getItem(MERGE_REVIEW_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && ["male","female","person-a","person-b"].includes(parsed.type) ? parsed : null;
+  } catch (_) { return null; }
+}
+
+function updateMergeReviewBannerLanguage() {
+  if (!mergeReviewBanner) return;
+  const pending = readPendingMergeReview();
+  if (!pending) return;
+  const c = mergeReviewCopy(pending.type);
+  mergeReviewBanner.querySelector("[data-merge-title]").textContent = c.title;
+  mergeReviewBanner.querySelector("[data-merge-text]").textContent = c.text;
+  mergeReviewBanner.querySelector("[data-merge-open]").textContent = c.open;
+  mergeReviewBanner.querySelector("[data-merge-close]").textContent = c.close;
+}
+
+function dismissMergeReviewBanner() {
+  try { sessionStorage.removeItem(MERGE_REVIEW_KEY); } catch (_) {}
+  if (mergeReviewBanner) mergeReviewBanner.remove();
+  mergeReviewBanner = null;
+}
+
+function renderMergeReviewBanner() {
+  const pending = readPendingMergeReview();
+  if (!pending || mergeReviewBanner) return;
+  const banner = document.createElement("aside");
+  banner.className = "merge-review-banner";
+  banner.setAttribute("role", "status");
+  banner.innerHTML = `<div class="merge-review-copy"><strong data-merge-title></strong><span data-merge-text></span></div>
+    <div class="merge-review-actions"><button type="button" data-merge-open></button><button type="button" data-merge-close></button></div>`;
+  const header = document.querySelector("header");
+  if (header) header.insertAdjacentElement("afterend", banner); else document.body.prepend(banner);
+  mergeReviewBanner = banner;
+  updateMergeReviewBannerLanguage();
+  banner.querySelector("[data-merge-open]").addEventListener("click", () => {
+    if (allTools) allTools.open = true;
+    const safety = document.querySelector(".safety-tool-section");
+    if (safety) requestAnimationFrame(() => safety.scrollIntoView({behavior:"smooth", block:"start"}));
+  });
+  banner.querySelector("[data-merge-close]").addEventListener("click", dismissMergeReviewBanner);
+}
+
+function renderRoleChoiceLabel(btn) {
+  const person = btn.dataset.personChoice === "person-b" ? "person-b" : "person-a";
+  const profile = window.CHECKLIST_PROFILE_API?.get?.();
+  const name = person === "person-a"
+    ? (profile?.personA?.name || (currentLang === "fr" ? "Personne A" : "Person A"))
+    : (profile?.personB?.name || (currentLang === "fr" ? "Personne B" : "Person B"));
+  const nameEl = document.createElement("span");
+  nameEl.className = "role-choice-name";
+  nameEl.textContent = name;
+  const roleEl = document.createElement("small");
+  roleEl.className = "role-choice-ds";
+  roleEl.textContent = currentLang === "fr" ? "Mes réponses" : "My answers";
+  btn.replaceChildren(nameEl, roleEl);
+}
+
+function renderRoleUI() {
+  document.body.dataset.role = currentRole;
+  document.body.dataset.readonly = readOnly ? "true" : "false";
+
+  for (const btn of roleButtons) {
+    const active = btn.dataset.personChoice === activeEditPerson;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+    renderRoleChoiceLabel(btn);
+  }
+
+  if (toggleOtherRole) {
+    toggleOtherRole.hidden = true;
+    toggleOtherRole.disabled = true;
+    toggleOtherRole.setAttribute("aria-hidden", "true");
+  }
+
+  document.body.dataset.viewMode = readOnly ? "read" : "edit";
+  if (modeEditBtn) {
+    modeEditBtn.textContent = currentLang === "fr" ? "✏️ Édition" : "✏️ Edit";
+    modeEditBtn.classList.toggle("active", !readOnly);
+    modeEditBtn.setAttribute("aria-pressed", !readOnly ? "true" : "false");
+  }
+  if (modeReadBtn) {
+    modeReadBtn.textContent = currentLang === "fr" ? "👁 Lecture" : "👁 Reading";
+    modeReadBtn.classList.toggle("active", readOnly);
+    modeReadBtn.setAttribute("aria-pressed", readOnly ? "true" : "false");
+  }
+
+  if (statModeEl) {
+    const profile = window.CHECKLIST_PROFILE_API?.get?.();
+    const name = activeEditPerson === "person-a" ? profile?.personA?.name : profile?.personB?.name;
+    statModeEl.textContent = readOnly ? `${t("mode")} : ${t("readOnlySuffix")}` : `${t("mode")} : ${name || (activeEditPerson === "person-a" ? "A" : "B")}`;
+  }
+
+  applyReadOnlyToSafety();
+  renderSessionPanel();
+}
+
+function setActivePerson(person) {
+  const normalized = person === "person-b" ? "person-b" : "person-a";
+  if (normalized === activeEditPerson) return;
+  activeEditPerson = normalized;
+  currentRole = activeEditPerson === "person-a" ? PERSON_A_ROLE : PERSON_B_ROLE;
+  V2_STORAGE.setDisplay("activeEditPerson", activeEditPerson, false);
+  V2_STORAGE.setActiveRole(currentRole);
+  renderRoleUI();
+  render();
+}
+
+for (const btn of roleButtons) {
+  btn.addEventListener("click", () => setActivePerson(btn.dataset.personChoice));
+}
+
+for (const btn of languageButtons) {
+  btn.addEventListener("click", () => setLanguage(btn.dataset.langChoice, true));
+}
+
+openHelpBtn.addEventListener("click", openHelpModal);
+closeHelpBtn.addEventListener("click", closeHelpModal);
+
+
+if (document.documentElement.classList.contains("adult-gate-required")) {
+  setAppBackgroundInert(true);
+  requestAnimationFrame(() => {
+    const langClass = currentLang === "fr" ? ".adult-lang-fr" : ".adult-lang-en";
+    const btn = adultGate && adultGate.querySelector(`${langClass} [data-adult-accept]`);
+    if (btn) btn.focus();
+  });
+}
+
+document.querySelectorAll("[data-adult-accept]").forEach(btn => btn.addEventListener("click", acceptAdultGate));
+document.querySelectorAll("[data-adult-exit]").forEach(btn => btn.addEventListener("click", leaveAdultGate));
+
+document.querySelectorAll("[data-info-open]").forEach(btn => {
+  btn.addEventListener("click", () => openInfoModal(btn.dataset.infoOpen || "adult", btn));
+});
+if (closeInfoModalBtn) closeInfoModalBtn.addEventListener("click", closeInfoModal);
+if (infoModal) {
+  infoModal.addEventListener("click", e => {
+    if (e.target && e.target.dataset && e.target.dataset.infoClose === "true") closeInfoModal();
+  });
+}
+
+document.addEventListener("keydown", e => {
+  if (onboardingModal && !onboardingModal.hidden) {
+    if (e.key === "Escape") { e.preventDefault(); closeFirstUseGuide(true); return; }
+    focusTrapIn(onboardingDialog, e);
+    return;
+  }
+  if (document.documentElement.classList.contains("adult-gate-required")) {
+    if (e.key === "Escape") { e.preventDefault(); return; }
+    focusTrapIn(adultGateDialog, e);
+    return;
+  }
+  if (infoModal && !infoModal.hidden) {
+    if (e.key === "Escape") { e.preventDefault(); closeInfoModal(); return; }
+    focusTrapIn(infoModal.querySelector(".info-modal-dialog"), e);
+  }
+});
+
+helpModal.addEventListener("click", (e) => {
+  if (e.target.closest("[data-help-close='true']")) {
+    closeHelpModal();
+    return;
+  }
+
+  const jump = e.target.closest("[data-help-target]");
+  if (jump) {
+    const target = document.getElementById(jump.dataset.helpTarget);
+    if (target) target.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (helpModal && !helpModal.hidden) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeHelpModal();
+      return;
+    }
+    focusTrapIn(helpModal.querySelector(".help-dialog"), e);
+  }
+});
+
+function setViewMode(mode) {
+  const next = mode === "read";
+  if (next === readOnly) return;
+  readOnly = next;
+  V2_STORAGE.setDisplay("readOnly", readOnly, false);
+  sessionOnlyFilter = false;
+  status.dataset.readerLang = "";
+  renderRoleUI(); render();
+  if (sessionMode && !sessionMode.hidden) renderSessionMode();
+}
+function toggleReadOnlyMode() { setViewMode(readOnly ? "edit" : "read"); }
+if (toggleReadOnly) toggleReadOnly.addEventListener("click", toggleReadOnlyMode);
+if (modeEditBtn) modeEditBtn.addEventListener("click",()=>setViewMode("edit"));
+if (modeReadBtn) modeReadBtn.addEventListener("click",()=>setViewMode("read"));
+if (sessionToggleReadOnly) sessionToggleReadOnly.addEventListener("click", toggleReadOnlyMode);
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+const categoryTextColorCache = new Map();
+function variantEntryKey(entryOrPracticeId, variant=null) {
+  if (typeof entryOrPracticeId === "object" && entryOrPracticeId) return `${entryOrPracticeId.practiceId}|${entryOrPracticeId.variant}`;
+  return `${entryOrPracticeId}|${variant}`;
+}
+function refreshVariantSessionSet() {
+  variantSessionKeySet = new Set(variantSessionOrder.map(entry => variantEntryKey(entry)));
+}
+function saveVariantSessionOrder() {
+  refreshVariantSessionSet();
+  V2_STORAGE.setSessionEntries?.(variantSessionOrder);
+  markModified("common");
+}
+function isVariantInSession(practiceId, variant) {
+  return variantSessionKeySet.has(variantEntryKey(practiceId,variant));
+}
+// Compatibility adapter retained for legacy migrations only.
+function sessionEntryData(entry) {
+  const entity=UNIFIED_ENTITY_BY_ID.get(entry?.practiceId); if(!entity) return null;
+  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+  const practiceResponse=V2_STORAGE.getReaderPractice(entity.id);
+  const pair=INTERACTION_MODEL.readingPair(entity,entry.variant,practiceResponse,profile);
+  if(!pair) return null;
+  const info=readerVariantInfo(entity,entry.variant);
+  return {entry,entity,pair,info,key:variantEntryKey(entry)};
+}
+let lastSessionPanelSignature = "";
+function renderSessionPanel(force=false) {
+  if (!sessionList || !sessionSummary) return;
+  variantSessionOrder=(V2_STORAGE.getAllSessionEntries?.()||variantSessionOrder).filter(entry=>UNIFIED_ENTITY_BY_ID.has(entry.practiceId));
+  refreshVariantSessionSet();
+  const selected=variantSessionOrder.map(sessionEntryData).filter(Boolean);
+  const signature=[currentLang,...selected.map(x=>`${x.key}:${x.pair.compatibility?.status}:${x.pair.common?.doneTogether?1:0}`)].join("|");
+  if(!force&&signature===lastSessionPanelSignature){if(sessionMode&&!sessionMode.hidden)renderSessionMode();return;}
+  lastSessionPanelSignature=signature;
+  const fantasies=selected.filter(x=>x.pair.compatibility?.status==="fantasy").length;
+  sessionSummary.textContent=selected.length
+    ? (currentLang==="fr"?`${selected.length} configuration${selected.length>1?'s':''} dans la séance${fantasies?` · ${fantasies} fantasme${fantasies>1?'s':''}`:''}.`:`${selected.length} configuration${selected.length>1?'s':''} in the session${fantasies?` · ${fantasies} fantas${fantasies>1?'ies':'y'}`:''}.`)
+    : t("sessionNone");
+  showSessionBtn.disabled=selected.length===0; openSessionModeBtn.disabled=selected.length===0; resetSessionBtn.disabled=selected.length===0;
+  sessionList.innerHTML=selected.map((x,index)=>{
+    const fantasy=x.pair.compatibility?.status==="fantasy";
+    return `<div class="session-item${fantasy?' is-fantasy':''}" data-session-key="${esc(x.key)}">
+      <span class="session-index">${index+1}</span>
+      <span class="session-name"><strong>${esc(x.info.title||x.entity.id)}</strong><small>${esc(readerVariantLabel(x.entity,x.entry.variant))}</small></span>
+      ${x.info.risk!=="normal"?riskBadge({risk:x.info.risk}):""}
+      ${fantasy?`<span class="fantasy-session-badge">💭 ${esc(t("fantasyOnlyShort"))}</span>`:""}
+      <button class="session-move" data-session-action="up" data-session-index="${index}" type="button" ${index===0?'disabled':''} title="${t("moveUp")}">↑</button>
+      <button class="session-move" data-session-action="down" data-session-index="${index}" type="button" ${index===selected.length-1?'disabled':''} title="${t("moveDown")}">↓</button>
+      <button class="session-remove" data-session-action="remove" data-session-index="${index}" type="button" title="${t("removeSession")}">×</button>
+    </div>`;
+  }).join("");
+  if(sessionMode&&!sessionMode.hidden)renderSessionMode();
+}
+
+function renderSessionSafetySummary() {
+  const safety = getSafety();
+  const entries = [];
+  const push = (label, value) => { const clean=typeof value==="string"?value.trim():value; if(clean) entries.push(`<div class="session-safety-item"><strong>${esc(label)} :</strong> ${esc(clean)}</div>`); };
+  push(t("slowWordLabel"), safety.slowWord); push(t("safeWordLabel"), safety.safeWord); push(t("slowSignalLabel"), safety.slowSignal); push(t("stopSignalLabel"), safety.stopSignal);
+  const marksEl=document.getElementById("marks"),mediaEl=document.getElementById("media");
+  push(t("marksLabel"),safety.marks&&marksEl?.selectedOptions?.[0]?marksEl.selectedOptions[0].textContent:safety.marks); push(t("hardLimitsLabel"),safety.hardLimits); push(t("aftercareLabel"),safety.aftercare); push(t("mediaLabel"),safety.media&&mediaEl?.selectedOptions?.[0]?mediaEl.selectedOptions[0].textContent:safety.media);
+  if(safety.stopImmediate)push(t("stopImmediate"),currentLang==="fr"?"Oui":"Yes"); if(safety.noIntoxication)push(t("noIntoxication"),currentLang==="fr"?"Oui":"Yes"); if(safety.nextDayDebrief)push(t("nextDayDebrief"),currentLang==="fr"?"Oui":"Yes");
+  sessionSafetySummary.innerHTML=entries.length?`<div class="session-safety-grid">${entries.join("")}</div>`:`<div class="session-safety-item">${esc(t("sessionSafetyEmpty"))}</div>`;
+}
+function renderSessionMode() {
+  if(!sessionModeList||!sessionSafetySummary)return; renderSessionSafetySummary();
+  const selected=variantSessionOrder.map(sessionEntryData).filter(Boolean);
+  if(!selected.length){sessionModeList.innerHTML=`<div class="empty">${esc(t("sessionModeEmpty"))}</div>`;return;}
+  sessionModeList.innerHTML=selected.map((x,index)=>{
+    const fantasy=x.pair.compatibility?.status==="fantasy",limit=x.pair.compatibility?.status==="limit",done=x.pair.common?.doneTogether===true;
+    const names=readerNames();
+    return `<article class="session-mode-card${fantasy?' fantasy-only':''}${limit?' has-limit':''}" data-session-key="${esc(x.key)}" style="--category-color:${categoryColors[x.info.category]||'#9aa0a6'}">
+      <div class="session-mode-card-head"><span class="session-mode-index">${index+1}</span><div class="session-mode-title-wrap"><div class="session-mode-category">${esc(localizedCategory(x.info.category))}</div><div class="session-mode-practice">${esc(x.info.title)} ${x.info.risk!=="normal"?riskBadge({risk:x.info.risk}):""}</div><div class="session-mode-variant">${esc(readerVariantLabel(x.entity,x.entry.variant,names))}</div></div><div class="session-mode-meta"><span class="session-mode-compat">${esc(readerCompatibilityLabel(x.pair.compatibility?.status||'incomplete'))}</span></div></div>
+      ${fantasy?`<div class="session-mode-fantasy-banner">${esc(t("sessionFantasyBanner"))}</div>`:""}
+      <div class="session-mode-expl">${esc(x.info.explanation||"")}</div>
+      <div class="session-mode-couple-grid">${readerPersonPanel(names.personA,"person-a",x.pair.personA.slot,x.pair.personA.state)}${readerPersonPanel(names.personB,"person-b",x.pair.personB.slot,x.pair.personB.state)}</div>
+      <label class="session-mode-together" ${fantasy||limit?`title="${esc(fantasy?t("fantasyTogetherDisabled"):(currentLang==='fr'?'Une limite empêche de marquer cette configuration comme faite ensemble.':'A limit prevents marking this configuration as done together.'))}"`:""}><input type="checkbox" data-session-mode-together data-practice-id="${esc(x.entry.practiceId)}" data-variant="${esc(x.entry.variant)}" ${done?'checked':''} ${fantasy||limit?'disabled':''}><span>${esc(t("sessionDoneTogetherLabel"))}</span></label>
+    </article>`;
+  }).join("");
+}
+let sessionModePreviousFocus=null;
+function openSessionMode(){if(!variantSessionOrder.length)return;sessionModePreviousFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;renderSessionMode();sessionMode.hidden=false;sessionMode.setAttribute("aria-hidden","false");document.body.classList.add("session-mode-open");setAppBackgroundInert(true);closeSessionModeBtn.focus();}
+function closeSessionMode(){sessionMode.hidden=true;sessionMode.setAttribute("aria-hidden","true");document.body.classList.remove("session-mode-open");setAppBackgroundInert(false);render();if(sessionModePreviousFocus&&document.contains(sessionModePreviousFocus))sessionModePreviousFocus.focus();sessionModePreviousFocus=null;}
+function toggleSessionVariant(practiceId,variant){const key=variantEntryKey(practiceId,variant),index=variantSessionOrder.findIndex(entry=>variantEntryKey(entry)===key);if(index>=0)variantSessionOrder.splice(index,1);else variantSessionOrder.push({practiceId,variant});saveVariantSessionOrder();renderSessionPanel(true);}
+function moveSessionEntry(index,direction){const target=direction==="up"?index-1:index+1;if(index<0||target<0||index>=variantSessionOrder.length||target>=variantSessionOrder.length)return;[variantSessionOrder[index],variantSessionOrder[target]]=[variantSessionOrder[target],variantSessionOrder[index]];saveVariantSessionOrder();renderSessionPanel(true);}
+function saveModifiedScopes() {
+  V2_STORAGE.setModifiedScopesLegacy(modifiedScopes, lastModifiedAt);
+}
+
+function persistModifiedMetadata() {
+  V2_STORAGE.setModifiedScopesLegacy(modifiedScopes, lastModifiedAt);
+}
+
+function markModified(scopes = null, persist = true) {
+  const now = new Date().toISOString();
+  lastModifiedAt = now;
+
+  const list = Array.isArray(scopes) ? scopes : (scopes ? [scopes] : []);
+  for (const scope of list) {
+    if (["sub","dom","common"].includes(scope)) modifiedScopes[scope] = now;
+  }
+  if (persist) persistModifiedMetadata();
+}
+
+const scoreUiCache = new Map();
+function cachedScoreUi(value, role=null) {
+  const key = `${currentLang}|${role || "none"}|${value}`;
+  if (scoreUiCache.has(key)) return scoreUiCache.get(key);
+  const ui = Object.freeze({
+    label:scoreButtonLabel(value, role),
+    title:esc(scoreChoiceTitle(value, role))
+  });
+  scoreUiCache.set(key, ui);
+  return ui;
+}
+
+
+const individualEditor = document.getElementById("individualEditor");
+const individualEditorList = document.getElementById("individualEditorList");
+const individualEditorEmpty = document.getElementById("individualEditorEmpty");
+const individualEditorTitle = document.getElementById("individualEditorTitle");
+const individualEditorProgress = document.getElementById("individualEditorProgress");
+const individualEditorLegend = document.getElementById("individualEditorLegend");
+const individualEditorProfile = document.getElementById("individualEditorProfile");
+const coupleReader = document.getElementById("coupleReader");
+const coupleReaderList = document.getElementById("coupleReaderList");
+const coupleReaderEmpty = document.getElementById("coupleReaderEmpty");
+const coupleReaderTitle = document.getElementById("coupleReaderTitle");
+const coupleReaderIntro = document.getElementById("coupleReaderIntro");
+const coupleReaderSummary = document.getElementById("coupleReaderSummary");
+const coupleReaderLegend = document.getElementById("coupleReaderLegend");
+if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => window.CHECKLIST_PROFILE_API?.open?.());
+
+function modelPersonKey() { return activeEditPerson === "person-b" ? "personB" : "personA"; }
+function editorProfileName(person=modelPersonKey()) {
+  const p=window.CHECKLIST_PROFILE_API?.get?.();
+  return person === "personA" ? (p?.personA?.name || (currentLang==="fr"?"Personne A":"Person A")) : (p?.personB?.name || (currentLang==="fr"?"Personne B":"Person B"));
+}
+function scenarioBlockForEditor(entity, person, slot) {
+  for (const [scenarioKey,scenarioName] of [["aDom","a-dom"],["bDom","b-dom"]]) {
+    if (INTERACTION_MODEL.slotForLegacyPerson(entity,scenarioName,person) === slot && entity?.scenarios?.[scenarioKey]) return {block:entity.scenarios[scenarioKey],scenarioKey};
+  }
+  const firstKey = entity?.scenarios?.aDom ? "aDom" : entity?.scenarios?.bDom ? "bDom" : null;
+  return firstKey ? {block:entity.scenarios[firstKey],scenarioKey:firstKey} : {block:null,scenarioKey:null};
+}
+function personalizeLegacyText(text, scenarioKey) {
+  let out=String(text||""); const p=window.CHECKLIST_PROFILE_API?.get?.(); if(!p) return out;
+  const a=p.personA?.name||"A", b=p.personB?.name||"B";
+  const dom=scenarioKey==="bDom"?b:a, sub=scenarioKey==="bDom"?a:b;
+  const replacements=[
+    [/\b(?:le |la )?Ma[iî]tre(?:sse)?\b/gi,dom],[/\b(?:du |de la )Ma[iî]tre(?:sse)?\b/gi,dom],
+    [/\b(?:le |la )?Soumis(?:e)?\b/gi,sub],[/\b(?:du |de la )Soumis(?:e)?\b/gi,sub],
+    [/\b(?:the )?Master\b/gi,dom],[/\b(?:the )?Mistress\b/gi,dom],[/\b(?:the )?Submissive\b/gi,sub]
+  ];
+  for(const [re,value] of replacements) out=out.replace(re,value);
+  return out;
+}
+function editorSlotLabel(slot) {
+  if(currentLang==="fr") return ({interest:"Mon intérêt",give:"Donner",receive:"Recevoir",dominant:"En position dominante",submissive:"En position soumise"})[slot]||slot;
+  return ({interest:"My interest",give:"Give",receive:"Receive",dominant:"As dominant",submissive:"As submissive"})[slot]||slot;
+}
+function editorSlotHint(slot) {
+  const partner=editorProfileName(modelPersonKey()==="personA"?"personB":"personA");
+  if(currentLang==="fr") return ({give:`Ce que j’aime faire à ${partner}.`,receive:`Ce que j’aime recevoir de ${partner}.`,dominant:`Ce que j’aime vivre en position dominante.`,submissive:`Ce que j’aime vivre en position soumise.`,interest:"Mon intérêt personnel pour cette pratique."})[slot]||"";
+  return ({give:`What I like doing to ${partner}.`,receive:`What I like receiving from ${partner}.`,dominant:`What I like while taking the dominant role.`,submissive:`What I like while taking the submissive role.`,interest:"My personal interest in this practice."})[slot]||"";
+}
+function editorSlotsForEntity(entity, person, profile) {
+  let slots=INTERACTION_MODEL.visibleSlots(entity,person,profile);
+  if(INTERACTION_MODEL.axisOf(entity)===INTERACTION_MODEL.AXIS.ROLE && profile?.dynamic?.mode!=="switch") {
+    const dominant = profile?.dynamic?.mode==="a-dom"?"personA":profile?.dynamic?.mode==="b-dom"?"personB":null;
+    if(dominant) slots=slots.filter(slot => slot === (person===dominant ? INTERACTION_MODEL.SLOT.DOMINANT : INTERACTION_MODEL.SLOT.SUBMISSIVE));
+  }
+  return slots;
+}
+function editorEntityInfo(entity, person, slots) {
+  const preferred=scenarioBlockForEditor(entity,person,slots[0]||INTERACTION_MODEL.slotsForEntity(entity)[0]);
+  const block=preferred.block||{};
+  return {title:personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),preferred.scenarioKey), explanation:personalizeLegacyText(currentLang==="en"?(block.explanationEn||block.explanation):(block.explanation||block.explanationEn),preferred.scenarioKey), category:block.category||"Autres", level:Number.isInteger(block.level)?block.level:3, risk:["normal","caution","high"].includes(block.risk)?block.risk:"normal"};
+}
+function editorScoreButtons(v2Id,slot,state) {
+  const role = slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
+  const unknown=`<button class="score-btn unknown-score${Number.isInteger(state.preference)?"":" selected"}" data-personal-action="preference" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="unknown" type="button" title="${esc(t("unknown"))}">?</button>`;
+  return unknown+SCORE_BUTTON_ORDER.map(n=>{const ui=cachedScoreUi(n,role),sel=state.preference===n;return `<button class="score-btn semantic-score-btn${n===0?' limit-score':''}${sel?' selected':''}" data-personal-action="preference" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="${n}" type="button" title="${ui.title}" aria-pressed="${sel?'true':'false'}">${ui.label}</button>`}).join("");
+}
+function editorAfterButtons(v2Id,slot,state) {
+  const role = slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
+  if(!state.prior && !Number.isInteger(state.after)) return `<span class="individual-after-disabled">${currentLang==="fr"?"Activez « Déjà essayé » pour noter l’après essai.":"Enable “Already tried” to rate after trying."}</span>`;
+  const unknown=`<button class="score-btn unknown-score${Number.isInteger(state.after)?"":" selected"}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="unknown" type="button">?</button>`;
+  return unknown+SCORE_BUTTON_ORDER.map(n=>{const ui=cachedScoreUi(n,role),sel=state.after===n;return `<button class="score-btn semantic-score-btn${n===0?' limit-score':''}${sel?' selected':''}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="${n}" type="button" title="${ui.title}" aria-pressed="${sel?'true':'false'}">${ui.label}</button>`}).join("");
+}
+function renderEditorSlot(entity,person,slot,profile) {
+  const state=V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{};
+  const applicability=INTERACTION_MODEL.evaluateSlot(entity,person,slot,profile);
+  const source=scenarioBlockForEditor(entity,person,slot); const block=source.block||{};
+  const contextualTitle=personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),source.scenarioKey);
+  const incompatible=applicability.status==="notApplicable";
+  return `<section class="individual-slot${incompatible?' is-incompatible':''}" data-editor-slot="${slot}">
+    <div class="individual-slot-head"><div><strong>${esc(editorSlotLabel(slot))}</strong><small>${esc(editorSlotHint(slot))}</small>${contextualTitle?`<span class="individual-slot-context">${esc(contextualTitle)}</span>`:""}</div>${incompatible?`<span class="individual-applicability">${currentLang==="fr"?"Anatomie non compatible":"Anatomy not compatible"}</span>`:""}</div>
+    <div class="individual-field"><span class="individual-field-label">${currentLang==="fr"?"Mon choix":"My choice"}</span><div class="individual-score-row">${editorScoreButtons(entity.id,slot,state)}</div></div>
+    <div class="individual-experience-row"><button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}"><span>${state.prior?'✓':'□'}</span> ${currentLang==="fr"?"Déjà essayé":"Already tried"}</button><div class="individual-after"><span class="individual-field-label">${currentLang==="fr"?"Après essai":"After trying"}</span><div class="individual-score-row">${editorAfterButtons(entity.id,slot,state)}</div></div></div>
+    <label class="individual-note"><span>💬 ${currentLang==="fr"?"Ma note":"My note"}</span><textarea data-personal-note data-v2-id="${esc(entity.id)}" data-slot="${slot}" placeholder="${currentLang==="fr"?"Note personnelle…":"Personal note…"}">${esc(state.note||"")}</textarea></label>
+  </section>`;
+}
+function configureEditorStatusOptions() {
+  const langKey=`edit-${currentLang}`; if(status.dataset.readerLang===langKey) return;
+  const previous=status.value;
+  const options=currentLang==="fr"?[["","Tous mes choix"],["incomplete","? À compléter"],["want","🔥 Envie ou favori"],["favorite","★ Favoris"],["fantasy","💭 Fantasmes"],["limit","🚫 Limites"],["tried","✓ Déjà essayé"],["after","Après essai renseigné"],["notes","Avec une note"]]:[["","All my choices"],["incomplete","? To complete"],["want","🔥 Want or favorite"],["favorite","★ Favorites"],["fantasy","💭 Fantasies"],["limit","🚫 Limits"],["tried","✓ Already tried"],["after","After trying filled"],["notes","With a note"]];
+  status.innerHTML=options.map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join("");
+  status.value=options.some(([value])=>value===previous)?previous:""; status.dataset.readerLang=langKey;
+}
+function editorEffectiveScore(state){return Number.isInteger(state?.after)?state.after:Number.isInteger(state?.preference)?state.preference:null;}
+function editorSlotMatches(state,statusValue,minScore){const score=editorEffectiveScore(state);if(statusValue==="incomplete"&&Number.isInteger(state?.preference))return false;if(statusValue==="want"&&![3,4].includes(score))return false;if(statusValue==="favorite"&&score!==4)return false;if(statusValue==="fantasy"&&score!==5)return false;if(statusValue==="limit"&&score!==0)return false;if(statusValue==="tried"&&state?.prior!==true)return false;if(statusValue==="after"&&!Number.isInteger(state?.after))return false;if(statusValue==="notes"&&!(typeof state?.note==="string"&&state.note.trim()))return false;if(minScore!==null&&(score===5||!Number.isInteger(score)||score<minScore))return false;return true;}
+
+function renderIndividualEditor() {
+  if(!individualEditor||!individualEditorList) return;
+  individualEditor.hidden=false;
+  configureEditorStatusOptions();
+  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{}; const person=modelPersonKey(),name=editorProfileName(person);
+  individualEditorTitle.textContent=currentLang==="fr"?`Réponses de ${name}`:`${name}'s answers`;
+  individualEditorIntro.textContent=currentLang==="fr"?`Vous modifiez uniquement les choix de ${name}. Les réponses de l’autre personne ne sont jamais affichées ici.`:`You are editing only ${name}'s choices. The other person's answers are never shown here.`;
+  individualEditorLegend.innerHTML=currentLang==="fr"?`<strong>Comment répondre :</strong> une pratique peut demander votre intérêt général, ce que vous aimez <b>donner</b>/<b>recevoir</b>, ou ce que vous aimez en position <b>dominante</b>/<b>soumise</b>.`:`<strong>How to answer:</strong> a practice may ask for your general interest, what you like to <b>give</b>/<b>receive</b>, or what you like in a <b>dominant</b>/<b>submissive</b> role.`;
+  const q=search.value.trim().toLowerCase(), cat=category.value, risk=riskFilter.value; const maxLevel=experienceMaxLevel();
+  const minRaw=minFilterScore.value, minScore=minRaw===""?null:Number(minRaw), statusValue=status.value;
+  const grouped=new Map(); let visible=0;
+  for(const entity of UNIFIED_CATALOG.entities||[]) {
+    const slots=editorSlotsForEntity(entity,person,profile).filter(slot=>editorSlotMatches(V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{},statusValue,minScore)); if(!slots.length) continue;
+    const info=editorEntityInfo(entity,person,slots); if(info.level>maxLevel) continue; if(risk&&info.risk!==risk) continue; if(cat&&info.category!==cat) continue;
+    const ownText=slots.map(slot=>{const st=V2_STORAGE.getPersonalSlotState(entity.id,person,slot);return st?.note||""}).join(" ");
+    const hay=`${info.title} ${info.explanation} ${info.category} ${ownText}`.toLowerCase(); if(q&&!hay.includes(q)) continue;
+    if(!grouped.has(info.category)) grouped.set(info.category,[]); grouped.get(info.category).push({entity,slots,info}); visible++;
+  }
+  const categories=[...grouped.keys()].sort((a,b)=>a.localeCompare(b,currentLang)); let html="";
+  for(const catName of categories) {
+    const rows=grouped.get(catName); const collapsed=collapsedCategories.has(catName) && !q && !cat && !risk;
+    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slots,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}"><header><div><span class="individual-practice-category">${esc(currentLang==='fr'?`Niveau ${info.level}`:`Level ${info.level}`)}</span><h3>${esc(info.title)}</h3>${info.explanation?`<p>${esc(info.explanation)}</p>`:''}</div>${info.risk==='normal'?'':`<span class="risk-badge risk-${info.risk}">${info.risk==='high'?'⚠':'!'}</span>`}</header><div class="individual-slots${slots.length>1?' has-multiple':''}">${slots.map(slot=>renderEditorSlot(entity,person,slot,profile)).join('')}</div></article>`).join('')}</div>`}</section>`;
+  }
+  individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
+  const summary=V2_STORAGE.getPersonalSummary(person); individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
+  updateStats(visible);
+}
+function hideIndividualEditor() {
+  if(individualEditor) individualEditor.hidden=true;
+}
+if(individualEditorList) {
+  individualEditorList.addEventListener("click",e=>{
+    const catBtn=e.target.closest("[data-editor-category-toggle]"); if(catBtn){const c=catBtn.dataset.editorCategoryToggle;if(collapsedCategories.has(c))collapsedCategories.delete(c);else collapsedCategories.add(c);saveCollapsedCategories();render();return;}
+    const btn=e.target.closest("button[data-personal-action]"); if(!btn)return;
+    const id=btn.dataset.v2Id,slot=btn.dataset.slot,person=modelPersonKey(); const state=V2_STORAGE.getPersonalSlotState(id,person,slot)||{}; const action=btn.dataset.personalAction;
+    if(action==="prior"){state.prior=!state.prior;if(!state.prior)delete state.after;}
+    else {const value=btn.dataset.score==="unknown"?null:Number(btn.dataset.score);if(value===null)delete state[action];else state[action]=state[action]===value?undefined:value;if(state[action]===undefined)delete state[action];}
+    V2_STORAGE.setPersonalSlotState(id,person,slot,state); invalidateDerivedData(); render();
+  });
+  individualEditorList.addEventListener("input",e=>{const note=e.target.closest("textarea[data-personal-note]");if(!note)return;const person=modelPersonKey(),state=V2_STORAGE.getPersonalSlotState(note.dataset.v2Id,person,note.dataset.slot)||{};state.note=note.value;V2_STORAGE.setPersonalSlotState(note.dataset.v2Id,person,note.dataset.slot,state);const summary=V2_STORAGE.getPersonalSummary(person);individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;});
+}
+
+function readerNames() {
+  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+  return {
+    personA:profile.personA?.name||(currentLang==="fr"?"Personne A":"Person A"),
+    personB:profile.personB?.name||(currentLang==="fr"?"Personne B":"Person B")
+  };
+}
+function readerSlotLabel(slot) {
+  if(currentLang==="fr") return ({interest:"Intérêt",give:"Donner",receive:"Recevoir",dominant:"Dominant",submissive:"Soumis"})[slot]||slot;
+  return ({interest:"Interest",give:"Give",receive:"Receive",dominant:"Dominant",submissive:"Submissive"})[slot]||slot;
+}
+function readerAxisLabel(entity) {
+  const axis=INTERACTION_MODEL.axisOf(entity);
+  if(currentLang==="fr") return axis===INTERACTION_MODEL.AXIS.DIRECTION?"Donner / Recevoir":axis===INTERACTION_MODEL.AXIS.ROLE?"Dynamique D/s":"Intérêt commun";
+  return axis===INTERACTION_MODEL.AXIS.DIRECTION?"Give / Receive":axis===INTERACTION_MODEL.AXIS.ROLE?"D/s roles":"Shared interest";
+}
+function readerVariantLabel(entity,variant,names=readerNames()) {
+  if(variant===INTERACTION_MODEL.VARIANT.A_TO_B) return currentLang==="fr"?`${names.personA} donne → ${names.personB} reçoit`:`${names.personA} gives → ${names.personB} receives`;
+  if(variant===INTERACTION_MODEL.VARIANT.B_TO_A) return currentLang==="fr"?`${names.personB} donne → ${names.personA} reçoit`:`${names.personB} gives → ${names.personA} receives`;
+  if(variant===INTERACTION_MODEL.VARIANT.A_DOMINANT) return currentLang==="fr"?`${names.personA} dominant → ${names.personB} soumis`:`${names.personA} dominant → ${names.personB} submissive`;
+  if(variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return currentLang==="fr"?`${names.personB} dominant → ${names.personA} soumis`:`${names.personB} dominant → ${names.personA} submissive`;
+  return currentLang==="fr"?"Intérêt partagé":"Shared interest";
+}
+function readerScenarioSource(entity,variant) {
+  for(const [scenarioName,key] of [["a-dom","aDom"],["b-dom","bDom"]]) {
+    if(INTERACTION_MODEL.variantForLegacyScenario(entity,scenarioName)===variant && entity?.scenarios?.[key]) return {block:entity.scenarios[key],scenarioKey:key};
+  }
+  const key=entity?.scenarios?.aDom?"aDom":entity?.scenarios?.bDom?"bDom":null;
+  return key?{block:entity.scenarios[key],scenarioKey:key}:{block:{},scenarioKey:null};
+}
+function readerVariantInfo(entity,variant) {
+  const source=readerScenarioSource(entity,variant), block=source.block||{};
+  return {
+    title:personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),source.scenarioKey),
+    explanation:personalizeLegacyText(currentLang==="en"?(block.explanationEn||block.explanation):(block.explanation||block.explanationEn),source.scenarioKey),
+    category:block.category||"Autres",
+    level:Number.isInteger(block.level)?block.level:3,
+    risk:["normal","caution","high"].includes(block.risk)?block.risk:"normal"
+  };
+}
+function readerCompatibilityLabel(status) {
+  if(currentLang==="fr") return ({excellent:"★ Excellent match",strong:"🔥 Très compatible",compatible:"✓ Compatible",later:"⏳ Pas maintenant",fantasy:"💭 Fantasme à discuter",limit:"🚫 Limite",incomplete:"? Incomplet"})[status]||"? Incomplet";
+  return ({excellent:"★ Excellent match",strong:"🔥 Strong match",compatible:"✓ Compatible",later:"⏳ Not now",fantasy:"💭 Fantasy to discuss",limit:"🚫 Limit",incomplete:"? Incomplete"})[status]||"? Incomplete";
+}
+function readerScoreRole(slot) {
+  return slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
+}
+function readerEffectiveState(state) {
+  const after=Number.isInteger(state?.after)?state.after:null;
+  const preference=Number.isInteger(state?.preference)?state.preference:null;
+  return {score:after!==null?after:preference,source:after!==null?"after":preference!==null?"preference":"unknown"};
+}
+function readerPersonPanel(personName,personClass,slot,state) {
+  const effective=readerEffectiveState(state), role=readerScoreRole(slot);
+  const emoji=scoreButtonLabel(effective.score,role);
+  const sourceLabel=currentLang==="fr"?(effective.source==="after"?"Après essai":effective.source==="preference"?"Choix initial":"Non renseigné"):(effective.source==="after"?"After trying":effective.source==="preference"?"Initial choice":"Not filled in");
+  const preference=Number.isInteger(state?.preference)?scoreButtonLabel(state.preference,role):"—";
+  const after=Number.isInteger(state?.after)?scoreButtonLabel(state.after,role):"—";
+  const prior=state?.prior===true;
+  return `<div class="couple-person-result ${personClass}">
+    <div class="couple-person-head"><strong>${esc(personName)}</strong><span class="couple-person-slot">${esc(readerSlotLabel(slot))}</span></div>
+    <div class="couple-person-effective"><span class="couple-score">${emoji}</span><span class="couple-effective-label">${esc(sourceLabel)}</span></div>
+    <div class="couple-person-details"><span>${currentLang==="fr"?"Choix":"Choice"} : ${preference}</span><span>${currentLang==="fr"?"Déjà essayé":"Tried before"} : ${prior?"✓":"—"}</span><span>${currentLang==="fr"?"Après":"After"} : ${after}</span></div>
+    ${state?.note?`<div class="couple-person-note">💬 ${esc(state.note)}</div>`:""}
+  </div>`;
+}
+function readerResultPanel(entity,pair) {
+  const c=pair.compatibility||{status:"incomplete",scoreA:null,scoreB:null};
+  const aRole=readerScoreRole(pair.personA.slot), bRole=readerScoreRole(pair.personB.slot);
+  const a=scoreButtonLabel(c.scoreA,aRole), b=scoreButtonLabel(c.scoreB,bRole);
+  const done=pair.common?.doneTogether===true, inSession=isVariantInSession(entity.id,pair.variant);
+  const blocked=c.status==="limit", fantasy=c.status==="fantasy";
+  return `<div class="couple-result" data-result="${esc(c.status)}">
+    <span class="couple-result-badge">${esc(readerCompatibilityLabel(c.status))}</span>
+    <span class="couple-result-scores">${a} + ${b}</span>
+    <div class="couple-result-actions">
+      <button class="couple-together-btn${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):'')}">${done?(currentLang==="fr"?"✓ Fait ensemble":"✓ Done together"):(currentLang==="fr"?"○ Fait ensemble":"○ Done together")}</button>
+      <button class="couple-session-btn${inSession?' is-selected':''}" data-couple-action="session" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked?'disabled':''} title="${esc(blocked?t('sessionLimitWarning'):(inSession?t('removeSession'):t('addSession')))}">${inSession?'📌 ✓':'📌'}</button>
+    </div>
+  </div>`;
+}
+function readerVariantMatches(pair,state) {
+  const c=pair.compatibility||{};
+  if(state.status==="coupleCompatible" && !["compatible","strong","excellent"].includes(c.status)) return false;
+  if(state.status==="coupleStrong" && !["strong","excellent"].includes(c.status)) return false;
+  if(state.status==="coupleLimit" && c.status!=="limit") return false;
+  if(state.status==="coupleFantasy" && c.status!=="fantasy") return false;
+  if(state.status==="coupleIncomplete" && c.status!=="incomplete") return false;
+  if(state.status==="together" && pair.common?.doneTogether!==true) return false;
+  if(state.status==="notTogether" && pair.common?.doneTogether===true) return false;
+  if(state.minScore!==null && !(Number.isInteger(c.score)&&c.score>=state.minScore)) return false;
+  return true;
+}
+function configureReaderStatusOptions() {
+  const langKey=currentLang;
+  if(status.dataset.readerLang===langKey) return;
+  const previous=status.value;
+  const options=currentLang==="fr"?[
+    ["","Tous les résultats"],["coupleCompatible","✓ Compatibles"],["coupleStrong","🔥 Très compatibles"],["coupleLimit","🚫 Avec une limite"],["coupleFantasy","💭 Fantasmes"],["coupleIncomplete","? Incomplets"],["together","Déjà fait ensemble"],["notTogether","Jamais fait ensemble"]
+  ]:[
+    ["","All results"],["coupleCompatible","✓ Compatible"],["coupleStrong","🔥 Strong matches"],["coupleLimit","🚫 With a limit"],["coupleFantasy","💭 Fantasies"],["coupleIncomplete","? Incomplete"],["together","Done together"],["notTogether","Never done together"]
+  ];
+  status.innerHTML=options.map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join("");
+  if(options.some(([value])=>value===previous)) status.value=previous;
+  status.dataset.readerLang=langKey;
+}
+function hideCoupleReader() {
+  if(coupleReader) coupleReader.hidden=true;
+}
+function renderCoupleReader() {
+  if(!coupleReader||!coupleReaderList) return;
+  configureReaderStatusOptions();
+  coupleReader.hidden=false;
+  hideIndividualEditor();
+  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{}, names=readerNames();
+  coupleReaderTitle.textContent=currentLang==="fr"?`Résultats de ${names.personA} & ${names.personB}`:`${names.personA} & ${names.personB} results`;
+  coupleReaderIntro.textContent=currentLang==="fr"?"Chaque résultat croise uniquement les réponses complémentaires : donner avec recevoir, dominant avec soumis, ou intérêt partagé.":"Each result matches only complementary answers: give with receive, dominant with submissive, or shared interest.";
+  coupleReaderLegend.innerHTML=currentLang==="fr"?`<strong>Lecture :</strong> les réponses restent personnelles. Le résultat au centre est calculé pour chaque configuration réellement possible. 🚫 reste une limite prioritaire ; 💭 reste un fantasme et n’est jamais transformé en consentement réel.`:`<strong>Reading:</strong> answers remain personal. The center result is calculated for each actually possible configuration. 🚫 remains a priority limit; 💭 remains a fantasy and is never converted into real-world consent.`;
+  const q=search.value.trim().toLowerCase(), maxLevel=experienceMaxLevel(), selectedCategory=category.value, selectedRisk=riskFilter.value;
+  const minRaw=minFilterScore.value; const filter={status:status.value,minScore:minRaw===""?null:Number(minRaw)};
+  const grouped=new Map(); let visiblePractices=0,visibleVariants=0,completeVariants=0,compatible=0,strong=0,fantasies=0,limits=0,done=0;
+  for(const entity of UNIFIED_CATALOG.entities||[]) {
+    const practiceResponse=V2_STORAGE.getReaderPractice(entity.id); if(!practiceResponse) continue;
+    const allPairs=INTERACTION_MODEL.readingView(entity,practiceResponse,profile)||[];
+    const candidates=[];
+    for(const pair of allPairs) {
+      const info=readerVariantInfo(entity,pair.variant);
+      if(info.level>maxLevel) continue;
+      if(selectedCategory&&info.category!==selectedCategory) continue;
+      if(selectedRisk&&info.risk!==selectedRisk) continue;
+      if(sessionOnlyFilter&&!isVariantInSession(entity.id,pair.variant)) continue;
+      if(!readerVariantMatches(pair,filter)) continue;
+      candidates.push({pair,info});
+    }
+    if(!candidates.length) continue;
+    const searchText=candidates.map(({pair,info})=>`${info.title} ${info.explanation} ${info.category} ${pair.personA.state?.note||""} ${pair.personB.state?.note||""}`).join(" ").toLowerCase();
+    if(q&&!searchText.includes(q)) continue;
+    const categoryName=candidates[0].info.category||"Autres";
+    if(!grouped.has(categoryName)) grouped.set(categoryName,[]);
+    grouped.get(categoryName).push({entity,variants:candidates}); visiblePractices++; visibleVariants+=candidates.length;
+    for(const {pair} of candidates) {
+      const st=pair.compatibility?.status;
+      if(st!=="incomplete") completeVariants++;
+      if(["compatible","strong","excellent"].includes(st)) compatible++;
+      if(["strong","excellent"].includes(st)) strong++;
+      if(st==="fantasy") fantasies++;
+      if(st==="limit") limits++;
+      if(pair.common?.doneTogether===true) done++;
+    }
+  }
+  const categories=[...grouped.keys()].sort((a,b)=>localizedCategory(a).localeCompare(localizedCategory(b),currentLang));
+  coupleReaderList.innerHTML=categories.map(categoryName=>{
+    const entries=grouped.get(categoryName), collapsed=collapsedCategories.has(categoryName), color=categoryColors[categoryName]||"#aaa";
+    const practiceHtml=entries.map(({entity,variants})=>{
+      const base=variants[0].info, axis=readerAxisLabel(entity);
+      const variantHtml=variants.map(({pair,info})=>{
+        const context=info.title&&info.title!==base.title?info.title:"";
+        return `<section class="couple-variant" data-reader-variant="${esc(pair.variant)}" data-result="${esc(pair.compatibility?.status||'incomplete')}">
+          <div class="couple-variant-head"><span class="couple-variant-flow">${esc(readerVariantLabel(entity,pair.variant,names))}</span>${context?`<span class="couple-variant-context">${esc(context)}</span>`:""}</div>
+          <div class="couple-match-grid">${readerPersonPanel(names.personA,"person-a",pair.personA.slot,pair.personA.state)}${readerResultPanel(entity,pair)}${readerPersonPanel(names.personB,"person-b",pair.personB.slot,pair.personB.state)}</div>
+        </section>`;
+      }).join("");
+      return `<article class="couple-practice" data-v2-id="${esc(entity.id)}"><div class="couple-practice-head"><div class="couple-practice-title"><strong>${esc(base.title||entity.id)}</strong>${base.explanation?`<p>${esc(base.explanation)}</p>`:""}</div><div class="couple-practice-meta"><span class="couple-reader-axis">${esc(axis)}</span><span class="level-badge level-${base.level}" title="${esc(experienceLabel(base.level===1?'beginner':base.level===2?'confirmed':'advanced'))}">${esc(levelShortLabel(base.level))}</span>${base.risk!=="normal"?riskBadge({risk:base.risk}):""}</div></div><div class="couple-variant-list">${variantHtml}</div></article>`;
+    }).join("");
+    return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span></button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
+  }).join("");
+  coupleReaderEmpty.hidden=visiblePractices!==0;
+  const summary=currentLang==="fr"?`${visiblePractices} pratiques · ${visibleVariants} configurations · ${completeVariants} résultats complets`:`${visiblePractices} practices · ${visibleVariants} configurations · ${completeVariants} complete results`;
+  coupleReaderSummary.textContent=summary;
+  statVisibleEl.textContent=summary;
+  statDoneEl.textContent=currentLang==="fr"?`${done} configurations déjà faites ensemble`:`${done} configurations already done together`;
+  statTogetherEl.textContent=currentLang==="fr"?`${compatible} compatibles · ${strong} fortes`:`${compatible} compatible · ${strong} strong`;
+  statRatedEl.textContent=currentLang==="fr"?`${completeVariants}/${visibleVariants} résultats calculables`:`${completeVariants}/${visibleVariants} calculable results`;
+  statStarredEl.textContent=currentLang==="fr"?`${fantasies} fantasmes · ${limits} limites`:`${fantasies} fantasies · ${limits} limits`;
+  if(statModeEl) statModeEl.textContent=currentLang==="fr"?"Mode : Lecture du couple":"Mode: Couple reading";
+  compatIndicator.textContent=currentLang==="fr"?`${compatible} compatibilités · ${completeVariants} résultats complets`:`${compatible} matches · ${completeVariants} complete results`;
+  compatIndicator.removeAttribute("role"); compatIndicator.removeAttribute("tabindex"); compatIndicator.title="";
+  return {visiblePractices,visibleVariants,completeVariants,compatible,strong,fantasies,limits,done};
+}
+if(coupleReaderList) coupleReaderList.addEventListener("click",e=>{
+  const action=e.target.closest("button[data-couple-action]");
+  if(action){
+    const id=action.dataset.v2Id,variant=action.dataset.variant;
+    if(action.dataset.coupleAction==="session") toggleSessionVariant(id,variant);
+    if(action.dataset.coupleAction==="together"){
+      const entity=UNIFIED_ENTITY_BY_ID.get(id),pair=entity?INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(id),window.CHECKLIST_PROFILE_API?.get?.()||{}):null;
+      if(!pair||["limit","fantasy"].includes(pair.compatibility?.status)) return;
+      V2_STORAGE.setVariantCommonState(id,variant,{doneTogether:pair.common?.doneTogether!==true});
+      markModified("common"); invalidateRandomSnapshot();
+    }
+    renderSessionPanel(true); renderCoupleReader(); return;
+  }
+  const btn=e.target.closest("[data-reader-category-toggle]");if(!btn)return;const cat=btn.dataset.readerCategoryToggle;if(collapsedCategories.has(cat))collapsedCategories.delete(cat);else collapsedCategories.add(cat);saveCollapsedCategories();renderCoupleReader();
+});
+
+function render() {
+  if (readOnly) {
+    hideIndividualEditor();
+    renderCoupleReader();
+  } else {
+    hideCoupleReader();
+    renderIndividualEditor();
+  }
+}
+
+
+
+function randomThresholdRank(value) {
+  return ({ fantasy:1, neutral:2, want:3, favorite:4 })[value] || 0;
+}
+
+function randomPreferenceRank(score) {
+  const v = validScore(score);
+  if (v === FANTASY_SCORE) return 1;
+  if (v === 2) return 2;
+  if (v === 3) return 3;
+  if (v === FAVORITE_SCORE) return 4;
+  // ? / 🚫 / Pas maintenant ne sont jamais tirables.
+  return 0;
+}
+
+function randomThresholdLabel(value) {
+  if (value === "fantasy") return t("drawFantasy");
+  if (value === "neutral") return t("drawNeutral");
+  if (value === "want") return t("drawWant");
+  if (value === "favorite") return t("drawFavorite");
+  return "—";
+}
+
+function randomPairRanks(pair) {
+  const a = randomPreferenceRank(pair?.compatibility?.scoreA);
+  const b = randomPreferenceRank(pair?.compatibility?.scoreB);
+  return {a,b};
+}
+
+function matchesRandomVariantCriterion(pair) {
+  const {a,b}=randomPairRanks(pair);
+  if(!a||!b) return false;
+  const one=randomThresholdRank(minRandomOne.value), other=randomThresholdRank(minRandomOther.value);
+  if(!((a>=one&&b>=other)||(a>=other&&b>=one))) return false;
+  if(!randomIncludeNeutralNeutral.checked && pair.compatibility?.scoreA===2 && pair.compatibility?.scoreB===2) return false;
+  return true;
+}
+
+function getRandomEligibilitySnapshot() {
+  if (randomSnapshotCache.revision === randomStateRevision && randomSnapshotCache.value) return randomSnapshotCache.value;
+  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+  const pairEligible=[], baseEligible=[], eligible=[];
+  let bothFavorite=0,newTogether=0,fantasyCount=0;
+  for(const entity of UNIFIED_CATALOG.entities||[]) {
+    const response=V2_STORAGE.getReaderPractice(entity.id); if(!response) continue;
+    for(const pair of INTERACTION_MODEL.readingView(entity,response,profile)||[]) {
+      const info=readerVariantInfo(entity,pair.variant);
+      if(info.level>experienceMaxLevel()) continue;
+      if(!matchesRandomVariantCriterion(pair)) continue;
+      const candidate={entity,pair,info,key:`${entity.id}|${pair.variant}`};
+      pairEligible.push(candidate);
+      if(pair.compatibility?.scoreA===FAVORITE_SCORE&&pair.compatibility?.scoreB===FAVORITE_SCORE) bothFavorite++;
+      if(pair.common?.doneTogether!==true) newTogether++;
+      if(pair.compatibility?.status==='fantasy') fantasyCount++;
+      if(randomOnlyNew.checked&&pair.common?.doneTogether===true) continue;
+      if(randomExcludeHighRisk.checked&&info.risk==='high'&&pair.compatibility?.status!=='fantasy') continue;
+      baseEligible.push(candidate);
+      if(!randomNoRepeat.checked||!randomDrawHistory.has(candidate.key)) eligible.push(candidate);
+    }
+  }
+  const snapshot={pairEligible,baseEligible,eligible,bothFavorite,newTogether,fantasyCount};
+  randomSnapshotCache={revision:randomStateRevision,value:snapshot};
+  return snapshot;
+}
+
+let lastCompatibilitySignature = "";
+function updateCompatibilityIndicator() {
+  if(!readOnly) {
+    if(compatIndicator) compatIndicator.textContent=currentLang==='fr'?'Édition individuelle':'Individual editing';
+    if(compatDetails) compatDetails.innerHTML='';
+    if(randomCandidateInfo) randomCandidateInfo.textContent='';
+    return;
+  }
+  const snapshot=getRandomEligibilitySnapshot();
+  const {pairEligible,baseEligible,eligible,bothFavorite,newTogether,fantasyCount}=snapshot;
+  const thresholdValues=[minRandomOne.value,minRandomOther.value].sort((a,b)=>randomThresholdRank(b)-randomThresholdRank(a));
+  const thresholdLabels=thresholdValues.map(randomThresholdLabel);
+  const criterionLabel=thresholdValues[0]===thresholdValues[1]?thresholdLabels[0]:`${thresholdLabels[0]} + ${thresholdLabels[1]}`;
+  const signature=[currentLang,thresholdValues.join(','),pairEligible.length,baseEligible.length,eligible.length,bothFavorite,newTogether,fantasyCount,randomNoRepeat.checked?1:0].join('|');
+  if(signature===lastCompatibilitySignature)return; lastCompatibilitySignature=signature;
+  compatIndicator.textContent=currentLang==='fr'?`${pairEligible.length} configurations au critère : ${criterionLabel}`:`${pairEligible.length} variants match: ${criterionLabel}`;
+  compatIndicator.removeAttribute('role'); compatIndicator.removeAttribute('tabindex'); compatIndicator.title='';
+  compatDetails.innerHTML=currentLang==='fr'
+    ? `<span>⭐+⭐ ${bothFavorite} favoris communs</span><span>○ ${newTogether} jamais faites ensemble</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantasme${fantasyCount>1?'s':''}</span>`:''}`
+    : `<span>⭐+⭐ ${bothFavorite} shared favorites</span><span>○ ${newTogether} never done together</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantas${fantasyCount>1?'ies':'y'}</span>`:''}`;
+  randomCandidateInfo.textContent=randomNoRepeat.checked
+    ? (currentLang==='fr'?`Tirables : ${eligible.length}/${baseEligible.length} restantes dans ce cycle`:`Eligible: ${eligible.length}/${baseEligible.length} remaining in this cycle`)
+    : (currentLang==='fr'?`Tirables avec les options actuelles : ${baseEligible.length}`:`Eligible with current options: ${baseEligible.length}`);
+}
+
+function getStatsSnapshot() {
+  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+  let variants=0,complete=0,compatible=0,strong=0,done=0,favorites=0;
+  for(const entity of UNIFIED_CATALOG.entities||[]) {
+    const response=V2_STORAGE.getReaderPractice(entity.id); if(!response)continue;
+    for(const pair of INTERACTION_MODEL.readingView(entity,response,profile)||[]) {
+      variants++;
+      const st=pair.compatibility?.status;
+      if(st!=='incomplete') complete++;
+      if(['compatible','strong','excellent'].includes(st)) compatible++;
+      if(['strong','excellent'].includes(st)) strong++;
+      if(pair.common?.doneTogether===true) done++;
+      if(pair.compatibility?.scoreA===4&&pair.compatibility?.scoreB===4) favorites++;
+    }
+  }
+  return {variants,complete,compatible,strong,done,favorites};
+}
+
+let lastStatsSignature = "";
+let lastVisibleStatCount = null;
+function updateStats(visibleCount = null) {
+  if(visibleCount!==null) lastVisibleStatCount=visibleCount;
+  if(!readOnly) {
+    const person=modelPersonKey(), summary=V2_STORAGE.getPersonalSummary(person), name=editorProfileName(person);
+    if(statVisibleEl) statVisibleEl.textContent=currentLang==='fr'?`${lastVisibleStatCount??summary.practicesTouched} pratiques visibles`:`${lastVisibleStatCount??summary.practicesTouched} visible practices`;
+    if(statDoneEl) statDoneEl.textContent='';
+    if(statTogetherEl) statTogetherEl.textContent='';
+    if(statRatedEl) statRatedEl.textContent=currentLang==='fr'?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
+    if(statStarredEl) statStarredEl.textContent='';
+    if(statModeEl) statModeEl.textContent=currentLang==='fr'?`Édition individuelle · ${name}`:`Individual editing · ${name}`;
+    updateCompatibilityIndicator(); renderSessionPanel(); return;
+  }
+  const x=getStatsSnapshot();
+  const signature=[currentLang,lastVisibleStatCount,x.variants,x.complete,x.compatible,x.strong,x.done,x.favorites].join('|');
+  if(signature!==lastStatsSignature){lastStatsSignature=signature;
+    if(statVisibleEl) statVisibleEl.textContent=currentLang==='fr'?`${lastVisibleStatCount??x.variants} pratiques visibles`:`${lastVisibleStatCount??x.variants} visible practices`;
+    if(statDoneEl) statDoneEl.textContent=currentLang==='fr'?`${x.complete}/${x.variants} résultats complets`:`${x.complete}/${x.variants} complete results`;
+    if(statTogetherEl) statTogetherEl.textContent=currentLang==='fr'?`${x.done} faites ensemble`:`${x.done} done together`;
+    if(statRatedEl) statRatedEl.textContent=currentLang==='fr'?`${x.compatible} configurations compatibles`:`${x.compatible} compatible variants`;
+    if(statStarredEl) statStarredEl.textContent=currentLang==='fr'?`${x.favorites} favoris communs`:`${x.favorites} shared favorites`;
+    if(statModeEl) statModeEl.textContent=currentLang==='fr'?`Lecture du couple · ${x.strong} très compatibles`:`Couple reading · ${x.strong} strong matches`;
+  }
+  updateCompatibilityIndicator(); renderSessionPanel();
+}
+
+let randomPickedId = null;
+function pickRandomPractice() {
+  if(!readOnly) setViewMode('read');
+  const snapshot=getRandomEligibilitySnapshot(); let eligible=snapshot.eligible, cycleRestarted=false;
+  if(!snapshot.baseEligible.length){
+    randomResult.innerHTML=currentLang==='fr'?'Aucune configuration ne correspond aux critères actuels.':'No variant matches the current criteria.';
+    updateCompatibilityIndicator(); return;
+  }
+  if(randomNoRepeat.checked&&!eligible.length){randomDrawHistory.clear();saveRandomHistory();invalidateRandomSnapshot();eligible=[...snapshot.baseEligible];cycleRestarted=true;}
+  const picked=eligible[Math.floor(Math.random()*eligible.length)];
+  randomPickedId=picked.key;
+  if(randomNoRepeat.checked){randomDrawHistory.add(picked.key);saveRandomHistory();invalidateRandomSnapshot();}
+  search.value='';category.value='';status.value='';minFilterScore.value='';riskFilter.value='';sessionOnlyFilter=false;render();
+  const card=coupleReaderList?.querySelector(`[data-v2-id="${CSS.escape(picked.entity.id)}"]`); if(card)card.scrollIntoView({behavior:'smooth',block:'center'});
+  const already=isVariantInSession(picked.entity.id,picked.pair.variant), blocked=picked.pair.compatibility?.status==='limit';
+  const fantasy=picked.pair.compatibility?.status==='fantasy';
+  const riskInfo=picked.info.risk==='normal'?'':` · <strong>${esc(riskLabel(picked.info.risk))}</strong>`;
+  randomResult.innerHTML=`<strong>${esc(picked.info.title)}</strong> · ${esc(readerVariantLabel(picked.entity,picked.pair.variant))}${riskInfo}<br><span>${esc(readerCompatibilityLabel(picked.pair.compatibility?.status))}</span>${fantasy?`<div class="random-fantasy-warning">${esc(t('randomFantasyWarning'))}</div>`:''}${cycleRestarted?`<div class="random-candidate-info">${currentLang==='fr'?'Nouveau cycle démarré automatiquement.':'A new cycle started automatically.'}</div>`:''}<div class="random-result-actions"><button class="random-session-btn" data-random-practice-id="${esc(picked.entity.id)}" data-random-variant="${esc(picked.pair.variant)}" type="button" ${already||blocked?'disabled':''}>${already?t('alreadyInSession'):t('addRandomToSession')}</button></div>`;
+  updateCompatibilityIndicator();
+}
+
+function getSafety() {
+  return {
+    slowWord: document.getElementById("slowWord").value,
+    safeWord: document.getElementById("safeWord").value,
+    slowSignal: document.getElementById("slowSignal").value,
+    stopSignal: document.getElementById("stopSignal").value,
+    marks: document.getElementById("marks").value,
+    hardLimits: document.getElementById("hardLimits").value,
+    aftercare: document.getElementById("aftercare").value,
+    media: document.getElementById("media").value,
+    noIntoxication: document.getElementById("noIntoxication").checked,
+    nextDayDebrief: document.getElementById("nextDayDebrief").checked,
+    stopImmediate: document.getElementById("stopImmediate").checked,
+  };
+}
+function applySafety(s) {
+  if (!s || typeof s !== "object") return;
+  for (const [k,v] of Object.entries(s)) {
+    const el = document.getElementById(k);
+    if (!el) continue;
+    if (el.type === "checkbox") el.checked = !!v;
+    else el.value = v ?? "";
+  }
+}
+
+function loadSafety() {
+  try { applySafety(V2_STORAGE.getSafety()); } catch(e) {}
+}
+
+
+let searchRenderTimer = null;
+search.addEventListener("input", () => {
+  clearTimeout(searchRenderTimer);
+  searchRenderTimer = setTimeout(render, 100);
+});
+[category, status, minFilterScore, riskFilter].forEach(el => el.addEventListener("input", render));
+
+showSessionBtn.addEventListener("click", () => {
+  if (!readOnly) setViewMode("read");
+  sessionOnlyFilter = !sessionOnlyFilter;
+  search.value = ""; category.value = ""; status.value = ""; minFilterScore.value = "";
+  showSessionBtn.classList.toggle("active", sessionOnlyFilter);
+  showSessionBtn.textContent = sessionOnlyFilter ? (currentLang==="fr"?"📌 Afficher tout":"📌 Show all") : t("showSession");
+  render();
+});
+
+openSessionModeBtn.addEventListener("click", openSessionMode);
+closeSessionModeBtn.addEventListener("click", closeSessionMode);
+sessionMode.addEventListener("click", (e) => {
+  if (e.target === sessionMode) closeSessionMode();
+});
+document.addEventListener("keydown", (e) => {
+  if (!sessionMode.hidden) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeSessionMode();
+      return;
+    }
+    focusTrapIn(sessionMode.querySelector(".session-mode-panel"), e);
+  }
+});
+
+sessionModeList.addEventListener("change", (e) => {
+  const checkbox=e.target.closest("input[data-session-mode-together]"); if(!checkbox)return;
+  const id=checkbox.dataset.practiceId,variant=checkbox.dataset.variant,entity=UNIFIED_ENTITY_BY_ID.get(id); if(!entity)return;
+  const pair=INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(id),window.CHECKLIST_PROFILE_API?.get?.()||{}); if(!pair||["limit","fantasy"].includes(pair.compatibility?.status))return;
+  V2_STORAGE.setVariantCommonState(id,variant,{doneTogether:!!checkbox.checked}); markModified("common"); renderSessionPanel(true); render();
+});
+
+resetSessionBtn.addEventListener("click", () => {
+  if (!variantSessionOrder.length) return;
+  const message=currentLang==="fr"?`Reset de la séance ? Les ${variantSessionOrder.length} configuration${variantSessionOrder.length>1?'s':''} sélectionnées seront retirées. Les réponses ne seront pas effacées.`:`Reset the session? The ${variantSessionOrder.length} selected configuration${variantSessionOrder.length>1?'s':''} will be removed. Answers will not be deleted.`;
+  if(!window.confirm(message))return; variantSessionOrder=[]; saveVariantSessionOrder(); sessionOnlyFilter=false; renderSessionPanel(true); render(); randomResult.innerHTML=`<strong>${t("sessionResetDone")}</strong> ${t("sessionNowEmpty")}`;
+});
+
+sessionList.addEventListener("click", (e) => {
+  const btn=e.target.closest("[data-session-action]"); if(!btn||btn.disabled)return; const index=Number(btn.dataset.sessionIndex),action=btn.dataset.sessionAction;
+  if(action==="remove"&&Number.isInteger(index)){variantSessionOrder.splice(index,1);saveVariantSessionOrder();renderSessionPanel(true);render();}
+  else if((action==="up"||action==="down")&&Number.isInteger(index)){moveSessionEntry(index,action);render();}
+});
+
+experienceSwitch.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-experience-mode]");
+  if (!btn) return;
+  const mode = btn.dataset.experienceMode;
+  if (!["beginner","confirmed","advanced"].includes(mode)) return;
+  experienceMode = mode;
+  V2_STORAGE.setDisplay("experienceMode", experienceMode, false);
+  invalidateRandomSnapshot();
+  renderExperienceModeUI();
+    render();
+});
+
+randomBtn.addEventListener("click", pickRandomPractice);
+randomResult.addEventListener("click", (e) => {
+  const btn=e.target.closest("[data-random-practice-id][data-random-variant]");
+  if(!btn||btn.disabled)return;
+  const practiceId=btn.dataset.randomPracticeId, variant=btn.dataset.randomVariant;
+  if(isVariantInSession(practiceId,variant))return;
+  const entity=UNIFIED_ENTITY_BY_ID.get(practiceId); if(!entity)return;
+  const pair=INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(practiceId),window.CHECKLIST_PROFILE_API?.get?.()||{});
+  if(!pair||pair.compatibility?.status==='limit'){window.alert(t("sessionLimitWarning"));btn.disabled=true;return;}
+  toggleSessionVariant(practiceId,variant);
+  btn.disabled=true; btn.textContent=t("alreadyInSession");
+});
+resetRandomCycleBtn.addEventListener("click", () => clearRandomHistory(true));
+[minRandomOne, minRandomOther, randomOnlyNew, randomIncludeNeutralNeutral, randomExcludeHighRisk, randomNoRepeat].forEach(el => {
+  const onChange = () => {
+    if (randomDrawHistory.size) { randomDrawHistory.clear(); saveRandomHistory(); }
+    invalidateRandomSnapshot();
+    saveRandomPreferences();
+    updateCompatibilityIndicator();
+  };
+  el.addEventListener("change", onChange);
+});
+const cats = allCatalogCategories;
+
+function renderCategoryControls() {
+  const currentValue = category.value;
+  category.replaceChildren();
+  const allOption = new Option(t("allCategories"), "");
+  category.appendChild(allOption);
+  for (const name of cats) category.appendChild(new Option(localizedCategory(name), name));
+  category.value = cats.includes(currentValue) ? currentValue : "";
+}
+
+
+function validateGlobalBackup(payload) {
+  const inspection = V2_STORAGE.inspectBackup(payload);
+  return { ...inspection, type: inspection.type === "male" ? "person-a" : inspection.type === "female" ? "person-b" : inspection.type };
+}
+
+function setGlobalLastExchange(info) {
+  V2_STORAGE.setLastExchange(info);
+  lastExchange = info;
+  renderExchangeInfo();
+}
+
+function importGlobalBackup(payload) {
+  const result = V2_STORAGE.importBackup(payload);
+  lastExchange = result.info || V2_STORAGE.getLastExchange();
+  return result;
+}
+
+importJsonBtn.addEventListener("click", () => {
+  if (readOnly) {
+    randomResult.innerHTML = `<strong>${t("readOnlyActive")}</strong> ${t("disableRestore")}`;
+    return;
+  }
+  importJsonFile.value = "";
+  importJsonFile.click();
+});
+
+importJsonFile.addEventListener("change", async () => {
+  if (readOnly) return;
+  const file = importJsonFile.files && importJsonFile.files[0];
+  if (!file) return;
+  flushSafetySave();
+
+  try {
+    const parsed = JSON.parse(await file.text());
+    const inspection = validateGlobalBackup(parsed);
+    const backupType = inspection.type;
+    if (!window.confirm(globalBackupConfirmationText(backupType, parsed, inspection))) {
+      randomResult.innerHTML = currentLang === "fr"
+        ? "<strong>Restauration annulée.</strong> Aucune donnée n’a été modifiée."
+        : "<strong>Restore cancelled.</strong> No data was changed.";
+      return;
+    }
+
+    const result = importGlobalBackup(parsed);
+    if (["person-a","person-b","male","female"].includes(result.type)) {
+      try { sessionStorage.setItem(MERGE_REVIEW_KEY, JSON.stringify({type:result.type, at:new Date().toISOString()})); } catch (_) {}
+    }
+    const label = backupTypeLabel(result.type);
+    const conflictCount = Array.isArray(result.conflicts) ? result.conflicts.length : 0;
+    const conflictText = conflictCount
+      ? (currentLang === "fr" ? ` · ⚠️ ${conflictCount} conflit(s) sécurité conservé(s)` : ` · ⚠️ ${conflictCount} safety conflict(s) preserved`)
+      : "";
+    const migrated = result.format === "legacy-v2";
+    const message = currentLang === "fr"
+      ? `Sauvegarde ${label} restaurée${migrated ? " et migrée depuis V1.1.55" : ""}${conflictText}. La page va être actualisée.`
+      : `${label} backup restored${migrated ? " and migrated from V1.1.55" : ""}${conflictText}. The page will now refresh.`;
+    window.alert(message);
+    window.location.reload();
+  } catch (err) {
+    console.error(err);
+    const prefix = currentLang === "fr" ? "Restauration impossible :" : "Restore failed:";
+    randomResult.innerHTML = `<strong>${prefix}</strong> ${esc(err && err.message ? err.message : t("invalidBackup"))}`;
+  }
+});
+
+function clearSafetyForm() {
+  const textIds = ["slowWord","safeWord","slowSignal","stopSignal","hardLimits","aftercare"];
+  for (const id of textIds) {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  }
+
+  const selectIds = ["marks","media"];
+  for (const id of selectIds) {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  }
+
+  for (const id of ["noIntoxication","nextDayDebrief","stopImmediate"]) {
+    const el = document.getElementById(id);
+    if (el) el.checked = false;
+  }
+}
+
+
+resetChecklistBtn.addEventListener("click", () => {
+  if (readOnly) {
+    randomResult.innerHTML = `<strong>${t("readOnlyActive")}</strong> ${t("disableReset")}`;
+    return;
+  }
+
+  const message = currentLang === "fr"
+    ? "Réinitialiser la checklist ? Toutes les préférences, expériences antérieures, notes après expérience, notes communes, l’historique de tirage, la sélection de séance et les réglages de sécurité seront effacés. Cette action est irréversible sans sauvegarde."
+    : "Reset the checklist? All preferences, prior-experience flags, after-experience ratings, shared notes, random-draw history, session selection and safety settings will be deleted. This cannot be undone without a backup.";
+
+  const ok = window.confirm(message);
+  if (!ok) return;
+
+  clearTimeout(safetySaveTimer);
+  safetySaveTimer = null;
+  safetyDirty = false;
+
+  V2_STORAGE.resetAllUserData();
+  randomPickedId = null;
+  invalidateDerivedData();
+  lastSessionPanelSignature = "";
+  lastStatsSignature = "";
+  lastVisibleStatCount = null;
+  modifiedScopes = V2_STORAGE.getModifiedScopesLegacy();
+  lastModifiedAt = V2_STORAGE.getLastModified();
+  lastExchange = null;
+  clearSafetyForm();
+
+  variantSessionOrder = []; refreshVariantSessionSet();
+  randomDrawHistory.clear();
+  renderSessionPanel();
+
+  search.value = "";
+  category.value = "";
+  status.value = "";
+  minFilterScore.value = "";
+  riskFilter.value = "";
+  
+  randomResult.innerHTML = currentLang === "fr"
+    ? `<strong>${t("checklistResetDone")}</strong> Toutes les réponses, la sélection de séance et les réglages de sécurité ont été effacés.`
+    : `<strong>${t("checklistResetDone")}</strong> All answers, the session selection and safety settings have been cleared.`;
+  render();
+});
+
+function download(filename, content, type) {
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+function buildGlobalBackupPayload(type) {
+  return V2_STORAGE.buildBackup(type, APP_VERSION);
+}
+
+function exportBackup(type) {
+  flushSafetySave();
+
+  const payload = buildGlobalBackupPayload(type);
+  const d = new Date();
+  const dateStamp = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"), String(d.getDate()).padStart(2, "0")].join("-");
+  const timeStamp = [String(d.getHours()).padStart(2, "0"), String(d.getMinutes()).padStart(2, "0")].join("-");
+
+  const normalizedType = payload.backupType;
+  const label = backupTypeLabel(normalizedType);
+  const fileLabel = normalizedType === "full" ? (currentLang === "fr" ? "COMPLETE" : "FULL") : normalizedType === "person-a" ? "PERSON_A" : "PERSON_B";
+  download(`Checklist_BDSM_${fileLabel}_${dateStamp}_${timeStamp}.json`, JSON.stringify(payload,null,2), "application/json");
+
+  const info = {
+    type:"export",
+    backupType:normalizedType,
+    exportedAt:payload.exportedAt,
+    lastModifiedAt:payload.exportedAt,
+    appVersion:APP_VERSION,
+    schemaVersion:payload.schemaVersion
+  };
+  setGlobalLastExchange(info);
+
+  if (currentLang === "fr") {
+    const content = normalizedType === "full"
+      ? "profils, réponses individuelles, données du couple, sécurité et réglages"
+      : normalizedType === "person-a"
+        ? "réponses personnelles de la Personne A et sécurité"
+        : "réponses personnelles de la Personne B et sécurité";
+    randomResult.innerHTML = `<strong>Sauvegarde ${label} créée :</strong> ${content} · schéma ${payload.schemaVersion} · ${APP_VERSION}.`;
+  } else {
+    const content = normalizedType === "full"
+      ? "profiles, individual answers, couple data, safety and settings"
+      : normalizedType === "person-a"
+        ? "Person A personal answers and safety"
+        : "Person B personal answers and safety";
+    randomResult.innerHTML = `<strong>${label} backup created:</strong> ${content} · schema ${payload.schemaVersion} · ${APP_VERSION}.`;
+  }
+}
+
+exportFullBtn.addEventListener("click", () => exportBackup("full"));
+exportPersonABtn.addEventListener("click", () => exportBackup("person-a"));
+exportPersonBBtn.addEventListener("click", () => exportBackup("person-b"));
+
+loadSafety();
+applyStaticLanguage();
+renderLanguageButtons();
+updateHelpLanguage();
+updateAdultInfoLanguage();
+renderCategoryControls();
+renderExperienceModeUI();
+renderExchangeInfo();
+renderRoleUI();
+render();
+renderMergeReviewBanner();
+
+requestAnimationFrame(showFirstUseGuideIfNeeded);
+
