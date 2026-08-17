@@ -4775,7 +4775,7 @@ body[data-readonly="true"] .session-section { display:none !important; }
 }
 
 /* ========================================================================== 
-   V1.1.66 — FINAL UNIFIED UX
+   V1.1.67 — FINAL UNIFIED UX
    One page: individual editing + couple reading. Couple tools live in Reading.
    ========================================================================== */
 .mode-switch{display:inline-flex;align-items:center;gap:4px;padding:4px;border:1px solid #ddd;border-radius:12px;background:#f4f4f4}
@@ -4820,7 +4820,7 @@ body[data-view-mode="read"] .safety-tool-section{display:block!important}
 body[data-view-mode="read"] .role-switch{display:none!important}
 
 /* ========================================================================== 
-   V1.1.66 — MOBILE HEADER LAYOUT FIX
+   V1.1.67 — MOBILE HEADER LAYOUT FIX
    Keep the compact header readable: primary controls on row 1, Edit/Reading
    navigation on its own row, then Tools & options below without overlap.
    ========================================================================== */

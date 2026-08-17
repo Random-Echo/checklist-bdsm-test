@@ -11,7 +11,7 @@ for (let i = 0; i < initialItems.length; i++) {
   if (!Number.isInteger(initialItems[i].displayIndex)) initialItems[i].displayIndex = i + 1;
 }
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.66";
+const APP_VERSION = "V1.1.67";
 const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -216,6 +216,75 @@ const PERSON_B_ROLE = CHECKLIST_SCENARIO.personBRole;
 const FAVORITE_SCORE = 4;
 const FANTASY_SCORE = 5;
 const SCORE_BUTTON_ORDER = [0,1,FANTASY_SCORE,2,3,FAVORITE_SCORE];
+
+
+// Semantic score helpers used by the unified Edit/Read renderers.
+// Keep these independent from the legacy table renderer: they are part of the active V2 UI.
+function validScore(value) {
+  return Number.isInteger(value) && value >= 0 && value <= FANTASY_SCORE ? value : null;
+}
+
+function favoriteSymbol(role = null) {
+  if (role === "sub") return "⭐";
+  if (role === "dom") return "👑";
+  return "★";
+}
+
+function scoreLabel(value, compact = false, role = null) {
+  const v = validScore(value);
+  if (v === null) return t("unknown");
+  if (v === FANTASY_SCORE) return compact ? "💭" : t("scoreFantasy");
+  if (v === FAVORITE_SCORE) {
+    const symbol = favoriteSymbol(role);
+    return compact ? symbol : `${symbol} ${t("favoriteWord")}`;
+  }
+  if (currentLang === "fr") {
+    const full = ["🚫 Limite", "Pas maintenant", "Neutre", "🔥 Envie"];
+    const short = ["🚫", "Pas maintenant", "Neutre", "🔥"];
+    return (compact ? short : full)[v];
+  }
+  const full = ["🚫 Limit", "Not now", "Neutral", "🔥 Want to"];
+  const short = ["🚫", "Not now", "Neutral", "🔥"];
+  return (compact ? short : full)[v];
+}
+
+function scoreButtonLabel(value, role = null) {
+  const v = validScore(value);
+  if (v === null) return "?";
+  if (v === FANTASY_SCORE) return "💭";
+  if (v === FAVORITE_SCORE) return favoriteSymbol(role);
+  if (v === 0) return "🚫";
+  if (v === 1) return "⏳";
+  if (v === 2) return "😐";
+  if (v === 3) return "🔥";
+  return "?";
+}
+
+function scoreDescription(value) {
+  const v = validScore(value);
+  if (v === null) return t("unknown");
+  if (v === FANTASY_SCORE) return t("scoreFantasyDesc");
+  if (v === FAVORITE_SCORE) return t("scoreFavoriteDesc");
+  return t(["scoreLimitDesc", "scoreLaterDesc", "scoreNeutralDesc", "scoreWantDesc"][v]);
+}
+
+function scoreChoiceTitle(value, role = null) {
+  const v = validScore(value);
+  if (v === null) return t("unknown");
+  return `${scoreLabel(v, false, role)} — ${scoreDescription(v)}`;
+}
+
+function riskLabel(risk) {
+  if (risk === "high") return t("riskHigh").replace(/^.*?:\s*/, "");
+  if (risk === "caution") return t("riskCaution").replace(/^.*?:\s*/, "");
+  return t("riskNormal").replace(/^.*?:\s*/, "");
+}
+
+function riskBadge(item) {
+  if (item?.risk === "high") return `<span class="risk-badge risk-high" title="${esc(t("riskHighTitle"))}" aria-label="${esc(t("riskHighTitle"))}">⚠</span>`;
+  if (item?.risk === "caution") return `<span class="risk-badge risk-caution" title="${esc(t("riskCautionTitle"))}" aria-label="${esc(t("riskCautionTitle"))}">!</span>`;
+  return "";
+}
 
 // Caches de données dérivées : un changement de réponse les invalide une seule fois.
 // Les statistiques et le tirage ne reparcourent ainsi pas les 600 pratiques plusieurs fois par cycle UI.
@@ -1518,6 +1587,28 @@ function applySafety(s) {
 function loadSafety() {
   try { applySafety(V2_STORAGE.getSafety()); } catch(e) {}
 }
+
+
+let safetySaveTimer = null;
+let safetyDirty = false;
+function flushSafetySave() {
+  clearTimeout(safetySaveTimer);
+  safetySaveTimer = null;
+  if (!safetyDirty) return;
+  safetyDirty = false;
+  markModified("common");
+  V2_STORAGE.setSafety(getSafety());
+}
+function scheduleSafetySave() {
+  safetyDirty = true;
+  clearTimeout(safetySaveTimer);
+  safetySaveTimer = setTimeout(flushSafetySave, 140);
+}
+safetyFields.forEach(el => el.addEventListener("input", scheduleSafetySave));
+window.addEventListener("pagehide", flushSafetySave);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") flushSafetySave();
+});
 
 
 let searchRenderTimer = null;
