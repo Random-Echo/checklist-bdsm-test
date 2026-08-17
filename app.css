@@ -4775,7 +4775,7 @@ body[data-readonly="true"] .session-section { display:none !important; }
 }
 
 /* ========================================================================== 
-   V1.1.67 — FINAL UNIFIED UX
+   V1.1.68 — FINAL UNIFIED UX
    One page: individual editing + couple reading. Couple tools live in Reading.
    ========================================================================== */
 .mode-switch{display:inline-flex;align-items:center;gap:4px;padding:4px;border:1px solid #ddd;border-radius:12px;background:#f4f4f4}
@@ -4820,7 +4820,7 @@ body[data-view-mode="read"] .safety-tool-section{display:block!important}
 body[data-view-mode="read"] .role-switch{display:none!important}
 
 /* ========================================================================== 
-   V1.1.67 — MOBILE HEADER LAYOUT FIX
+   V1.1.68 — MOBILE HEADER LAYOUT FIX
    Keep the compact header readable: primary controls on row 1, Edit/Reading
    navigation on its own row, then Tools & options below without overlap.
    ========================================================================== */
@@ -5043,5 +5043,38 @@ body[data-view-mode="read"] .role-switch{display:none!important}
      the injected header shortcut on phones creates an extra implicit grid row. */
   header .title-actions > .profile-edit-button {
     display:none !important;
+  }
+}
+
+
+/* ==========================================================================
+   V1.1.68 — MAIN VERTICAL SCROLL RESTORATION
+   The unified editor/reader renders inside <main>. The document shell keeps
+   body locked so the header/footer stay fixed; therefore <main> must own the
+   vertical scroll.
+   ========================================================================== */
+body[data-view-mode="edit"] main,
+body[data-view-mode="read"] main {
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
+  scrollbar-gutter:stable;
+}
+
+/* The active unified sections must grow naturally inside the scrollport. */
+body[data-view-mode="edit"] #individualEditor,
+body[data-view-mode="read"] #coupleReader {
+  flex:0 0 auto;
+  min-height:min-content;
+}
+
+@media (max-width:650px) {
+  body[data-view-mode="edit"] main,
+  body[data-view-mode="read"] main {
+    overscroll-behavior-y:auto;
+    touch-action:pan-y;
+    scrollbar-gutter:auto;
   }
 }
