@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.69";
+const APP_VERSION = "V1.1.72";
 const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1030,13 +1030,8 @@ function personalizeLegacyText(text, legacySourceKey) {
   return out;
 }
 function editorSlotLabel(slot) {
-  if(currentLang==="fr") return ({interest:"Mon intérêt",give:"Donner",receive:"Recevoir",dominant:"En position dominante",submissive:"En position soumise"})[slot]||slot;
-  return ({interest:"My interest",give:"Give",receive:"Receive",dominant:"As dominant",submissive:"As submissive"})[slot]||slot;
-}
-function editorSlotHint(slot) {
-  const partner=editorProfileName(modelPersonKey()==="personA"?"personB":"personA");
-  if(currentLang==="fr") return ({give:`Ce que j’aime faire à ${partner}.`,receive:`Ce que j’aime recevoir de ${partner}.`,dominant:`Ce que j’aime vivre en position dominante.`,submissive:`Ce que j’aime vivre en position soumise.`,interest:"Mon intérêt personnel pour cette pratique."})[slot]||"";
-  return ({give:`What I like doing to ${partner}.`,receive:`What I like receiving from ${partner}.`,dominant:`What I like while taking the dominant role.`,submissive:`What I like while taking the submissive role.`,interest:"My personal interest in this practice."})[slot]||"";
+  if(currentLang==="fr") return ({interest:"INTÉRÊT",give:"DONNER",receive:"RECEVOIR",dominant:"DOM",submissive:"SUB"})[slot]||slot;
+  return ({interest:"INTEREST",give:"GIVE",receive:"RECEIVE",dominant:"DOM",submissive:"SUB"})[slot]||slot;
 }
 function editorSlotsForEntity(entity, person, profile) {
   let slots=INTERACTION_MODEL.visibleSlots(entity,person,profile);
@@ -1058,23 +1053,31 @@ function editorScoreButtons(v2Id,slot,state) {
 }
 function editorAfterButtons(v2Id,slot,state) {
   const role = slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
-  if(!state.prior && !Number.isInteger(state.after)) return `<span class="individual-after-disabled">${currentLang==="fr"?"Activez « Déjà essayé » pour noter l’après essai.":"Enable “Already tried” to rate after trying."}</span>`;
   const unknown=`<button class="score-btn unknown-score${Number.isInteger(state.after)?"":" selected"}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="unknown" type="button">?</button>`;
   return unknown+SCORE_BUTTON_ORDER.map(n=>{const ui=cachedScoreUi(n,role),sel=state.after===n;return `<button class="score-btn semantic-score-btn${n===0?' limit-score':''}${sel?' selected':''}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="${n}" type="button" title="${ui.title}" aria-pressed="${sel?'true':'false'}">${ui.label}</button>`}).join("");
 }
 function renderEditorSlot(entity,person,slot,profile) {
   const state=V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{};
   const applicability=INTERACTION_MODEL.evaluateSlot(entity,person,slot,profile);
-  const source=legacyBlockForEditorSlot(entity,person,slot); const block=source.block||{};
-  const contextualTitle=personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),source.legacySourceKey);
   const incompatible=applicability.status==="notApplicable";
+  const incompatTitle=currentLang==="fr"?"Anatomie non compatible":"Anatomy not compatible";
+  const hasNote=typeof state.note==="string"&&state.note.trim().length>0;
+  const noteTitle=currentLang==="fr"?(hasNote?"Ouvrir la note renseignée":"Ajouter une note"):(hasNote?"Open saved note":"Add a note");
+  const showAfter=state.prior===true||Number.isInteger(state.after);
   return `<section class="individual-slot${incompatible?' is-incompatible':''}" data-editor-slot="${slot}">
-    <div class="individual-slot-head"><div><strong>${esc(editorSlotLabel(slot))}</strong><small>${esc(editorSlotHint(slot))}</small>${contextualTitle?`<span class="individual-slot-context">${esc(contextualTitle)}</span>`:""}</div>${incompatible?`<span class="individual-applicability">${currentLang==="fr"?"Anatomie non compatible":"Anatomy not compatible"}</span>`:""}</div>
-    <div class="individual-field"><span class="individual-field-label">${currentLang==="fr"?"Mon choix":"My choice"}</span><div class="individual-score-row">${editorScoreButtons(entity.id,slot,state)}</div></div>
-    <div class="individual-experience-row"><button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}"><span>${state.prior?'✓':'□'}</span> ${currentLang==="fr"?"Déjà essayé":"Already tried"}</button><div class="individual-after"><span class="individual-field-label">${currentLang==="fr"?"Après essai":"After trying"}</span><div class="individual-score-row">${editorAfterButtons(entity.id,slot,state)}</div></div></div>
-    <label class="individual-note"><span>💬 ${currentLang==="fr"?"Ma note":"My note"}</span><textarea data-personal-note data-v2-id="${esc(entity.id)}" data-slot="${slot}" placeholder="${currentLang==="fr"?"Note personnelle…":"Personal note…"}">${esc(state.note||"")}</textarea></label>
+    <div class="individual-slot-main">
+      <div class="individual-slot-label-wrap"><strong class="individual-slot-label">${esc(editorSlotLabel(slot))}</strong>${incompatible?`<span class="individual-applicability" title="${esc(incompatTitle)}" aria-label="${esc(incompatTitle)}">⚠</span>`:""}</div>
+      <div class="individual-score-row">${editorScoreButtons(entity.id,slot,state)}</div>
+      <div class="individual-slot-tools">
+        <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${currentLang==="fr"?"Déjà essayé":"Already tried"}"><span>${state.prior?'✓':'□'}</span><span class="individual-prior-text">${currentLang==="fr"?"Essayé":"Tried"}</span></button>
+        <button class="individual-note-toggle${hasNote?' has-note':''}" data-personal-note-toggle type="button" aria-expanded="false" title="${esc(noteTitle)}"><span aria-hidden="true">📝</span>${hasNote?'<i aria-hidden="true"></i>':''}<span class="sr-only">${esc(noteTitle)}</span></button>
+      </div>
+    </div>
+    ${showAfter?`<div class="individual-after"><span class="individual-field-label">${currentLang==="fr"?"Après":"After"}</span><div class="individual-score-row">${editorAfterButtons(entity.id,slot,state)}</div></div>`:""}
+    <label class="individual-note-panel" hidden><span>${currentLang==="fr"?"Note personnelle":"Personal note"}</span><textarea data-personal-note data-v2-id="${esc(entity.id)}" data-slot="${slot}" placeholder="${currentLang==="fr"?"Note personnelle…":"Personal note…"}">${esc(state.note||"")}</textarea></label>
   </section>`;
 }
+
 function configureEditorStatusOptions() {
   const langKey=`edit-${currentLang}`; if(status.dataset.readerLang===langKey) return;
   const previous=status.value;
@@ -1106,7 +1109,7 @@ function renderIndividualEditor() {
   const categories=[...grouped.keys()].sort((a,b)=>a.localeCompare(b,currentLang)); let html="";
   for(const catName of categories) {
     const rows=grouped.get(catName); const collapsed=collapsedCategories.has(catName) && !q && !cat && !risk;
-    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slots,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}"><header><div><span class="individual-practice-category">${esc(currentLang==='fr'?`Niveau ${info.level}`:`Level ${info.level}`)}</span><h3>${esc(info.title)}</h3>${info.explanation?`<p>${esc(info.explanation)}</p>`:''}</div>${info.risk==='normal'?'':`<span class="risk-badge risk-${info.risk}">${info.risk==='high'?'⚠':'!'}</span>`}</header><div class="individual-slots${slots.length>1?' has-multiple':''}">${slots.map(slot=>renderEditorSlot(entity,person,slot,profile)).join('')}</div></article>`).join('')}</div>`}</section>`;
+    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slots,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.risk==='normal'?'':`<span class="risk-badge risk-${info.risk}">${info.risk==='high'?'⚠':'!'}</span>`}</header><div class="individual-slots${slots.length>1?' has-multiple':''}">${slots.map(slot=>renderEditorSlot(entity,person,slot,profile)).join('')}</div></article>`).join('')}</div>`}</section>`;
   }
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
   const summary=V2_STORAGE.getPersonalSummary(person); individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
@@ -1118,13 +1121,19 @@ function hideIndividualEditor() {
 if(individualEditorList) {
   individualEditorList.addEventListener("click",e=>{
     const catBtn=e.target.closest("[data-editor-category-toggle]"); if(catBtn){const c=catBtn.dataset.editorCategoryToggle;if(collapsedCategories.has(c))collapsedCategories.delete(c);else collapsedCategories.add(c);saveCollapsedCategories();render();return;}
+    const noteToggle=e.target.closest("button[data-personal-note-toggle]");
+    if(noteToggle){
+      const slotEl=noteToggle.closest(".individual-slot"),panel=slotEl?.querySelector(".individual-note-panel");
+      if(panel){const opening=panel.hidden;panel.hidden=!opening;noteToggle.setAttribute("aria-expanded",opening?"true":"false");noteToggle.classList.toggle("is-open",opening);if(opening)panel.querySelector("textarea")?.focus();}
+      return;
+    }
     const btn=e.target.closest("button[data-personal-action]"); if(!btn)return;
     const id=btn.dataset.v2Id,slot=btn.dataset.slot,person=modelPersonKey(); const state=V2_STORAGE.getPersonalSlotState(id,person,slot)||{}; const action=btn.dataset.personalAction;
     if(action==="prior"){state.prior=!state.prior;if(!state.prior)delete state.after;}
     else {const value=btn.dataset.score==="unknown"?null:Number(btn.dataset.score);if(value===null)delete state[action];else state[action]=state[action]===value?undefined:value;if(state[action]===undefined)delete state[action];}
     V2_STORAGE.setPersonalSlotState(id,person,slot,state); invalidateDerivedData(); render();
   });
-  individualEditorList.addEventListener("input",e=>{const note=e.target.closest("textarea[data-personal-note]");if(!note)return;const person=modelPersonKey(),state=V2_STORAGE.getPersonalSlotState(note.dataset.v2Id,person,note.dataset.slot)||{};state.note=note.value;V2_STORAGE.setPersonalSlotState(note.dataset.v2Id,person,note.dataset.slot,state);const summary=V2_STORAGE.getPersonalSummary(person);individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;});
+  individualEditorList.addEventListener("input",e=>{const note=e.target.closest("textarea[data-personal-note]");if(!note)return;const person=modelPersonKey(),state=V2_STORAGE.getPersonalSlotState(note.dataset.v2Id,person,note.dataset.slot)||{};state.note=note.value;V2_STORAGE.setPersonalSlotState(note.dataset.v2Id,person,note.dataset.slot,state);const toggle=note.closest(".individual-slot")?.querySelector("[data-personal-note-toggle]");if(toggle){const hasNote=note.value.trim().length>0;toggle.classList.toggle("has-note",hasNote);let dot=toggle.querySelector("i");if(hasNote&&!dot){dot=document.createElement("i");dot.setAttribute("aria-hidden","true");toggle.appendChild(dot);}else if(!hasNote&&dot)dot.remove();}const summary=V2_STORAGE.getPersonalSummary(person);individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;});
 }
 
 function readerNames() {
