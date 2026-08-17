@@ -11,7 +11,7 @@ for (let i = 0; i < initialItems.length; i++) {
   if (!Number.isInteger(initialItems[i].displayIndex)) initialItems[i].displayIndex = i + 1;
 }
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.64";
+const APP_VERSION = "V1.1.65";
 const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
