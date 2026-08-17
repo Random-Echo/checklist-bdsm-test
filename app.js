@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.77";
+const APP_VERSION = "V1.1.79";
 const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1255,9 +1255,13 @@ function readerResultPanel(entity,pair,names=readerNames()) {
   const sessionLabel=blocked?t('sessionLimitWarning'):(inSession?t('removeSession'):t('addSession'));
   const hasNote=display.some(p=>String(p.state?.note||"").trim());
   const detailsLabel=currentLang==="fr"?"Afficher les détails, notes, avant et après":"Show details, notes, before and after";
+  const sharedLabel=currentLang==="fr"?"Commun":"Shared";
+  const resultTitle=readerCompatibilityLabel(c.status);
+  const scoreTitle=`${display[0].name} · ${readerSlotLabel(display[0].slot)} : ${firstScore} | ${display[1].name} · ${readerSlotLabel(display[1].slot)} : ${secondScore}`;
   return `<div class="couple-compact-result" data-result="${esc(c.status)}">
-    <span class="couple-compact-scores" title="${esc(`${display[0].name} · ${readerSlotLabel(display[0].slot)} : ${firstScore} | ${display[1].name} · ${readerSlotLabel(display[1].slot)} : ${secondScore}`)}"><span>${firstScore}</span><b aria-hidden="true">+</b><span>${secondScore}</span></span>
-    <span class="couple-compact-status" title="${esc(readerCompatibilityLabel(c.status))}"><span class="couple-compact-status-icon" aria-hidden="true">${esc(resultIcon)}</span><span class="couple-compact-status-text">${esc(resultText)}</span></span>
+    <span class="couple-result-cell couple-result-person-cell" title="${esc(`${display[0].name} · ${readerSlotLabel(display[0].slot)} : ${firstScore}`)}"><span class="couple-result-cell-value">${firstScore}</span><span class="couple-result-cell-caption">${esc(display[0].name)}</span></span>
+    <span class="couple-result-cell couple-result-person-cell" title="${esc(`${display[1].name} · ${readerSlotLabel(display[1].slot)} : ${secondScore}`)}"><span class="couple-result-cell-value">${secondScore}</span><span class="couple-result-cell-caption">${esc(display[1].name)}</span></span>
+    <span class="couple-result-cell couple-result-common-cell" title="${esc(resultTitle)} · ${esc(scoreTitle)}"><span class="couple-result-cell-value" aria-hidden="true">${esc(resultIcon)}</span><span class="couple-result-cell-caption">${esc(resultText)}</span></span>
     <div class="couple-result-actions">
       <button class="couple-together-btn${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} aria-label="${esc(togetherLabel)}" title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):togetherLabel)}">${done?'✓':'○'}</button>
       <button class="couple-session-btn${inSession?' is-selected':''}" data-couple-action="session" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked?'disabled':''} aria-label="${esc(sessionLabel)}" title="${esc(sessionLabel)}">📌</button>
