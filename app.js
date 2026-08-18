@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.91";
+const APP_VERSION = "V1.1.92";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -989,21 +989,95 @@ function readerVariantPeople(entity, variant, names = readerNames()) {
 function stripEndingPunctuation(text) {
   return String(text || '').trim().replace(/\s*[.!?…]+$/u, '');
 }
+function normalizeWord(word) {
+  return String(word || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+function looksLikeInfinitive(word) {
+  const w = normalizeWord(word);
+  return /(?:er|ir|re)$/.test(w) || w === 'etre' || w === 'avoir';
+}
+function conjugateFrenchInfinitive(word) {
+  const source = String(word || '').trim();
+  if (!source) return source;
+  const lower = source.toLowerCase();
+  const norm = normalizeWord(lower);
+  const irregular = {
+    'etre': 'est', 'avoir': 'a', 'faire': 'fait', 'aller': 'va', 'pouvoir': 'peut', 'vouloir': 'veut', 'devoir': 'doit',
+    'recevoir': 'reçoit', 'envoyer': 'envoie', 'nettoyer': 'nettoie', 'essuyer': 'essuie', 'appuyer': 'appuie',
+    'employer': 'emploie', 'payer': 'paie', 'essayer': 'essaie', 'tutoyer': 'tutoie', 'vouvoyer': 'vouvoie',
+    'ecrire': 'écrit', 'decrire': 'décrit', 'interdire': 'interdit', 'dire': 'dit', 'lire': 'lit', 'suivre': 'suit',
+    'attendre': 'attend', 'vendre': 'vend', 'prendre': 'prend', 'apprendre': 'apprend', 'comprendre': 'comprend',
+    'mettre': 'met', 'permettre': 'permet', 'promettre': 'promet', 'boire': 'boit', 'conduire': 'conduit',
+    'masser': 'masse', 'embrasser': 'embrasse', 'venerer': 'vénère', 'adorer': 'adore', 'porter': 'porte',
+    'tirer': 'tire', 'ordonner': 'ordonne', 'controler': 'contrôle', 'inspecter': 'inspecte', 'obeir': 'obéit',
+    'servir': 'sert', 'dormir': 'dort', 'sortir': 'sort', 'partir': 'part', 'mentir': 'ment', 'sentir': 'sent',
+    'ouvrir': 'ouvre', 'offrir': 'offre', 'souffrir': 'souffre', 'courir': 'court', 'rire': 'rit', 'sourire': 'sourit'
+  };
+  let out = irregular[norm];
+  if (!out) {
+    if (/yer$/.test(norm)) out = lower.slice(0, -3) + 'ie';
+    else if (/eler$/.test(norm) || /eter$/.test(norm)) out = lower.slice(0, -2);
+    else if (/er$/.test(norm)) out = lower.slice(0, -2) + 'e';
+    else if (/ir$/.test(norm)) out = lower.slice(0, -2) + 'it';
+    else if (/re$/.test(norm)) out = lower.slice(0, -2);
+    else out = lower;
+  }
+  return out;
+}
+function conjugateFrenchPhrase(raw) {
+  let text = String(raw || '').trim();
+  if (!text) return '';
+  const parts = text.split(/(\s*,\s*|\s+et\s+|\s+ou\s+)/i);
+  const converted = parts.map((part, index) => {
+    if (!part || /^(\s*,\s*|\s+et\s+|\s+ou\s+)$/i.test(part)) return part;
+    const seg = part.match(/^(\s*)(s['’]\s*|se\s+)?([A-Za-zÀ-ÿ-]+)(.*)$/u);
+    if (!seg) return index === 0 ? part.charAt(0).toLowerCase() + part.slice(1) : part;
+    const [, lead, reflexive = '', verb = '', rest = ''] = seg;
+    if (!looksLikeInfinitive(verb)) return index === 0 ? part.charAt(0).toLowerCase() + part.slice(1) : part;
+    const conj = conjugateFrenchInfinitive(verb);
+    const reflex = reflexive ? reflexive.replace(/^S/, 's') : '';
+    return `${lead}${reflex}${conj}${rest}`;
+  }).join('');
+  return converted.charAt(0).toLowerCase() + converted.slice(1);
+}
+function frenchFirstInfinitive(raw) {
+  const text = String(raw || '').trim();
+  const seg = text.match(/^(?:s['’]\s*|se\s+)?([A-Za-zÀ-ÿ-]+)/u);
+  return seg ? normalizeWord(seg[1]) : '';
+}
+function explanationHasExplicitActor(raw, names = readerNames()) {
+  const text = String(raw || '').trim();
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  const a = String(names?.personA || '').toLowerCase();
+  const b = String(names?.personB || '').toLowerCase();
+  if ((a && lower.includes(a)) || (b && lower.includes(b))) return true;
+  return /(le|la|les)\s+(ma[iî]tre|ma[iî]tresse|soumis|soumise)/i.test(text) || /par/i.test(text);
+}
+function explanationSubjectSide(raw, people) {
+  const first = frenchFirstInfinitive(raw);
+  const actorVerbs = new Set(['masser','embrasser','venerer','nettoyer','caresser','lecher','sucer','doigter','fesser','attacher','stimuler','adorer','vouer','servir','donner','interdire','ordonner','controler','punir','dresser','guider']);
+  if (actorVerbs.has(first)) return { person: people.fromPerson, name: people.fromName };
+  return { person: people.toPerson, name: people.toName };
+}
 function readerContextualExplanationHtml(entity, pair, info, names = readerNames()) {
   const raw = String(info?.explanation || '').trim();
   const people = readerVariantPeople(entity, pair?.variant, names);
   if (!people) return raw ? esc(raw) : '';
   const cleaned = stripEndingPunctuation(raw);
-  if (currentLang === 'fr') {
-    if (cleaned) {
-      return `${profileNameBadge(people.toPerson, people.toName, true)} <span class="profile-inline-text">:</span> ${esc(cleaned)} <span class="profile-inline-text">de la part de</span> ${profileNameBadge(people.fromPerson, people.fromName, true)}.`;
-    }
-    return `${profileNameBadge(people.fromPerson, people.fromName, true)} <span class="flow-arrow">→</span> ${profileNameBadge(people.toPerson, people.toName, true)}`;
+  if (!cleaned) return `${profileNameBadge(people.fromPerson, people.fromName, true)} <span class="flow-arrow">→</span> ${profileNameBadge(people.toPerson, people.toName, true)}`;
+  if (currentLang !== 'fr') {
+    if (explanationHasExplicitActor(cleaned, names)) return esc(cleaned) + '.';
+    return esc(cleaned) + '.';
   }
-  if (cleaned) {
-    return `${profileNameBadge(people.toPerson, people.toName, true)} <span class="profile-inline-text">:</span> ${esc(cleaned)} <span class="profile-inline-text">from</span> ${profileNameBadge(people.fromPerson, people.fromName, true)}.`;
+  if (explanationHasExplicitActor(cleaned, names)) return `${esc(cleaned)}.`;
+  const firstVerb = frenchFirstInfinitive(cleaned);
+  if (firstVerb && looksLikeInfinitive(firstVerb)) {
+    const subject = explanationSubjectSide(cleaned, people);
+    const converted = conjugateFrenchPhrase(cleaned);
+    return `${profileNameBadge(subject.person, subject.name, true)} <span class="profile-inline-text">${esc(converted)}</span>.`;
   }
-  return `${profileNameBadge(people.fromPerson, people.fromName, true)} <span class="flow-arrow">→</span> ${profileNameBadge(people.toPerson, people.toName, true)}`;
+  return `${esc(cleaned)}.`;
 }
 function variantEntryKey(entryOrPracticeId, variant=null) {
   if (typeof entryOrPracticeId === "object" && entryOrPracticeId) return `${entryOrPracticeId.practiceId}|${entryOrPracticeId.variant}`;
