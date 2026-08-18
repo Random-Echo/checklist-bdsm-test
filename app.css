@@ -3193,7 +3193,7 @@ button.couple-result-tick{font-family:inherit;cursor:pointer}
 button.couple-result-tick:hover{background:rgba(255,255,255,.94)}
 button.couple-result-tick:disabled{cursor:not-allowed;opacity:.6}
 .couple-together-tick.is-done{color:#356d43;background:rgba(255,255,255,.72)}
-.couple-reader-notes{margin:-1px 7px 6px calc(var(--reader-rail-width) + 13px);padding:4px 7px;border-radius:7px;background:rgba(255,255,255,.68);color:#555;display:flex;flex-direction:column;gap:3px}
+.couple-reader-notes{margin:-1px 7px 6px calc(var(--reader-rail-width) + 13px);padding:4px 7px;border-radius:7px;background:rgba(255,250,243,.72);color:#4d4a46;display:flex;flex-direction:column;gap:3px;border:1px solid rgba(110,90,58,.10)}
 .couple-reader-note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px;align-items:start;font-size:.58rem;line-height:1.22}
 .couple-reader-note strong{white-space:nowrap;color:#444}
 .couple-reader-note span{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -3782,13 +3782,13 @@ button.risk-badge:hover,button.risk-badge:focus-visible{filter:brightness(.97);o
 /* Shared result palette for single- and multi-direction Reading cards.
    Each panel also defines a dark explanation color with strong contrast against
    its own result background; explanations remain readable even at mobile sizes. */
-:is(.couple-practice,.couple-group-variant-block)[data-result="excellent"]{--result-bg:#3f8053;--result-panel:#c9d8c5;--result-border:#2d6340;--result-copy-muted:#22362a}
-:is(.couple-practice,.couple-group-variant-block)[data-result="strong"]{--result-bg:#78833d;--result-panel:#d7dbb3;--result-border:#60692f;--result-copy-muted:#363923}
-:is(.couple-practice,.couple-group-variant-block)[data-result="compatible"]{--result-bg:#aa7c2a;--result-panel:#e3d0a0;--result-border:#86611e;--result-copy-muted:#43371c}
-:is(.couple-practice,.couple-group-variant-block)[data-result="later"]{--result-bg:#a8643a;--result-panel:#dfc0a3;--result-border:#824b2b;--result-copy-muted:#483226}
-:is(.couple-practice,.couple-group-variant-block)[data-result="fantasy"]{--result-bg:#526f98;--result-panel:#c0cedf;--result-border:#3f587a;--result-copy-muted:#283646}
-:is(.couple-practice,.couple-group-variant-block)[data-result="limit"]{--result-bg:#934458;--result-panel:#d4b0ba;--result-border:#743246;--result-copy-muted:#432730}
-:is(.couple-practice,.couple-group-variant-block)[data-result="incomplete"]{--result-bg:#747b81;--result-panel:#d7dbde;--result-border:#596167;--result-copy-muted:#383e43}
+:is(.couple-practice,.couple-group-variant-block)[data-result="excellent"]{--result-bg:#315f44;--result-panel:linear-gradient(180deg,#d7e0d1 0%,#c5d1be 100%);--result-border:#274d36;--result-copy-muted:#1f3025}
+:is(.couple-practice,.couple-group-variant-block)[data-result="strong"]{--result-bg:#666a31;--result-panel:linear-gradient(180deg,#dddcb7 0%,#cecf9f 100%);--result-border:#535628;--result-copy-muted:#35361f}
+:is(.couple-practice,.couple-group-variant-block)[data-result="compatible"]{--result-bg:#9a6d22;--result-panel:linear-gradient(180deg,#e8d6a6 0%,#dbc184 100%);--result-border:#795518;--result-copy-muted:#403217}
+:is(.couple-practice,.couple-group-variant-block)[data-result="later"]{--result-bg:#915230;--result-panel:linear-gradient(180deg,#e3c2a7 0%,#d3a986 100%);--result-border:#754127;--result-copy-muted:#452e21}
+:is(.couple-practice,.couple-group-variant-block)[data-result="fantasy"]{--result-bg:#445678;--result-panel:linear-gradient(180deg,#cad2e0 0%,#b2bdd0 100%);--result-border:#37465f;--result-copy-muted:#243040}
+:is(.couple-practice,.couple-group-variant-block)[data-result="limit"]{--result-bg:#7f3347;--result-panel:linear-gradient(180deg,#dbc1c8 0%,#c79ca8 100%);--result-border:#652738;--result-copy-muted:#3e222b}
+:is(.couple-practice,.couple-group-variant-block)[data-result="incomplete"]{--result-bg:#5d6167;--result-panel:linear-gradient(180deg,#d8dade 0%,#c2c7cb 100%);--result-border:#4a4e54;--result-copy-muted:#34373b}
 .couple-group-variant-row{
   display:grid;grid-template-columns:var(--reader-rail-width) minmax(0,1fr) var(--reader-results-width);
   align-items:center;gap:6px;min-height:50px;padding:5px 7px
