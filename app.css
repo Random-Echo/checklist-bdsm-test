@@ -2959,8 +2959,8 @@ header .role-choice {
 .individual-editor-progress { padding:4px 7px; border-radius:999px; background:#f4f4f4; color:#4d4d4d; font-size:.66rem; font-weight:800; white-space:nowrap; }
 .individual-editor-legend { margin:5px 0 7px; padding:5px 8px; border-radius:7px; border:1px solid #e5e5e5; background:#fafafa; color:#5b5b5b; font-size:.69rem; line-height:1.2; }
 .individual-editor-list { display:flex; flex-direction:column; gap:5px; }
-.individual-category { border-radius:9px; }
-.individual-category-head { width:100%; min-height:31px; display:grid; grid-template-columns:auto 1fr auto auto; align-items:center; gap:6px; padding:5px 8px; border:1px solid #dedede; border-radius:8px; background:#f8f8f8; color:#333; text-align:left; cursor:pointer; position:sticky; top:var(--edit-category-sticky-top,0px); z-index:7; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.individual-category { position:relative; border-radius:9px; overflow:visible; }
+.individual-category-head { width:100%; min-height:31px; display:grid; grid-template-columns:auto 1fr auto auto; align-items:center; gap:6px; padding:5px 8px; border:1px solid #dedede; border-radius:8px; background:#f8f8f8; color:#333; text-align:left; cursor:pointer; position:sticky; top:var(--edit-category-sticky-top,0px); z-index:12; box-shadow:0 2px 8px rgba(0,0,0,.08); }
 .individual-category-head strong { font-size:.78rem; line-height:1.1; }
 .individual-category-head > span:nth-of-type(2) { padding:1px 5px; border-radius:999px; background:#ececec; color:#666; font-size:.62rem; font-weight:800; }
 .individual-category-cards { display:flex; flex-direction:column; gap:4px; padding:4px 0 0; }
@@ -3092,23 +3092,24 @@ header .role-choice {
 .couple-reader-summary{flex:none;padding:4px 7px;border-radius:999px;background:#f4f4f4;color:#555;font-size:.64rem;font-weight:850;white-space:nowrap}
 .couple-reader-legend{display:none}
 .couple-reader-list{--reader-rail-width:38px;--reader-results-width:156px;display:flex;flex-direction:column;gap:6px}
-.couple-reader-category{overflow:hidden;border:1px solid #d9dcdf;border-left:4px solid var(--reader-category-color,#aaa);border-radius:10px;background:#fff}
-.couple-reader-category-head{width:100%;min-height:39px;display:flex;align-items:center;gap:6px;padding:4px 7px;border:0;background:#f5f3f5;cursor:pointer;text-align:left;position:sticky;top:var(--read-category-sticky-top,0px);z-index:9;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.couple-reader-category{position:relative;overflow:visible;border:1px solid #d9dcdf;border-left:4px solid var(--reader-category-color,#aaa);border-radius:10px;background:#fff}
+.couple-reader-category-head{width:100%;min-height:39px;display:flex;align-items:center;gap:6px;padding:4px 7px;border:0;border-radius:9px 9px 0 0;background:#f5f3f5;cursor:pointer;text-align:left;position:sticky;top:var(--read-category-sticky-top,0px);z-index:14;box-shadow:0 2px 10px rgba(0,0,0,.10)}
 .couple-reader-category-head>strong{min-width:0;flex:1;font-size:.78rem;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .couple-reader-category-count{color:#747a7f;font-size:.58rem;font-weight:850;white-space:nowrap}
-.individual-category,
-.couple-reader-category{scroll-margin-top:calc(var(--read-category-sticky-top,0px) + 10px)}
+.individual-category{scroll-margin-top:calc(var(--edit-category-sticky-top,0px) + 8px)}
+.couple-reader-category{scroll-margin-top:calc(var(--read-category-sticky-top,0px) + 8px)}
 .individual-category-head:focus-visible,
 .couple-reader-category-head:focus-visible{outline:2px solid color-mix(in srgb,var(--accent,#5aa0c2) 70%,white);outline-offset:1px}
 .couple-reader-category-head::after,
-.individual-category-head::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:rgba(0,0,0,.05);pointer-events:none}
+.individual-category-head::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:rgba(0,0,0,.06);pointer-events:none}
 .couple-reader-category-chevron{flex:none;font-size:.72rem;color:#666}
 .couple-result-head{flex:none;width:var(--reader-results-width);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;text-align:center}
 .couple-result-head>span{display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:center;line-height:1.05}
 .couple-result-head b{display:block;max-width:100%;font-size:.58rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .couple-result-head small{margin-top:2px;color:#687077;font-size:.48rem;font-weight:800;white-space:nowrap}
-.couple-reader-category-body{display:flex;flex-direction:column}
+.couple-reader-category-body{display:flex;flex-direction:column;overflow:hidden;border-radius:0 0 9px 9px;background:#fff}
 .couple-reader-category.is-collapsed .couple-reader-category-body{display:none}
+.couple-reader-category.is-collapsed .couple-reader-category-head{border-radius:9px}
 .couple-practice{--result-bg:#f1f2f3;--result-panel:#fff;--result-border:#d9dcdf;position:relative;border-top:1px solid #e2e4e6;background:var(--result-panel)}
 .couple-practice:first-child{border-top:0}
 .couple-practice-row{display:grid;grid-template-columns:var(--reader-rail-width) minmax(0,1fr) var(--reader-results-width);align-items:center;gap:6px;min-height:64px;padding:6px 7px}
@@ -3145,7 +3146,9 @@ button.couple-result-tick:disabled{cursor:not-allowed;opacity:.6}
   .couple-reader-head h2{font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .couple-reader-summary{padding:2px 4px;font-size:.51rem}
   .couple-reader-category{border-left-width:3px;border-radius:7px}
-  .couple-reader-category-head{min-height:36px;gap:4px;padding:3px 4px}
+  .couple-reader-category-head{min-height:36px;gap:4px;padding:3px 4px;border-radius:6px 6px 0 0}
+  .couple-reader-category-body{border-radius:0 0 6px 6px}
+  .couple-reader-category.is-collapsed .couple-reader-category-head{border-radius:6px}
   .couple-reader-category-head>strong{font-size:.68rem}
   .couple-reader-category-count{font-size:.49rem}
   .couple-result-head{gap:2px}
@@ -3483,7 +3486,9 @@ body[data-view-mode="read"] #coupleReader {
 
 /* Reading filter state hooks */
 
-/* Sticky category headers */
+/* Sticky category headers.
+   IMPORTANT: no ancestor between these headers and <main> may use overflow
+   hidden/auto/scroll. <main> is intentionally the sticky scrollport. */
 :root{
   --edit-category-sticky-top:0px;
   --read-category-sticky-top:46px;

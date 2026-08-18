@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.98";
+const APP_VERSION = "V1.1.99";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1397,7 +1397,10 @@ function updateStickyCategoryOffsets(){
 }
 window.addEventListener("resize", updateStickyCategoryOffsets, {passive:true});
 window.addEventListener("orientationchange", updateStickyCategoryOffsets, {passive:true});
-if(readerFilterDock) readerFilterDock.addEventListener("toggle", ()=>window.requestAnimationFrame(updateStickyCategoryOffsets));
+if(readerFilterDock) {
+  readerFilterDock.addEventListener("toggle", ()=>window.requestAnimationFrame(updateStickyCategoryOffsets));
+  if("ResizeObserver" in window) new ResizeObserver(()=>updateStickyCategoryOffsets()).observe(readerFilterDock);
+}
 if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => window.CHECKLIST_PROFILE_API?.open?.());
 if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => {
   const cats=[...new Set(CATALOG_ENTITIES.map(entity=>entity.category).filter(Boolean))];
