@@ -4260,12 +4260,15 @@ button.action:hover{background:#f2ebe7}
   --dominant-soft:var(--person-a-role-soft);
 }
 body[data-view-mode="read"]{
-  --variant-bg:var(--dominant-soft);
-  --variant-header:var(--dominant-soft);
+  /* Global surface uses the dominant person's actual profile color rather than
+     the pale "soft" swatch. A small black mix keeps gold/orange profiles luxe
+     and preserves enough depth for light header text. */
+  --variant-bg:color-mix(in srgb,var(--dominant-color) 88%,var(--luxe-black,#120d11) 12%);
+  --variant-header:var(--variant-bg);
   --read-dominant-panel:color-mix(in srgb,var(--dominant-soft) 92%,#fff 8%);
   --read-dominant-panel-2:color-mix(in srgb,var(--dominant-soft) 86%,#fff 14%);
   --read-dominant-panel-3:color-mix(in srgb,var(--dominant-soft) 80%,#fff 20%);
-  --read-dominant-line:color-mix(in srgb,var(--dominant-color) 34%,#d7cbc3 66%);
+  --read-dominant-line:color-mix(in srgb,var(--dominant-color) 42%,#d7cbc3 58%);
   --read-dominant-ink:color-mix(in srgb,var(--dominant-dark) 76%,#20181d 24%);
 }
 body[data-view-mode="read"],
@@ -4274,6 +4277,10 @@ body[data-view-mode="read"] main,
 body[data-view-mode="read"] .site-footer,
 body[data-view-mode="read"] .top{
   background:var(--variant-bg);
+}
+body[data-view-mode="read"] header h1{
+  color:#fff8f2;
+  text-shadow:0 1px 2px rgba(18,13,17,.32);
 }
 body[data-view-mode="read"] :is(.home-button,.language-switch,.help-button,.mode-switch,.all-tools,.couple-reader-head,.reader-filter-dock,.couple-reader-category,.site-footer){
   border-color:var(--read-dominant-line);
