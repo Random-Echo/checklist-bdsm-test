@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.117";
+const APP_VERSION = "V1.1.119";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1565,6 +1565,19 @@ function editorAfterButtons(v2Id,slot,state) {
   const unknown=`<button class="score-btn unknown-score${Number.isInteger(state.after)?"":" selected"}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="unknown" type="button">?</button>`;
   return unknown+SCORE_BUTTON_ORDER.map(n=>{const ui=cachedScoreUi(n,role),sel=state.after===n;return `<button class="score-btn semantic-score-btn${n===0?' limit-score':''}${sel?' selected':''}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="${n}" type="button" title="${ui.title}" aria-pressed="${sel?'true':'false'}">${ui.label}</button>`}).join("");
 }
+function editorResultKeyFromScore(score){
+  return Number.isInteger(score) ? ({0:"limit",1:"later",2:"compatible",3:"strong",4:"excellent",5:"fantasy"}[score] || "incomplete") : "incomplete";
+}
+function editorStateVisualKey(state){
+  if(Number.isInteger(state?.after)) return editorResultKeyFromScore(state.after);
+  if(Number.isInteger(state?.preference)) return editorResultKeyFromScore(state.preference);
+  return "incomplete";
+}
+function editorPracticeVisualKey(slotStates){
+  const keys=slotStates.map(({state})=>editorStateVisualKey(state));
+  for(const key of ["limit","fantasy","excellent","strong","compatible","later"]){ if(keys.includes(key)) return key; }
+  return "incomplete";
+}
 function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{}) {
   const applicability=INTERACTION_MODEL.evaluateSlot(entity,person,slot,profile);
   const incompatible=applicability.status==="notApplicable";
@@ -1572,7 +1585,9 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
   const hasNote=typeof state.note==="string"&&state.note.trim().length>0;
   const noteTitle=currentLang==="fr"?(hasNote?"Ouvrir la note renseignée":"Ajouter une note"):(hasNote?"Open saved note":"Add a note");
   const showAfter=state.prior===true||Number.isInteger(state.after);
-  return `<section class="individual-slot${incompatible?' is-incompatible':''}" data-editor-slot="${slot}">
+  const visualKey=editorStateVisualKey(state);
+  const afterKey=editorResultKeyFromScore(state.after);
+  return `<section class="individual-slot${incompatible?' is-incompatible':''}" data-editor-slot="${slot}" data-result-key="${visualKey}">
     <div class="individual-slot-main">
       <div class="individual-slot-label-wrap"><strong class="individual-slot-label">${esc(editorSlotLabel(slot))}</strong>${incompatible?`<span class="individual-applicability" title="${esc(incompatTitle)}" aria-label="${esc(incompatTitle)}">⚠</span>`:""}</div>
       <div class="individual-score-row">${editorScoreButtons(entity.id,slot,state)}</div>
@@ -1581,7 +1596,7 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
         <button class="individual-note-toggle${hasNote?' has-note':''}" data-personal-note-toggle type="button" aria-expanded="false" aria-label="${esc(noteTitle)}" title="${esc(noteTitle)}"><span aria-hidden="true">📝</span>${hasNote?'<i aria-hidden="true"></i>':''}</button>
       </div>
     </div>
-    ${showAfter?`<div class="individual-after"><span class="individual-field-label">${currentLang==="fr"?"Après":"After"}</span><div class="individual-score-row">${editorAfterButtons(entity.id,slot,state)}</div></div>`:""}
+    ${showAfter?`<div class="individual-after" data-result-key="${afterKey}"><span class="individual-field-label">${currentLang==="fr"?"Après":"After"}</span><div class="individual-score-row">${editorAfterButtons(entity.id,slot,state)}</div></div>`:""}
     <label class="individual-note-panel" hidden><span>${currentLang==="fr"?"Note personnelle":"Personal note"}</span><textarea data-personal-note data-v2-id="${esc(entity.id)}" data-slot="${slot}" placeholder="${currentLang==="fr"?"Note personnelle…":"Personal note…"}">${esc(state.note||"")}</textarea></label>
   </section>`;
 }
@@ -1624,7 +1639,7 @@ function renderIndividualEditor() {
   const categories=[...grouped.keys()].sort((a,b)=>a.localeCompare(b,currentLang)); let html="";
   for(const catName of categories) {
     const rows=grouped.get(catName); const collapsed=collapsedCategories.has(catName) && !q && !cat && !risk;
-    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slotStates,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-headmain"><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.explanation?`<p class="individual-practice-explanation">${esc(info.explanation)}</p>`:''}</div>${info.risk==='normal'?'':riskBadge({risk:info.risk})}</header><div class="individual-slots${slotStates.length>1?' has-multiple':''}">${slotStates.map(({slot,state})=>renderEditorSlot(entity,person,slot,profile,state)).join('')}</div></article>`).join('')}</div>`}</section>`;
+    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slotStates,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}" data-result-key="${editorPracticeVisualKey(slotStates)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-headmain"><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.explanation?`<p class="individual-practice-explanation">${esc(info.explanation)}</p>`:''}</div>${info.risk==='normal'?'':riskBadge({risk:info.risk})}</header><div class="individual-slots${slotStates.length>1?' has-multiple':''}">${slotStates.map(({slot,state})=>renderEditorSlot(entity,person,slot,profile,state)).join('')}</div></article>`).join('')}</div>`}</section>`;
   }
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
   const summary=V2_STORAGE.getPersonalSummary(person); individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;

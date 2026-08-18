@@ -3168,7 +3168,7 @@ header .role-choice {
 }
 .couple-reader-category.is-collapsed .couple-reader-category-body{display:none}
 .couple-reader-category.is-collapsed .couple-reader-category-head{border-radius:9px}
-.couple-practice{--result-bg:#f1f2f3;--result-panel:#fbfbfb;--result-border:#d9dcdf;position:relative;border-top:1px solid rgba(124,132,140,.20);background:var(--result-panel);box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+.couple-practice{--result-bg:#f1f2f3;--result-panel:#f1eee8;--result-border:#d2c7be;position:relative;border-top:1px solid rgba(96,84,78,.20);background:var(--result-panel);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
 .couple-practice:first-child{border-top:0}
 .couple-practice-row{display:grid;grid-template-columns:var(--reader-rail-width) minmax(0,1fr) var(--reader-results-width);align-items:center;gap:6px;min-height:64px;padding:6px 7px}
 .couple-practice-rail{align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;padding-top:1px}
@@ -3771,7 +3771,7 @@ button.risk-badge:hover,button.risk-badge:focus-visible{filter:brightness(.97);o
 .couple-practice-grouped{background:#fff}
 .couple-group-variants{display:flex;flex-direction:column}
 .couple-group-variant-block{
-  --result-bg:#e7e9eb;--result-panel:#f2f3f4;--result-border:#cfd3d6;
+  --result-bg:#e7e9eb;--result-panel:#ebe7e1;--result-border:#c9beb5;
   background:var(--result-panel);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.28)
 }
@@ -3779,13 +3779,13 @@ button.risk-badge:hover,button.risk-badge:focus-visible{filter:brightness(.97);o
 /* Shared result palette for single- and multi-direction Reading cards.
    Each panel also defines a dark explanation color with strong contrast against
    its own result background; explanations remain readable even at mobile sizes. */
-:is(.couple-practice,.couple-group-variant-block)[data-result="excellent"]{--result-bg:#315f44;--result-panel:linear-gradient(180deg,#d7e0d1 0%,#c5d1be 100%);--result-border:#274d36;--result-copy-muted:#1f3025}
-:is(.couple-practice,.couple-group-variant-block)[data-result="strong"]{--result-bg:#666a31;--result-panel:linear-gradient(180deg,#dddcb7 0%,#cecf9f 100%);--result-border:#535628;--result-copy-muted:#35361f}
-:is(.couple-practice,.couple-group-variant-block)[data-result="compatible"]{--result-bg:#9a6d22;--result-panel:linear-gradient(180deg,#e8d6a6 0%,#dbc184 100%);--result-border:#795518;--result-copy-muted:#403217}
-:is(.couple-practice,.couple-group-variant-block)[data-result="later"]{--result-bg:#915230;--result-panel:linear-gradient(180deg,#e3c2a7 0%,#d3a986 100%);--result-border:#754127;--result-copy-muted:#452e21}
-:is(.couple-practice,.couple-group-variant-block)[data-result="fantasy"]{--result-bg:#445678;--result-panel:linear-gradient(180deg,#cad2e0 0%,#b2bdd0 100%);--result-border:#37465f;--result-copy-muted:#243040}
-:is(.couple-practice,.couple-group-variant-block)[data-result="limit"]{--result-bg:#7f3347;--result-panel:linear-gradient(180deg,#dbc1c8 0%,#c79ca8 100%);--result-border:#652738;--result-copy-muted:#3e222b}
-:is(.couple-practice,.couple-group-variant-block)[data-result="incomplete"]{--result-bg:#5d6167;--result-panel:linear-gradient(180deg,#d8dade 0%,#c2c7cb 100%);--result-border:#4a4e54;--result-copy-muted:#34373b}
+:is(.couple-practice,.couple-group-variant-block)[data-result="excellent"]{--result-bg:#315f44;--result-panel:linear-gradient(180deg,#c9d6c1 0%,#b8c8af 100%);--result-border:#274d36;--result-copy-muted:#1f3025}
+:is(.couple-practice,.couple-group-variant-block)[data-result="strong"]{--result-bg:#666a31;--result-panel:linear-gradient(180deg,#d2d09f 0%,#c0bf86 100%);--result-border:#535628;--result-copy-muted:#35361f}
+:is(.couple-practice,.couple-group-variant-block)[data-result="compatible"]{--result-bg:#9a6d22;--result-panel:linear-gradient(180deg,#dec588 0%,#cfb06a 100%);--result-border:#795518;--result-copy-muted:#403217}
+:is(.couple-practice,.couple-group-variant-block)[data-result="later"]{--result-bg:#915230;--result-panel:linear-gradient(180deg,#d9b08d 0%,#c8956c 100%);--result-border:#754127;--result-copy-muted:#452e21}
+:is(.couple-practice,.couple-group-variant-block)[data-result="fantasy"]{--result-bg:#445678;--result-panel:linear-gradient(180deg,#bdc8d8 0%,#a3b1c8 100%);--result-border:#37465f;--result-copy-muted:#243040}
+:is(.couple-practice,.couple-group-variant-block)[data-result="limit"]{--result-bg:#7f3347;--result-panel:linear-gradient(180deg,#d0adb7 0%,#bb8a98 100%);--result-border:#652738;--result-copy-muted:#3e222b}
+:is(.couple-practice,.couple-group-variant-block)[data-result="incomplete"]{--result-bg:#5d6167;--result-panel:linear-gradient(180deg,#ccced2 0%,#b7bbbf 100%);--result-border:#4a4e54;--result-copy-muted:#34373b}
 .couple-group-variant-row{
   display:grid;grid-template-columns:var(--reader-rail-width) minmax(0,1fr) var(--reader-results-width);
   align-items:center;gap:6px;min-height:50px;padding:5px 7px
@@ -4169,25 +4169,25 @@ button.action:hover{background:#f2ebe7}
 
 /* Results: keep meaning, harmonise saturation and warmth */
 :is(.couple-practice,.couple-group-variant-block)[data-result="excellent"]{
-  --result-bg:#315f44;--result-panel:linear-gradient(180deg,#d7e0d1 0%,#c5d1be 100%);--result-border:#274d36;--result-copy-muted:#26392b;
+  --result-bg:#315f44;--result-panel:linear-gradient(180deg,#c9d6c1 0%,#b8c8af 100%);--result-border:#274d36;--result-copy-muted:#26392b;
 }
 :is(.couple-practice,.couple-group-variant-block)[data-result="strong"]{
-  --result-bg:#666a31;--result-panel:linear-gradient(180deg,#deddb9 0%,#cecf9f 100%);--result-border:#535628;--result-copy-muted:#393923;
+  --result-bg:#666a31;--result-panel:linear-gradient(180deg,#d2d09f 0%,#c0bf86 100%);--result-border:#535628;--result-copy-muted:#393923;
 }
 :is(.couple-practice,.couple-group-variant-block)[data-result="compatible"]{
-  --result-bg:#9a6d22;--result-panel:linear-gradient(180deg,#ead8a9 0%,#dac084 100%);--result-border:#795518;--result-copy-muted:#453719;
+  --result-bg:#9a6d22;--result-panel:linear-gradient(180deg,#dec588 0%,#cfb06a 100%);--result-border:#795518;--result-copy-muted:#453719;
 }
 :is(.couple-practice,.couple-group-variant-block)[data-result="later"]{
-  --result-bg:#915230;--result-panel:linear-gradient(180deg,#e5c5aa 0%,#d3aa87 100%);--result-border:#754127;--result-copy-muted:#493125;
+  --result-bg:#915230;--result-panel:linear-gradient(180deg,#d9b08d 0%,#c8956c 100%);--result-border:#754127;--result-copy-muted:#493125;
 }
 :is(.couple-practice,.couple-group-variant-block)[data-result="fantasy"]{
-  --result-bg:#445678;--result-panel:linear-gradient(180deg,#cbd3e0 0%,#b1bdd0 100%);--result-border:#37465f;--result-copy-muted:#283342;
+  --result-bg:#445678;--result-panel:linear-gradient(180deg,#bdc8d8 0%,#a3b1c8 100%);--result-border:#37465f;--result-copy-muted:#283342;
 }
 :is(.couple-practice,.couple-group-variant-block)[data-result="limit"]{
-  --result-bg:#7f3347;--result-panel:linear-gradient(180deg,#dcc2c9 0%,#c79da8 100%);--result-border:#652738;--result-copy-muted:#43252e;
+  --result-bg:#7f3347;--result-panel:linear-gradient(180deg,#d0adb7 0%,#bb8a98 100%);--result-border:#652738;--result-copy-muted:#43252e;
 }
 :is(.couple-practice,.couple-group-variant-block)[data-result="incomplete"]{
-  --result-bg:#5d6167;--result-panel:linear-gradient(180deg,#dadbde 0%,#c4c7cb 100%);--result-border:#4a4e54;--result-copy-muted:#3b3d41;
+  --result-bg:#5d6167;--result-panel:linear-gradient(180deg,#ccced2 0%,#b7bbbf 100%);--result-border:#4a4e54;--result-copy-muted:#3b3d41;
 }
 .couple-result-cell{
   box-shadow:inset 0 0 0 1px rgba(255,250,244,.15),0 2px 5px rgba(47,30,36,.10);
@@ -4694,3 +4694,106 @@ body > header{border-top:0!important}
 body[data-view-mode="edit"] .individual-category{border-left:0!important}
 .individual-practice-card > header{border-top:0!important}
 .random-result,.explore-strip,.help-intro{border-left-width:1px!important}
+
+
+/* V1.1.119 — Edit mode color refactor
+   Bring edit cards much closer to reading mode by tinting practices and slot rows
+   with the same result language, while keeping strong readability. */
+body[data-view-mode="edit"] .individual-category-head,
+body[data-view-mode="edit"] .individual-editor-head,
+body[data-view-mode="edit"] .individual-editor-bulk-btn,
+body[data-view-mode="edit"] .all-tools > summary,
+body[data-view-mode="edit"] .all-tools-content{
+  background:color-mix(in srgb,var(--dominant-soft) 46%,#fff 54%);
+}
+body[data-view-mode="edit"] .individual-practice-card{
+  --edit-result-accent:#8c867f;
+  --edit-result-panel:#f3efe8;
+  --edit-result-panel-strong:#e9e2d8;
+  --edit-result-line:#d7ccc0;
+  background:var(--edit-result-panel);
+  border-color:var(--edit-result-line);
+  box-shadow:0 4px 12px rgba(32,17,22,.06);
+}
+body[data-view-mode="edit"] .individual-practice-card > header{
+  background:var(--edit-result-panel-strong);
+  border-bottom-color:var(--edit-result-line);
+}
+body[data-view-mode="edit"] .individual-slot{
+  background:color-mix(in srgb,var(--edit-result-panel) 64%,#fff 36%);
+}
+body[data-view-mode="edit"] .individual-slot + .individual-slot{border-top-color:color-mix(in srgb,var(--edit-result-line) 75%,#fff 25%)}
+body[data-view-mode="edit"] .individual-after,
+body[data-view-mode="edit"] .individual-note-panel{border-top-color:color-mix(in srgb,var(--edit-result-line) 78%,#fff 22%)}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="excellent"]{--edit-result-accent:#315f44;--edit-result-panel:#d8e4d1;--edit-result-panel-strong:#c5d6bb;--edit-result-line:#9eb290}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="strong"]{--edit-result-accent:#666a31;--edit-result-panel:#dedba9;--edit-result-panel-strong:#cfcc92;--edit-result-line:#adb06f}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="compatible"]{--edit-result-accent:#9a6d22;--edit-result-panel:#e7d2a0;--edit-result-panel-strong:#dbbf7e;--edit-result-line:#be9a57}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="later"]{--edit-result-accent:#915230;--edit-result-panel:#e1c3ab;--edit-result-panel-strong:#d3ab87;--edit-result-line:#b68668}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="fantasy"]{--edit-result-accent:#445678;--edit-result-panel:#c8d2e1;--edit-result-panel-strong:#b3c0d4;--edit-result-line:#8c9fbb}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="limit"]{--edit-result-accent:#7f3347;--edit-result-panel:#dcc0c8;--edit-result-panel-strong:#c99ea9;--edit-result-line:#b17e8b}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="incomplete"]{--edit-result-accent:#62656b;--edit-result-panel:#ece8e2;--edit-result-panel-strong:#e2dbd3;--edit-result-line:#cbc0b5}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-practice-category{
+  background:rgba(255,250,244,.82);
+  border-color:rgba(71,54,40,.12);
+  color:#544841;
+}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] h3,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-slot-label,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-field-label{
+  color:#2f2628;
+}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-practice-explanation,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-prior,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-note-toggle{
+  color:#53484c;
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key]{
+  --edit-slot-bg:rgba(255,252,248,.78);
+  --edit-slot-border:rgba(79,63,52,.10);
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key="excellent"]{--edit-slot-bg:rgba(233,244,228,.88);--edit-slot-border:rgba(49,95,68,.18)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="strong"]{--edit-slot-bg:rgba(239,239,211,.88);--edit-slot-border:rgba(102,106,49,.18)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="compatible"]{--edit-slot-bg:rgba(247,236,207,.88);--edit-slot-border:rgba(154,109,34,.18)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="later"]{--edit-slot-bg:rgba(244,225,211,.88);--edit-slot-border:rgba(145,82,48,.18)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="fantasy"]{--edit-slot-bg:rgba(226,233,245,.88);--edit-slot-border:rgba(68,86,120,.18)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="limit"]{--edit-slot-bg:rgba(243,225,231,.9);--edit-slot-border:rgba(127,51,71,.18)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="incomplete"]{--edit-slot-bg:rgba(246,242,237,.9);--edit-slot-border:rgba(98,101,107,.12)}
+body[data-view-mode="edit"] .individual-slot[data-result-key],
+body[data-view-mode="edit"] .individual-after[data-result-key]{
+  background:var(--edit-slot-bg);
+}
+body[data-view-mode="edit"] .individual-after[data-result-key]{
+  margin-top:0;
+  padding:4px 5px 0 0;
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main{
+  padding:4px 5px;
+  border:1px solid var(--edit-slot-border);
+  border-radius:8px;
+  background:rgba(255,253,250,.28);
+}
+body[data-view-mode="edit"] .individual-after[data-result-key] .individual-score-row{
+  padding:4px 5px;
+  border:1px solid var(--edit-slot-border);
+  border-radius:8px;
+  background:rgba(255,253,250,.24);
+}
+body[data-view-mode="edit"] .individual-note-panel{
+  padding:4px 0 0;
+}
+body[data-view-mode="edit"] .individual-prior,
+body[data-view-mode="edit"] .individual-note-toggle,
+body[data-view-mode="edit"] .individual-note-panel textarea{
+  background:rgba(255,251,247,.9);
+}
+body[data-view-mode="edit"] .individual-slot.is-incompatible{
+  background:rgba(245,238,235,.85);
+  opacity:1;
+}
+body[data-view-mode="edit"] .individual-slot.is-incompatible .individual-slot-main{
+  background:rgba(249,245,242,.82);
+}
+@media (max-width:760px){
+  body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main,
+  body[data-view-mode="edit"] .individual-after[data-result-key] .individual-score-row{padding:3px 4px;border-radius:7px}
+}
