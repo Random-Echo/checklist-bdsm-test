@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.86";
+const APP_VERSION = "V1.1.88";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1053,6 +1053,8 @@ const individualEditorIntro = document.getElementById("individualEditorIntro");
 const individualEditorProgress = document.getElementById("individualEditorProgress");
 const individualEditorLegend = document.getElementById("individualEditorLegend");
 const individualEditorProfile = document.getElementById("individualEditorProfile");
+const individualEditorCollapseAll = document.getElementById("individualEditorCollapseAll");
+const individualEditorExpandAll = document.getElementById("individualEditorExpandAll");
 const coupleReader = document.getElementById("coupleReader");
 const coupleReaderList = document.getElementById("coupleReaderList");
 const coupleReaderEmpty = document.getElementById("coupleReaderEmpty");
@@ -1061,6 +1063,17 @@ const coupleReaderIntro = document.getElementById("coupleReaderIntro");
 const coupleReaderSummary = document.getElementById("coupleReaderSummary");
 const coupleReaderLegend = document.getElementById("coupleReaderLegend");
 if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => window.CHECKLIST_PROFILE_API?.open?.());
+if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => {
+  const cats=[...new Set(CATALOG_ENTITIES.map(entity=>entity.category).filter(Boolean))];
+  collapsedCategories=new Set(cats);
+  saveCollapsedCategories();
+  render();
+});
+if (individualEditorExpandAll) individualEditorExpandAll.addEventListener("click", () => {
+  collapsedCategories.clear();
+  saveCollapsedCategories();
+  render();
+});
 
 function modelPersonKey() { return activeEditPerson === "person-b" ? "personB" : "personA"; }
 function editorProfileName(person=modelPersonKey()) {
@@ -1187,7 +1200,7 @@ function renderIndividualEditor() {
   const categories=[...grouped.keys()].sort((a,b)=>a.localeCompare(b,currentLang)); let html="";
   for(const catName of categories) {
     const rows=grouped.get(catName); const collapsed=collapsedCategories.has(catName) && !q && !cat && !risk;
-    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slotStates,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.risk==='normal'?'':riskBadge({risk:info.risk})}</header><div class="individual-slots${slotStates.length>1?' has-multiple':''}">${slotStates.map(({slot,state})=>renderEditorSlot(entity,person,slot,profile,state)).join('')}</div></article>`).join('')}</div>`}</section>`;
+    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slotStates,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-headmain"><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.explanation?`<p class="individual-practice-explanation">${esc(info.explanation)}</p>`:''}</div>${info.risk==='normal'?'':riskBadge({risk:info.risk})}</header><div class="individual-slots${slotStates.length>1?' has-multiple':''}">${slotStates.map(({slot,state})=>renderEditorSlot(entity,person,slot,profile,state)).join('')}</div></article>`).join('')}</div>`}</section>`;
   }
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
   const summary=V2_STORAGE.getPersonalSummary(person); individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;

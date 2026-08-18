@@ -3020,6 +3020,9 @@ header .role-choice {
 .individual-editor-head h2 { margin:0; font-size:1.03rem; line-height:1.15; }
 .individual-editor-head p { margin:2px 0 0; max-width:760px; color:#686868; font-size:.74rem; line-height:1.25; }
 .individual-editor-actions { display:flex; align-items:center; gap:5px; flex-wrap:nowrap; justify-content:flex-end; }
+.individual-editor-bulk { display:flex; gap:8px; margin:0 0 8px; }
+.individual-editor-bulk-btn { flex:1 1 0; min-height:36px; border:1px solid #d9dde2; border-radius:12px; background:#fff; color:#36424d; font-weight:800; font-size:.9rem; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+.individual-editor-bulk-btn:active { transform:translateY(1px); }
 .individual-editor-progress { padding:4px 7px; border-radius:999px; background:#f4f4f4; color:#4d4d4d; font-size:.66rem; font-weight:800; white-space:nowrap; }
 .individual-editor-legend { margin:5px 0 7px; padding:5px 8px; border-radius:7px; border:1px solid #e5e5e5; background:#fafafa; color:#5b5b5b; font-size:.69rem; line-height:1.2; }
 .individual-editor-list { display:flex; flex-direction:column; gap:5px; }
@@ -3029,9 +3032,11 @@ header .role-choice {
 .individual-category-head > span:nth-of-type(2) { padding:1px 5px; border-radius:999px; background:#ececec; color:#666; font-size:.62rem; font-weight:800; }
 .individual-category-cards { display:flex; flex-direction:column; gap:4px; padding:4px 0 0; }
 .individual-practice-card { min-width:0; overflow:hidden; border:1px solid #dedede; border-radius:9px; background:#fff; box-shadow:0 1px 5px rgba(0,0,0,.025); }
-.individual-practice-card > header { display:flex; justify-content:space-between; align-items:center; gap:6px; min-height:28px; padding:4px 7px; border-bottom:1px solid #ededed; background:linear-gradient(180deg,#fff,#fcfcfc); }
+.individual-practice-card > header { display:flex; justify-content:space-between; align-items:flex-start; gap:6px; min-height:28px; padding:5px 7px; border-bottom:1px solid #ededed; background:linear-gradient(180deg,#fff,#fcfcfc); }
+.individual-practice-headmain { min-width:0; flex:1 1 auto; }
 .individual-practice-titleline { min-width:0; display:flex; align-items:center; gap:5px; }
 .individual-practice-card h3 { min-width:0; margin:0; font-size:.83rem; line-height:1.12; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.individual-practice-explanation { margin:3px 0 0; color:#6d747b; font-size:.68rem; line-height:1.22; }
 .individual-practice-category { flex:0 0 auto; padding:1px 4px; border-radius:999px; background:#f1f1f1; color:#6e6e6e; font-size:.55rem; font-weight:850; text-transform:uppercase; letter-spacing:.02em; }
 .individual-practice-card > header .risk-badge { flex:0 0 auto; }
 .individual-slots,
@@ -3078,9 +3083,12 @@ header .role-choice {
   .individual-editor-head p { display:none; }
   .individual-editor-head h2 { font-size:.86rem; line-height:1.05; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .individual-editor-actions { width:auto; gap:3px; }
+  .individual-editor-bulk { gap:6px; margin-bottom:6px; }
+  .individual-editor-bulk-btn { min-height:32px; border-radius:10px; font-size:.76rem; }
   .individual-editor-progress { padding:3px 5px; font-size:.57rem; }
   .individual-editor-actions .profile-edit-button { min-height:27px; height:27px; padding:0 6px; border-radius:6px; font-size:.62rem; }
   .individual-editor-legend { display:none; }
+  .individual-practice-explanation { display:block; font-size:.62rem; }
   .individual-editor-list { gap:3px; }
   .individual-category-head { min-height:28px; padding:4px 6px; border-radius:7px; gap:5px; }
   .individual-category-head .section-dot { width:9px; height:9px; }
@@ -3135,6 +3143,7 @@ header .role-choice {
   .individual-editor { margin-top:2px; }
   .individual-editor-head,
   .individual-editor-legend { display:none; }
+  .individual-practice-explanation { display:block; font-size:.62rem; }
   .individual-category-head { min-height:25px; padding-top:3px; padding-bottom:3px; }
 }
 
@@ -3750,11 +3759,11 @@ button.risk-badge:hover,button.risk-badge:focus-visible{filter:brightness(.97);o
 }
 .couple-group-variant-block+ .couple-group-variant-block{border-top:1px solid rgba(80,88,94,.16)}
 /* Shared result palette for single- and multi-direction Reading cards. */
-:is(.couple-practice,.couple-group-variant-block)[data-result="excellent"]{--result-bg:#74c947;--result-panel:#bee79f;--result-border:#4e9a2b}
-:is(.couple-practice,.couple-group-variant-block)[data-result="strong"]{--result-bg:#a7d94f;--result-panel:#d7edac;--result-border:#79ab35}
+:is(.couple-practice,.couple-group-variant-block)[data-result="excellent"]{--result-bg:#35b14a;--result-panel:#9ade98;--result-border:#27863a}
+:is(.couple-practice,.couple-group-variant-block)[data-result="strong"]{--result-bg:#b9d64a;--result-panel:#e6ef9f;--result-border:#8fa22d}
 :is(.couple-practice,.couple-group-variant-block)[data-result="compatible"]{--result-bg:#f0c936;--result-panel:#f7e696;--result-border:#c49c17}
 :is(.couple-practice,.couple-group-variant-block)[data-result="later"]{--result-bg:#eea04a;--result-panel:#f5c98c;--result-border:#c87527}
-:is(.couple-practice,.couple-group-variant-block)[data-result="fantasy"]{--result-bg:#b17ae5;--result-panel:#dcc5f2;--result-border:#844dbd}
+:is(.couple-practice,.couple-group-variant-block)[data-result="fantasy"]{--result-bg:#71b7f0;--result-panel:#cae7fb;--result-border:#438eca}
 :is(.couple-practice,.couple-group-variant-block)[data-result="limit"]{--result-bg:#e96e7c;--result-panel:#f2b3bd;--result-border:#c43e54}
 :is(.couple-practice,.couple-group-variant-block)[data-result="incomplete"]{--result-bg:#ccd1d5;--result-panel:#e6e9eb;--result-border:#98a0a7}
 .couple-group-variant-row{
