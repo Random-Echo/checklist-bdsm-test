@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.99";
+const APP_VERSION = "V1.1.100";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1389,11 +1389,14 @@ function updateStickyCategoryOffsets(){
   if(coupleReader && !coupleReader.hidden && readerFilterDock){
     const styles=window.getComputedStyle(readerFilterDock);
     if(styles.display!=="none" && styles.visibility!=="hidden"){
-      readTop=readerFilterDock.offsetHeight || 0;
-      if(readTop>0) readTop+=6;
+      const filterRect=readerFilterDock.getBoundingClientRect();
+      readTop=filterRect.height || readerFilterDock.offsetHeight || 0;
+      // Slight overlap prevents practice rows from ever peeking through a
+      // sub-pixel seam between the two sticky bars (notably on Safari/iOS).
+      if(readTop>0) readTop=Math.max(0,readTop-1);
     }
   }
-  root.style.setProperty("--read-category-sticky-top", `${Math.max(0,Math.round(readTop))}px`);
+  root.style.setProperty("--read-category-sticky-top", `${Math.max(0,readTop)}px`);
 }
 window.addEventListener("resize", updateStickyCategoryOffsets, {passive:true});
 window.addEventListener("orientationchange", updateStickyCategoryOffsets, {passive:true});
