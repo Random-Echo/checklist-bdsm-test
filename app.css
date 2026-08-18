@@ -5024,3 +5024,71 @@ body[data-view-mode="edit"] .individual-after[data-result-key] .individual-score
   body[data-view-mode="edit"] .individual-slot{padding:2px 4px 0}
   body[data-view-mode="edit"] .individual-after{padding:2px 4px 0}
 }
+
+
+/* V1.1.125 — Reduce excess white in edit mode */
+body[data-view-mode="edit"] .individual-editor,
+body[data-view-mode="edit"] .individual-editor-head,
+body[data-view-mode="edit"] .individual-editor-bulk-btn,
+body[data-view-mode="edit"] .individual-category-head,
+body[data-view-mode="edit"] .all-tools > summary,
+body[data-view-mode="edit"] .all-tools-content,
+body[data-view-mode="edit"] .tool-section,
+body[data-view-mode="edit"] .individual-editor-progress,
+body[data-view-mode="edit"] .compat-summary,
+body[data-view-mode="edit"] .stat{
+  background:color-mix(in srgb,var(--dominant-soft) 84%,var(--dominant-color) 16%);
+}
+body[data-view-mode="edit"] .individual-editor,
+body[data-view-mode="edit"] .individual-editor-head,
+body[data-view-mode="edit"] .individual-category-head,
+body[data-view-mode="edit"] .individual-editor-bulk-btn,
+body[data-view-mode="edit"] .all-tools,
+body[data-view-mode="edit"] .all-tools > summary,
+body[data-view-mode="edit"] .all-tools-content{
+  border-color:color-mix(in srgb,var(--dominant-color) 34%,#fff 66%);
+}
+body[data-view-mode="edit"] .individual-practice-card{
+  background:color-mix(in srgb,var(--dominant-soft) 82%,var(--dominant-color) 18%);
+}
+body[data-view-mode="edit"] .individual-practice-card > header{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--dominant-color) 62%,#fff 38%) 0%,
+    color-mix(in srgb,var(--dominant-color) 48%,#fff 52%) 100%);
+}
+body[data-view-mode="edit"] .individual-practice-card .individual-practice-category,
+body[data-view-mode="edit"] .individual-category-head > span:nth-of-type(2),
+body[data-view-mode="edit"] .reader-filter-summary-value,
+body[data-view-mode="edit"] .reader-filter-summary-piece{
+  background:color-mix(in srgb,var(--dominant-soft) 78%,#fff 22%);
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .unknown-score,
+body[data-view-mode="edit"] .individual-after[data-result-key] .unknown-score,
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-prior,
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-note-toggle,
+body[data-view-mode="edit"] .individual-note-panel textarea,
+body[data-view-mode="edit"] .individual-slot[data-result-key] .score-btn:not(.semantic-score-btn),
+body[data-view-mode="edit"] .individual-after[data-result-key] .score-btn:not(.semantic-score-btn){
+  background:color-mix(in srgb,var(--dominant-soft) 76%,#fff 24%);
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main,
+body[data-view-mode="edit"] .individual-after[data-result-key] .individual-score-row{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 1px 2px rgba(42,24,32,.05);
+}
+body[data-view-mode="edit"] .individual-editor-head p,
+body[data-view-mode="edit"] .individual-editor-kicker,
+body[data-view-mode="edit"] .individual-practice-explanation,
+body[data-view-mode="edit"] .individual-prior,
+body[data-view-mode="edit"] .individual-note-toggle,
+body[data-view-mode="edit"] .individual-applicability{
+  color:#4a4146;
+}
+body[data-view-mode="edit"] .individual-practice-card h3,
+body[data-view-mode="edit"] .individual-slot-label,
+body[data-view-mode="edit"] .individual-field-label,
+body[data-view-mode="edit"] .individual-category-head strong,
+body[data-view-mode="edit"] .individual-editor-head,
+body[data-view-mode="edit"] .individual-editor-bulk-btn,
+body[data-view-mode="edit"] .all-tools > summary{
+  color:#2e2528;
+}
