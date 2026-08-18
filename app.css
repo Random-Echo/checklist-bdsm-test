@@ -4981,3 +4981,46 @@ body[data-view-mode="edit"] .individual-slot[data-result-key] .unknown-score,
 body[data-view-mode="edit"] .individual-after[data-result-key] .unknown-score{
   color:var(--dominant-dark);
 }
+
+
+/* V1.1.124 — Remove pale internal seams in edit cards */
+body[data-view-mode="edit"] .individual-practice-card{
+  background:color-mix(in srgb,var(--dominant-soft) 72%,#fff 28%);
+  border-color:color-mix(in srgb,var(--dominant-color) 34%,#fff 66%);
+}
+body[data-view-mode="edit"] .individual-practice-card > header{
+  border-bottom:0;
+}
+body[data-view-mode="edit"] .individual-slots,
+body[data-view-mode="edit"] .individual-slots.has-multiple{
+  display:block;
+  padding:2px 0 4px;
+  background:transparent;
+}
+body[data-view-mode="edit"] .individual-slot{
+  padding:2px 5px 0;
+  background:transparent;
+}
+body[data-view-mode="edit"] .individual-slot:first-child{
+  padding-top:0;
+}
+body[data-view-mode="edit"] .individual-slot + .individual-slot{
+  border-top:0;
+  margin-top:2px;
+}
+body[data-view-mode="edit"] .individual-after{
+  margin-top:2px;
+  padding:2px 5px 0;
+  border-top:0;
+  background:transparent;
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main,
+body[data-view-mode="edit"] .individual-after[data-result-key] .individual-score-row{
+  border-radius:10px;
+}
+@media (max-width:760px){
+  body[data-view-mode="edit"] .individual-slots,
+  body[data-view-mode="edit"] .individual-slots.has-multiple{padding:2px 0 3px}
+  body[data-view-mode="edit"] .individual-slot{padding:2px 4px 0}
+  body[data-view-mode="edit"] .individual-after{padding:2px 4px 0}
+}
