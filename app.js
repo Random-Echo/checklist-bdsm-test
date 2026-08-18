@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.143";
+const APP_VERSION = "V1.1.144";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
