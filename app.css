@@ -4436,3 +4436,104 @@ body[data-view-mode="edit"] .stat{
   color:var(--edit-theme-ink);
   border-color:var(--edit-theme-line);
 }
+
+/* V1.1.115 — Edit readability tuning */
+body[data-view-mode="edit"]{
+  --variant-bg:color-mix(in srgb,var(--dominant-color) 68%,var(--luxe-black,#120d11) 32%);
+  --edit-theme-panel:#f9f5f0;
+  --edit-theme-panel-2:color-mix(in srgb,var(--dominant-soft) 78%,#fff 22%);
+  --edit-theme-panel-3:color-mix(in srgb,var(--dominant-soft) 62%,#fff 38%);
+  --edit-theme-line:color-mix(in srgb,var(--dominant-dark) 26%,#cabdb5 74%);
+  --edit-theme-ink:#2f2629;
+  --edit-theme-muted:#5f5559;
+  --edit-card-bg:color-mix(in srgb,var(--dominant-soft) 18%,#fff 82%);
+  --edit-card-head:color-mix(in srgb,var(--dominant-soft) 42%,#fff 58%);
+  --edit-slot-bg:#fffdfa;
+  --edit-slot-sep:color-mix(in srgb,var(--dominant-dark) 10%,#e6ddd7 90%);
+}
+body[data-view-mode="edit"] .individual-editor{
+  background:var(--edit-theme-panel);
+  border-color:var(--edit-theme-line);
+  box-shadow:0 10px 30px rgba(24,14,19,.08);
+}
+body[data-view-mode="edit"] .individual-category{
+  background:transparent;
+  border-left:0;
+  box-shadow:none;
+}
+body[data-view-mode="edit"] .individual-category-head{
+  background:var(--edit-theme-panel-2);
+  border-color:var(--edit-theme-line);
+  box-shadow:0 2px 8px rgba(26,15,20,.08);
+}
+body[data-view-mode="edit"] .individual-category-head strong{color:var(--edit-theme-ink)}
+body[data-view-mode="edit"] .individual-category-head > span:nth-of-type(2){
+  background:rgba(255,252,248,.85);
+  color:var(--edit-theme-muted);
+}
+body[data-view-mode="edit"] .individual-practice-card{
+  background:var(--edit-card-bg);
+  border-color:var(--edit-theme-line);
+  box-shadow:0 2px 8px rgba(28,16,21,.05);
+}
+body[data-view-mode="edit"] .individual-practice-card > header{
+  background:var(--edit-card-head);
+  border-bottom-color:var(--edit-slot-sep);
+}
+body[data-view-mode="edit"] .individual-practice-card h3,
+body[data-view-mode="edit"] .individual-slot-label,
+body[data-view-mode="edit"] .individual-field-label,
+body[data-view-mode="edit"] .individual-note-panel > span{
+  color:var(--edit-theme-ink);
+}
+body[data-view-mode="edit"] .individual-practice-explanation,
+body[data-view-mode="edit"] .individual-practice-category,
+body[data-view-mode="edit"] .individual-editor-kicker,
+body[data-view-mode="edit"] .individual-editor-head p,
+body[data-view-mode="edit"] .individual-applicability,
+body[data-view-mode="edit"] .individual-prior,
+body[data-view-mode="edit"] .individual-note-toggle{
+  color:var(--edit-theme-muted);
+}
+body[data-view-mode="edit"] .individual-practice-category{
+  background:rgba(255,252,248,.82);
+  border:1px solid color-mix(in srgb,var(--dominant-dark) 9%,#e9e1dc 91%);
+}
+body[data-view-mode="edit"] .individual-slot,
+body[data-view-mode="edit"] .individual-note-panel textarea{
+  background:var(--edit-slot-bg);
+}
+body[data-view-mode="edit"] .individual-slot + .individual-slot,
+body[data-view-mode="edit"] .individual-after,
+body[data-view-mode="edit"] .individual-note-panel{
+  border-top-color:var(--edit-slot-sep);
+}
+body[data-view-mode="edit"] .individual-slot.is-incompatible{
+  background:color-mix(in srgb,var(--dominant-soft) 35%,#f5eeeb 65%);
+  opacity:.92;
+}
+body[data-view-mode="edit"] .individual-prior,
+body[data-view-mode="edit"] .individual-note-toggle,
+body[data-view-mode="edit"] .individual-note-panel textarea{
+  border-color:color-mix(in srgb,var(--dominant-dark) 15%,#d9ccc5 85%);
+  background:rgba(255,252,248,.92);
+}
+body[data-view-mode="edit"] .individual-prior.checked{
+  border-color:color-mix(in srgb,var(--dominant-dark) 28%,#8db28b 72%);
+  background:color-mix(in srgb,var(--dominant-soft) 34%,#eef6eb 66%);
+  color:#355338;
+}
+body[data-view-mode="edit"] .individual-note-toggle:hover,
+body[data-view-mode="edit"] .individual-note-toggle.is-open{
+  border-color:color-mix(in srgb,var(--dominant-color) 34%,#92a4b7 66%);
+  background:color-mix(in srgb,var(--dominant-soft) 24%,#f5f8fb 76%);
+}
+body[data-view-mode="edit"] .individual-note-toggle.has-note{
+  border-color:color-mix(in srgb,var(--dominant-color) 24%,#a48aa0 76%);
+  background:color-mix(in srgb,var(--dominant-soft) 24%,#fbf5fa 76%);
+}
+body[data-view-mode="edit"] .individual-editor-progress,
+body[data-view-mode="edit"] .compat-summary,
+body[data-view-mode="edit"] .stat{
+  background:rgba(255,252,248,.84);
+}
