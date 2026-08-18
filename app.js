@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.109";
+const APP_VERSION = "V1.1.110";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -807,6 +807,24 @@ function renderRoleChoiceLabel(btn) {
   btn.replaceChildren(nameEl, roleEl);
 }
 
+function applyDominantViewTheme() {
+  const root=document.documentElement, body=document.body;
+  if(!root || !body) return;
+  let side="";
+  const profile=runtimeProfile();
+  if(body.dataset.viewMode==="read"){
+    if(profile?.dynamic?.mode === "b-dom") side = "person-b";
+    else if(profile?.dynamic?.mode === "a-dom") side = "person-a";
+    else side = readerSelectedDsFilter(readerFilterState.ds) === "b-dominant" ? "person-b" : "person-a";
+  }
+  body.dataset.dominantSide = side;
+  const styles = getComputedStyle(root);
+  const prefix = side === "person-b" ? "--person-b-role" : "--person-a-role";
+  root.style.setProperty("--dominant-color", (styles.getPropertyValue(`${prefix}-color`) || "").trim() || "#9B782A");
+  root.style.setProperty("--dominant-dark", (styles.getPropertyValue(`${prefix}-dark`) || "").trim() || "#70561B");
+  root.style.setProperty("--dominant-soft", (styles.getPropertyValue(`${prefix}-soft`) || "").trim() || "#F8F0D9");
+}
+
 function renderRoleUI() {
 
   for (const btn of roleButtons) {
@@ -819,6 +837,7 @@ function renderRoleUI() {
 
   document.body.dataset.viewMode = isReadingMode ? "read" : "edit";
   document.body.dataset.activeEditPerson = activeEditPerson;
+  applyDominantViewTheme();
   if (!isReadingMode && readerHeaderDs) readerHeaderDs.hidden=true;
   if (modeEditBtn) {
     modeEditBtn.textContent = currentLang === "fr" ? "✏️ Édition" : "✏️ Edit";

@@ -4250,3 +4250,70 @@ button.action:hover{background:#f2ebe7}
 .random-session-btn:hover:not(:disabled),.session-mode-btn:hover:not(:disabled){
   box-shadow:0 0 0 2px rgba(181,141,74,.16),0 2px 6px rgba(73,53,28,.10);
 }
+
+
+/* Reading mode dominant-tinted surfaces: removes harsh white backgrounds and
+   instantly communicates who currently dominates. */
+:root{
+  --dominant-color:var(--person-a-role-color);
+  --dominant-dark:var(--person-a-role-dark);
+  --dominant-soft:var(--person-a-role-soft);
+}
+body[data-view-mode="read"]{
+  --variant-bg:color-mix(in srgb,var(--dominant-soft) 72%,#f3ede7 28%);
+  --variant-header:color-mix(in srgb,var(--dominant-soft) 84%,#fff 16%);
+  --read-dominant-panel:color-mix(in srgb,var(--dominant-soft) 80%,#fff 20%);
+  --read-dominant-panel-2:color-mix(in srgb,var(--dominant-soft) 68%,#fff 32%);
+  --read-dominant-panel-3:color-mix(in srgb,var(--dominant-soft) 58%,#fff 42%);
+  --read-dominant-line:color-mix(in srgb,var(--dominant-color) 30%,#d7cbc3 70%);
+  --read-dominant-ink:color-mix(in srgb,var(--dominant-dark) 72%,#20181d 28%);
+}
+body[data-view-mode="read"] header,
+body[data-view-mode="read"] main,
+body[data-view-mode="read"] .site-footer{
+  background:var(--variant-bg);
+}
+body[data-view-mode="read"] :is(.home-button,.language-switch,.help-button,.mode-switch,.all-tools,.couple-reader-head,.reader-filter-dock,.couple-reader-category,.site-footer){
+  border-color:var(--read-dominant-line);
+}
+body[data-view-mode="read"] .home-button,
+body[data-view-mode="read"] .language-switch,
+body[data-view-mode="read"] .help-button,
+body[data-view-mode="read"] .all-tools,
+body[data-view-mode="read"] .couple-reader-head,
+body[data-view-mode="read"] .reader-filter-dock,
+body[data-view-mode="read"] .couple-reader-category,
+body[data-view-mode="read"] .site-footer{
+  background:var(--read-dominant-panel);
+  color:var(--read-dominant-ink);
+}
+body[data-view-mode="read"] .mode-switch{
+  background:var(--read-dominant-panel-3);
+}
+body[data-view-mode="read"] .mode-switch button.active,
+body[data-view-mode="read"] .mode-switch button[aria-pressed="true"]{
+  background:var(--read-dominant-panel);
+}
+body[data-view-mode="read"] .all-tools > summary,
+body[data-view-mode="read"] .reader-filter-dock > summary,
+body[data-view-mode="read"] .couple-reader-head,
+body[data-view-mode="read"] .couple-reader-category-head,
+body[data-view-mode="read"] .reader-current-category-head{
+  background:var(--read-dominant-panel-2);
+  color:var(--read-dominant-ink);
+}
+body[data-view-mode="read"] .all-tools-content,
+body[data-view-mode="read"] .reader-filter-content,
+body[data-view-mode="read"] .couple-reader-category-body{
+  background:var(--read-dominant-panel);
+}
+body[data-view-mode="read"] .compat-summary,
+body[data-view-mode="read"] .stat,
+body[data-view-mode="read"] .reader-filter-summary-value{
+  background:rgba(255,252,248,.66);
+  color:var(--read-dominant-ink);
+}
+body[data-view-mode="read"] .reader-filter-dock::after,
+body[data-view-mode="read"] .reader-current-category-dock::before{
+  background:var(--variant-bg);
+}
