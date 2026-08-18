@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.102";
+const APP_VERSION = "V1.1.103";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1422,7 +1422,9 @@ function updateReaderCurrentCategory(){
     readerCurrentCategoryHead.setAttribute("aria-expanded",source.getAttribute("aria-expanded")||"true");
   }
   const color=getComputedStyle(active).getPropertyValue("--reader-category-color").trim()||"#aaa";
+  const sourceHeight=Math.max(1,Math.ceil(source.getBoundingClientRect().height));
   readerCurrentCategoryDock.style.setProperty("--reader-current-category-color",color);
+  readerCurrentCategoryDock.style.setProperty("--reader-current-category-height",`${sourceHeight}px`);
   readerCurrentCategoryDock.classList.add("is-active");
   readerCurrentCategoryDock.setAttribute("aria-hidden","false");
 }

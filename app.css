@@ -3109,15 +3109,38 @@ header .role-choice {
 .couple-result-head small{margin-top:2px;color:#687077;font-size:.48rem;font-weight:800;white-space:nowrap}
 .couple-reader-category-body{display:flex;flex-direction:column;overflow:hidden;border-radius:0 0 9px 9px;background:#fff}
 .reader-current-category-dock{
+  --reader-current-category-height:39px;
   position:sticky;
   top:var(--read-category-sticky-top,0px);
   z-index:23;
+  isolation:isolate;
   height:0;
   overflow:visible;
   pointer-events:none;
 }
+/* Opaque foreground shield: once the first category reaches the sticky stack,
+   absolutely nothing from the scrolling list (including the colored left rail)
+   may remain visible behind Filters + current category. */
+.reader-current-category-dock::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  top:calc(-1 * var(--read-category-sticky-top,0px));
+  left:-2px;
+  right:-2px;
+  height:calc(var(--read-category-sticky-top,0px) + var(--reader-current-category-height,39px) + 2px);
+  background:var(--variant-bg,var(--bg,#f5f6f7));
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.reader-current-category-dock.is-active::before{
+  opacity:1;
+  visibility:visible;
+}
 .reader-current-category-head{
   position:absolute;
+  z-index:1;
   top:-1px;
   left:0;
   width:100%;
