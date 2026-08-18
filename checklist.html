@@ -5,15 +5,15 @@
 <meta content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <title>Checklist BDSM — Personnes A &amp; B</title>
 <link href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23263238%27/%3E%3Cpath d=%27M13 23l10 9 9-17 9 17 10-9-5 25H18z%27 fill=%27%235AA0C2%27/%3E%3Ccircle cx=%2713%27 cy=%2721%27 r=%274%27 fill=%27%23F7EAF2%27/%3E%3Ccircle cx=%2732%27 cy=%2712%27 r=%274%27 fill=%27%23F7EAF2%27/%3E%3Ccircle cx=%2751%27 cy=%2721%27 r=%274%27 fill=%27%23F7EAF2%27/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
-<link href="app.css?v=V1.1.84" rel="stylesheet"/>
-<script src="bootstrap.js?v=V1.1.84"></script>
-<script defer src="profiles.js?v=V1.1.84"></script>
-<script defer src="interaction-model.js?v=V1.1.84"></script>
-<script defer src="practice-catalog.js?v=V1.1.84"></script>
-<script defer src="storage.js?v=V1.1.84"></script>
-<script defer src="app.js?v=V1.1.84"></script>
+<link href="app.css?v=V1.1.86" rel="stylesheet"/>
+<script src="bootstrap.js?v=V1.1.86"></script>
+<script defer src="profiles.js?v=V1.1.86"></script>
+<script defer src="interaction-model.js?v=V1.1.86"></script>
+<script defer src="practice-catalog.js?v=V1.1.86"></script>
+<script defer src="storage.js?v=V1.1.86"></script>
+<script defer src="app.js?v=V1.1.86"></script>
 </head>
-<!-- Checklist BDSM unifiée V1.1.84 -->
+<!-- Checklist BDSM unifiée V1.1.86 -->
 <body data-view-mode="edit">
 <div aria-labelledby="adultGateTitleFr" aria-modal="true" class="adult-gate" id="adultGate" role="dialog">
 <div aria-hidden="true" class="adult-gate-backdrop"></div>
@@ -46,7 +46,7 @@
 <header>
 <div class="top">
 <div class="title-role-row">
-<h1><span data-i18n="appTitle">Checklist BDSM — Personnes A &amp; B</span> <span class="version-badge">V1.1.84</span> <span class="title-extra" data-i18n="titleExtra"></span></h1>
+<h1><span data-i18n="appTitle">Checklist BDSM — Personnes A &amp; B</span> <span class="version-badge">V1.1.86</span> <span class="title-extra" data-i18n="titleExtra"></span></h1>
 <div class="title-actions">
 <a aria-label="Accueil / Home" class="home-button" href="index.html" title="Accueil / Home"><span class="adult-lang-fr">⌂ Accueil</span><span class="adult-lang-en">⌂ Home</span></a>
 <div aria-label="Personne qui répond" class="role-switch" role="group">
@@ -115,7 +115,7 @@
 <option data-i18n="minLater" value="1">Pas maintenant ou mieux</option>
 <option data-i18n="minNeutral" value="2">Neutre ou mieux</option>
 <option data-i18n="minWant" value="3">🔥 Envie ou favori</option>
-<option data-i18n="minFavorite" value="4">⭐/👑 Favori</option>
+<option data-i18n="minFavorite" value="4">👑 Favori</option>
 </select>
 <select aria-label="Filtrer par niveau de risque" data-i18n-aria-label="riskFilterAria" id="riskFilter">
 <option data-i18n="riskAll" value="">Risque : tous</option>
@@ -152,14 +152,14 @@
 <option data-i18n="drawFantasy" value="fantasy">💭 Fantasme</option>
 <option data-i18n="drawNeutral" value="neutral">Neutre</option>
 <option data-i18n="drawWant" selected="" value="want">🔥 Envie</option>
-<option data-i18n="drawFavorite" value="favorite">⭐/👑 Favori</option>
+<option data-i18n="drawFavorite" value="favorite">👑 Favori</option>
 </select>
 <label data-i18n="minOtherLabel" for="minRandomOther">L’autre :</label>
 <select id="minRandomOther">
 <option data-i18n="drawFantasy" value="fantasy">💭 Fantasme</option>
 <option data-i18n="drawNeutral" selected="" value="neutral">Neutre</option>
 <option data-i18n="drawWant" value="want">🔥 Envie</option>
-<option data-i18n="drawFavorite" value="favorite">⭐/👑 Favori</option>
+<option data-i18n="drawFavorite" value="favorite">👑 Favori</option>
 </select>
 </div>
 <button class="random-btn" data-i18n="choosePractice" id="randomBtn" type="button">🎲 Choisir une pratique</button>
@@ -237,7 +237,7 @@
 <span class="semantic-legend-item" style="background:var(--s2)"><b data-i18n="scoreFantasy">💭 Fantasme</b><small data-i18n="scoreFantasyDesc">L’idée m’excite, mais je ne veux pas la réaliser en vrai.</small></span>
 <span class="semantic-legend-item" style="background:var(--s3)"><b data-i18n="scoreNeutral">😐 Neutre</b><small data-i18n="scoreNeutralDesc">Je suis neutre : cela me va si l’autre en a envie.</small></span>
 <span class="semantic-legend-item" style="background:var(--s4)"><b data-i18n="scoreWant">🔥 Envie</b><small data-i18n="scoreWantDesc">Je veux réellement le faire.</small></span>
-<span class="semantic-legend-item" style="background:var(--s5)"><b data-i18n="scoreFavorite">⭐/👑 Favori</b><small data-i18n="scoreFavoriteDesc">Parmi les pratiques qui m’attirent le plus ou que je préfère.</small></span>
+<span class="semantic-legend-item" style="background:var(--s5)"><b data-i18n="scoreFavorite">👑 Favori</b><small data-i18n="scoreFavoriteDesc">Parmi les pratiques qui m’attirent le plus ou que je préfère.</small></span>
 <span class="legend-help" data-i18n="legendHelp">Lorsqu’une réponse « Après essai » est disponible, elle remplace « Envie » pour calculer et afficher le résultat.</span>
 <div class="reading-legend-card">
 <strong data-i18n="readingLegendTitle">👁 Mode lecture</strong>
@@ -274,27 +274,27 @@
 <p class="help-intro">La checklist possède deux usages distincts : <strong>Édition</strong> pour répondre chacun de son côté sans voir les choix du partenaire, et <strong>Lecture</strong> pour croiser les réponses complémentaires et afficher les résultats du couple. Les pseudos, l’anatomie pertinente et la dynamique sont définis dans le profil.</p>
 <section class="help-section"><h3>1. Mode Édition individuel</h3><p>Choisissez simplement la personne qui répond. Seules ses réponses sont chargées et affichées ; les choix et notes de l’autre personne ne sont jamais visibles dans ce mode.</p></section>
 <section class="help-section"><h3>2. Donner, recevoir et rôles D/s</h3><p>Selon la pratique, vous indiquez soit votre <strong>intérêt</strong>, soit ce que vous aimez <strong>donner / recevoir</strong>, soit ce que vous aimez en position <strong>dominante / soumise</strong>. Donner et dominer sont deux notions indépendantes. Pour une dynamique fixe, les pratiques D/s n’affichent que le rôle configuré ; en switch, les deux rôles restent disponibles.</p></section>
-<section class="help-section"><h3>3. Préférences et expérience</h3><p><strong>?</strong> = non renseigné · 🚫 = limite · ⏳ = pas maintenant · 💭 = fantasme uniquement · 😐 = neutre · 🔥 = envie · ⭐/👑 = favori. « Après expérience » remplace la préférence initiale dans le calcul lorsqu’une expérience réelle est renseignée.</p></section>
+<section class="help-section"><h3>3. Préférences et expérience</h3><p><strong>?</strong> = non renseigné · 🚫 = limite · ⏳ = pas maintenant · 💭 = fantasme uniquement · 😐 = neutre · 🔥 = envie · 👑 = favori. « Après expérience » remplace la préférence initiale dans le calcul lorsqu’une expérience réelle est renseignée.</p></section>
 <section class="help-section"><h3>4. Catalogue unique</h3><p>Le site charge désormais un seul catalogue technique. Les formulations spécifiques à A dominant et B dominant sont conservées quand elles diffèrent. Les anciennes entrées manifestement différentes malgré un même numéro ont été séparées pour qu’aucune pratique ne soit perdue.</p></section>
 <section class="help-section"><h3>5. Fait ensemble, notes et sécurité</h3><p>« Fait ensemble » appartient à chaque variante réelle de la pratique. Les notes restent personnelles. Les réglages de sécurité sont communs au couple.</p></section>
 <section class="help-section"><h3>6. Filtres, tirage et séance</h3><p>Recherche, catégories et filtres fonctionnent dans les deux modes. Le tirage, les épingles et le Mode séance travaillent directement sur les variantes réelles de chaque pratique.</p></section>
 <section class="help-section"><h3>7. Sauvegardes</h3><p><strong>💾 Complète</strong> exporte les profils, réponses personnelles, données du couple, sécurité, séances, affichage et tirage. <strong>🔵 Personne A</strong> et <strong>🟣 Personne B</strong> exportent uniquement leurs réponses personnelles. Les anciennes sauvegardes restent importables et sont migrées automatiquement.</p></section>
 <section class="help-section"><h3>8. Mode lecture</h3><p>Le mode Lecture affiche les deux réponses complémentaires et le résultat du couple. Les réponses personnelles sont verrouillées ; les actions communes « Fait ensemble » et séance restent disponibles.</p></section>
 <section class="help-section"><h3>9. Données locales</h3><p>Les réponses sont enregistrées localement dans le navigateur. Un autre appareil ne reçoit rien automatiquement : utilisez les sauvegardes JSON pour transférer les données.</p></section>
-<div class="help-end">V1.1.84</div>
+<div class="help-end">V1.1.86</div>
 </div>
 <div class="help-lang" data-help-lang="en">
 <p class="help-intro">The checklist has two distinct uses: <strong>Edit</strong> for each person to answer separately without seeing their partner’s choices, and <strong>Reading</strong> to match complementary answers and show couple results. Names, relevant anatomy and the couple dynamic are defined in the profile.</p>
 <section class="help-section"><h3>1. Individual Edit mode</h3><p>Choose the person who is answering. Only that person's answers are loaded and shown; the other person's choices and notes are never visible in this mode.</p></section>
 <section class="help-section"><h3>2. Give, receive and D/s roles</h3><p>Depending on the practice, you rate either your general <strong>interest</strong>, what you like to <strong>give / receive</strong>, or what you like in a <strong>dominant / submissive</strong> role. Giving and dominating are independent concepts. With a fixed dynamic, D/s practices only show the configured role; switch mode keeps both roles available.</p></section>
-<section class="help-section"><h3>3. Preferences and experience</h3><p><strong>?</strong> = unrated · 🚫 = limit · ⏳ = not now · 💭 = fantasy only · 😐 = neutral · 🔥 = want to · ⭐/👑 = favorite. After-experience ratings replace initial preference in calculations once real experience is recorded.</p></section>
+<section class="help-section"><h3>3. Preferences and experience</h3><p><strong>?</strong> = unrated · 🚫 = limit · ⏳ = not now · 💭 = fantasy only · 😐 = neutral · 🔥 = want to · 👑 = favorite. After-experience ratings replace initial preference in calculations once real experience is recorded.</p></section>
 <section class="help-section"><h3>4. Unified catalogue</h3><p>The site now loads one technical catalogue. Scenario-specific wording is retained when needed. Legacy slots that clearly contained different practices were split so no content is lost.</p></section>
 <section class="help-section"><h3>5. Done together, notes and safety</h3><p>Done together belongs to each real practice variant. Notes remain personal and safety settings are shared at couple level.</p></section>
 <section class="help-section"><h3>6. Filters, random draw and session</h3><p>Search, categories and filters work in both modes. Random draw, pins and Session mode operate directly on each real practice variant.</p></section>
 <section class="help-section"><h3>7. Backups</h3><p><strong>💾 Full</strong> exports profiles, personal answers, shared couple data, safety, sessions, display and random state. <strong>🔵 Person A</strong> and <strong>🟣 Person B</strong> export only their personal answers. Older backups remain importable and are migrated automatically.</p></section>
 <section class="help-section"><h3>8. Reading mode</h3><p>Reading mode shows both complementary answers and the couple result. Personal answers stay locked while shared Done together and session actions remain available.</p></section>
 <section class="help-section"><h3>9. Local data</h3><p>Answers are stored locally in this browser. Another device receives nothing automatically; use JSON backups to transfer data.</p></section>
-<div class="help-end">V1.1.84</div>
+<div class="help-end">V1.1.86</div>
 </div>
 </div>
 </section>

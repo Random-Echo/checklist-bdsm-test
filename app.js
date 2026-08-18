@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.84";
+const APP_VERSION = "V1.1.86";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -216,9 +216,7 @@ function validScore(value) {
 }
 
 function favoriteSymbol(role = null) {
-  if (role === "sub") return "⭐";
-  if (role === "dom") return "👑";
-  return "★";
+  return "👑";
 }
 
 function scoreLabel(value, compact = false, role = null) {
@@ -1156,7 +1154,7 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
 function configureEditorStatusOptions() {
   const langKey=`edit-${currentLang}`; if(status.dataset.readerLang===langKey) return;
   const previous=status.value;
-  const options=currentLang==="fr"?[["","Tous mes choix"],["incomplete","? À compléter"],["want","🔥 Envie ou favori"],["favorite","★ Favoris"],["fantasy","💭 Fantasmes"],["limit","🚫 Limites"],["tried","✓ Déjà essayé"],["after","Après essai renseigné"],["notes","Avec une note"]]:[["","All my choices"],["incomplete","? To complete"],["want","🔥 Want or favorite"],["favorite","★ Favorites"],["fantasy","💭 Fantasies"],["limit","🚫 Limits"],["tried","✓ Already tried"],["after","After trying filled"],["notes","With a note"]];
+  const options=currentLang==="fr"?[["","Tous mes choix"],["incomplete","? À compléter"],["want","🔥 Envie ou favori"],["favorite","👑 Favoris"],["fantasy","💭 Fantasmes"],["limit","🚫 Limites"],["tried","✓ Déjà essayé"],["after","Après essai renseigné"],["notes","Avec une note"]]:[["","All my choices"],["incomplete","? To complete"],["want","🔥 Want or favorite"],["favorite","👑 Favorites"],["fantasy","💭 Fantasies"],["limit","🚫 Limits"],["tried","✓ Already tried"],["after","After trying filled"],["notes","With a note"]];
   status.innerHTML=options.map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join("");
   status.value=options.some(([value])=>value===previous)?previous:""; status.dataset.readerLang=langKey;
 }
@@ -1271,8 +1269,8 @@ function readerVariantInfo(entity,variant) {
   return localizedLegacyInfo(entity,source.legacySourceKey);
 }
 function readerCompatibilityLabel(status) {
-  if(currentLang==="fr") return ({excellent:"★ Excellent match",strong:"🔥 Très compatible",compatible:"✓ Compatible",later:"⏳ Pas maintenant",fantasy:"💭 Fantasme à discuter",limit:"🚫 Limite",incomplete:"? Incomplet"})[status]||"? Incomplet";
-  return ({excellent:"★ Excellent match",strong:"🔥 Strong match",compatible:"✓ Compatible",later:"⏳ Not now",fantasy:"💭 Fantasy to discuss",limit:"🚫 Limit",incomplete:"? Incomplete"})[status]||"? Incomplete";
+  if(currentLang==="fr") return ({excellent:"👑 Excellent match",strong:"🔥 Très compatible",compatible:"✓ Compatible",later:"⏳ Pas maintenant",fantasy:"💭 Fantasme à discuter",limit:"🚫 Limite",incomplete:"? Incomplet"})[status]||"? Incomplet";
+  return ({excellent:"👑 Excellent match",strong:"🔥 Strong match",compatible:"✓ Compatible",later:"⏳ Not now",fantasy:"💭 Fantasy to discuss",limit:"🚫 Limit",incomplete:"? Incomplete"})[status]||"? Incomplete";
 }
 function readerScoreRole(slot) {
   return slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
@@ -1360,7 +1358,7 @@ function readerMinimumLabels(counts={}) {
     ["1",fr?"⏳ Pas maintenant":"⏳ Not now",counts[1]],
     ["2",fr?"🙂 Neutre":"🙂 Neutral",counts[2]],
     ["3",fr?"🔥 Envie":"🔥 Want",counts[3]],
-    ["4",fr?"⭐ Favori":"⭐ Favorite",counts[4]]
+    ["4",fr?"👑 Favori":"👑 Favorite",counts[4]]
   ];
 }
 function readerDsChipLabel(value,names) {
@@ -1377,7 +1375,7 @@ function readerMinimumChipLabel(value) {
     "1": "⏳",
     "2": "🙂",
     "3": "🔥",
-    "4": "⭐"
+    "4": "👑"
   })[String(value)] || (fr ? "Tous" : "All");
 }
 function readerMinimumChipTitle(value) {
@@ -1453,9 +1451,9 @@ function configureEditorMinimumOptions(){
   if(!minFilterScore) return;
   const previous=minFilterScore.value;
   const opts=currentLang==="fr"?[
-    ["","Niveau minimum : tous"],["1","Pas maintenant ou mieux"],["2","Neutre ou mieux"],["3","🔥 Envie ou favori"],["4","⭐/👑 Favori"]
+    ["","Niveau minimum : tous"],["1","Pas maintenant ou mieux"],["2","Neutre ou mieux"],["3","🔥 Envie ou favori"],["4","👑 Favori"]
   ]:[
-    ["","Minimum level: all"],["1","Not now or better"],["2","Neutral or better"],["3","🔥 Want or favorite"],["4","⭐/👑 Favorite"]
+    ["","Minimum level: all"],["1","Not now or better"],["2","Neutral or better"],["3","🔥 Want or favorite"],["4","👑 Favorite"]
   ];
   minFilterScore.innerHTML=opts.map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join("");
   minFilterScore.value=opts.some(([value])=>value===previous)?previous:"";
@@ -1703,8 +1701,8 @@ function updateCompatibilityIndicator() {
   compatIndicator.textContent=currentLang==='fr'?`${pairEligible.length} configurations au critère : ${criterionLabel}`:`${pairEligible.length} variants match: ${criterionLabel}`;
   compatIndicator.removeAttribute('role'); compatIndicator.removeAttribute('tabindex'); compatIndicator.title='';
   compatDetails.innerHTML=currentLang==='fr'
-    ? `<span>⭐+⭐ ${bothFavorite} favoris communs</span><span>○ ${newTogether} jamais faites ensemble</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantasme${fantasyCount>1?'s':''}</span>`:''}`
-    : `<span>⭐+⭐ ${bothFavorite} shared favorites</span><span>○ ${newTogether} never done together</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantas${fantasyCount>1?'ies':'y'}</span>`:''}`;
+    ? `<span>👑+👑 ${bothFavorite} favoris communs</span><span>○ ${newTogether} jamais faites ensemble</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantasme${fantasyCount>1?'s':''}</span>`:''}`
+    : `<span>👑+👑 ${bothFavorite} shared favorites</span><span>○ ${newTogether} never done together</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantas${fantasyCount>1?'ies':'y'}</span>`:''}`;
   randomCandidateInfo.textContent=randomNoRepeat.checked
     ? (currentLang==='fr'?`Tirables : ${eligible.length}/${baseEligible.length} restantes dans ce cycle`:`Eligible: ${eligible.length}/${baseEligible.length} remaining in this cycle`)
     : (currentLang==='fr'?`Tirables avec les options actuelles : ${baseEligible.length}`:`Eligible with current options: ${baseEligible.length}`);
