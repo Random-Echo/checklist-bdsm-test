@@ -5092,3 +5092,32 @@ body[data-view-mode="edit"] .individual-editor-bulk-btn,
 body[data-view-mode="edit"] .all-tools > summary{
   color:#2e2528;
 }
+
+
+/* V1.1.126 — Stronger separation between practice cards and page background */
+body[data-view-mode="edit"] .individual-category-cards{
+  gap:8px;
+  padding-top:6px;
+}
+body[data-view-mode="edit"] .individual-practice-card{
+  background:color-mix(in srgb,var(--dominant-soft) 74%,#fff 26%);
+  border:1px solid color-mix(in srgb,var(--dominant-color) 46%,#fff 54%);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--dominant-dark) 14%,transparent 86%),0 5px 14px rgba(34,18,31,.12);
+}
+body[data-view-mode="edit"] .individual-practice-card > header{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--dominant-color) 58%,#fff 42%) 0%,
+    color-mix(in srgb,var(--dominant-color) 46%,#fff 54%) 100%);
+  border-bottom:1px solid color-mix(in srgb,var(--dominant-dark) 22%,#fff 78%);
+}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="excellent"]{background:linear-gradient(180deg,#d5e2cf 0%,#cbdbc3 100%);border-color:color-mix(in srgb,var(--dominant-color) 38%,#9eb290 62%)}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="strong"]{background:linear-gradient(180deg,#e4e2b6 0%,#dad6a6 100%);border-color:color-mix(in srgb,var(--dominant-color) 38%,#adb06f 62%)}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="compatible"]{background:linear-gradient(180deg,#ead6aa 0%,#e0c993 100%);border-color:color-mix(in srgb,var(--dominant-color) 38%,#be9a57 62%)}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="later"]{background:linear-gradient(180deg,#e6cab4 0%,#dcbba0 100%);border-color:color-mix(in srgb,var(--dominant-color) 38%,#b68668 62%)}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="fantasy"]{background:linear-gradient(180deg,#d0d8e5 0%,#c1cde0 100%);border-color:color-mix(in srgb,var(--dominant-color) 38%,#8c9fbb 62%)}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="limit"]{background:linear-gradient(180deg,#e2cbd1 0%,#d5b7c0 100%);border-color:color-mix(in srgb,var(--dominant-color) 38%,#b17e8b 62%)}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="incomplete"]{background:linear-gradient(180deg,#efebe5 0%,#e5ded6 100%);border-color:color-mix(in srgb,var(--dominant-color) 38%,#cbc0b5 62%)}
+@media (max-width:760px){
+  body[data-view-mode="edit"] .individual-category-cards{gap:7px;padding-top:5px}
+  body[data-view-mode="edit"] .individual-practice-card{box-shadow:0 0 0 1px color-mix(in srgb,var(--dominant-dark) 12%,transparent 88%),0 4px 11px rgba(34,18,31,.11)}
+}
