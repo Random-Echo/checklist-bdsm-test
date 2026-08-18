@@ -4537,3 +4537,156 @@ body[data-view-mode="edit"] .compat-summary,
 body[data-view-mode="edit"] .stat{
   background:rgba(255,252,248,.84);
 }
+
+
+/* V1.1.116 — Global contrast pass
+   Prevent dark-on-dark and light-on-light combinations across the full UI. */
+:root{
+  --contrast-ink-strong:#2b2327;
+  --contrast-ink:#463c41;
+  --contrast-ink-soft:#665a61;
+  --contrast-chip-bg:rgba(255,252,248,.9);
+  --contrast-chip-border:rgba(86,68,76,.18);
+}
+
+/* Shared chips and inline labels */
+.profile-inline-name.person-a,
+.profile-inline-name.person-b{
+  background:var(--contrast-chip-bg);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.38);
+}
+.profile-inline-text{color:var(--contrast-ink)}
+
+/* Header person selector */
+.role-switch [data-person-choice]{
+  background:rgba(255,251,247,.96);
+  color:var(--contrast-ink-strong);
+}
+.role-switch [data-person-choice] .role-choice-name{color:var(--contrast-ink-strong)}
+.role-switch [data-person-choice] .role-choice-ds{color:var(--contrast-ink-soft);opacity:.92}
+.role-switch [data-person-choice].active{
+  color:#fffdf9;
+}
+.role-switch [data-person-choice].active .role-choice-name,
+.role-switch [data-person-choice].active .role-choice-ds{
+  color:#fffdf9;
+  text-shadow:0 1px 1px rgba(0,0,0,.18);
+}
+.role-switch [data-person-choice].active .profile-inline-name{
+  background:rgba(255,250,244,.92);
+  border-color:rgba(255,255,255,.34);
+  color:var(--role-accent-dark, #3a2b15);
+}
+
+/* Reading dominant selector */
+.reader-header-ds{
+  background:rgba(255,251,247,.96);
+  border-color:rgba(86,68,76,.20);
+}
+.reader-header-ds-choice{
+  background:color-mix(in srgb,var(--reader-person-soft) 72%,#fff 28%);
+  color:var(--reader-person-dark);
+}
+.reader-header-ds-choice .profile-inline-text,
+.reader-header-ds-count{color:inherit}
+.reader-header-ds-choice .profile-inline-name{
+  background:rgba(255,251,247,.9);
+  border-color:color-mix(in srgb,var(--reader-person-color) 24%,#fff 76%);
+}
+.reader-header-ds-choice.active,
+.reader-header-ds-choice[aria-pressed="true"]{
+  color:#fffdf8;
+}
+.reader-header-ds-choice.active .profile-inline-text,
+.reader-header-ds-choice[aria-pressed="true"] .profile-inline-text,
+.reader-header-ds-choice.active .reader-header-ds-count,
+.reader-header-ds-choice[aria-pressed="true"] .reader-header-ds-count,
+.reader-header-ds-choice.active .flow-arrow,
+.reader-header-ds-choice[aria-pressed="true"] .flow-arrow{
+  color:#fffdf8;
+}
+.reader-header-ds-choice.active .profile-inline-name,
+.reader-header-ds-choice[aria-pressed="true"] .profile-inline-name{
+  background:rgba(255,250,245,.92);
+  border-color:rgba(255,255,255,.26);
+  color:var(--reader-person-dark);
+}
+
+/* Better summary / control contrast */
+.compat-summary,
+.stat,
+.reader-filter-summary-value,
+.reader-filter-summary-piece,
+.individual-editor-progress,
+.individual-editor-kicker,
+.individual-editor-head p,
+.individual-practice-category,
+.individual-applicability,
+.individual-prior,
+.individual-note-toggle,
+.couple-result-head small,
+.couple-reader-note strong,
+.couple-reader-note span{
+  color:var(--contrast-ink);
+}
+
+/* Reading cards and categories */
+.couple-reader-category-head,
+.reader-current-category-head{
+  color:var(--contrast-ink-strong);
+}
+.couple-reader-category-head > strong,
+.reader-current-category-head > strong,
+.reader-filter-dock > summary,
+.all-tools > summary,
+.individual-category-head strong,
+.individual-practice-card h3,
+.couple-practice-title-line strong{
+  color:var(--contrast-ink-strong);
+}
+.couple-practice-description,
+.individual-practice-explanation{
+  color:#50464b;
+}
+.couple-reader-notes,
+body[data-view-mode="edit"] .individual-editor-progress,
+body[data-view-mode="edit"] .compat-summary,
+body[data-view-mode="edit"] .stat,
+body[data-view-mode="read"] .compat-summary,
+body[data-view-mode="read"] .stat,
+body[data-view-mode="read"] .reader-filter-summary-value{
+  background:rgba(255,252,248,.86);
+  color:var(--contrast-ink-strong);
+}
+
+/* Edit cards readability */
+body[data-view-mode="edit"] .individual-practice-card h3,
+body[data-view-mode="edit"] .individual-slot-label,
+body[data-view-mode="edit"] .individual-field-label,
+body[data-view-mode="edit"] .individual-note-panel > span,
+body[data-view-mode="edit"] .individual-category-head strong,
+body[data-view-mode="edit"] .all-tools > summary,
+body[data-view-mode="edit"] .individual-editor-head,
+body[data-view-mode="edit"] .individual-editor-bulk-btn{
+  color:var(--contrast-ink-strong);
+}
+body[data-view-mode="edit"] .individual-practice-explanation,
+body[data-view-mode="edit"] .individual-practice-category,
+body[data-view-mode="edit"] .individual-editor-head p,
+body[data-view-mode="edit"] .individual-editor-kicker,
+body[data-view-mode="edit"] .individual-prior,
+body[data-view-mode="edit"] .individual-note-toggle,
+body[data-view-mode="edit"] .individual-applicability{
+  color:#5a5056;
+}
+body[data-view-mode="edit"] .individual-practice-category,
+body[data-view-mode="edit"] .individual-category-head > span:nth-of-type(2){
+  background:rgba(255,252,248,.9);
+  border-color:rgba(98,81,88,.14);
+}
+
+/* Buttons with clear selected state */
+.score-btn.selected{
+  outline-color:#2f272b;
+  box-shadow:inset 0 0 0 1px rgba(28,21,24,.10),0 0 0 1px rgba(255,255,255,.28);
+}
