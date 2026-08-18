@@ -5,15 +5,15 @@
 <meta content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <title>Checklist BDSM — Personnes A &amp; B</title>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23070509'/%3E%3Cstop offset='1' stop-color='%23140a10'/%3E%3C/linearGradient%3E%3ClinearGradient id='cr' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23f03a67'/%3E%3Cstop offset='.55' stop-color='%23cf1748'/%3E%3Cstop offset='1' stop-color='%23990d35'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='2' y='2' width='60' height='60' rx='15' fill='url(%23bg)' stroke='%23301823' stroke-width='2'/%3E%3Cpath d='M13 24.5 22.2 31 32 14.5 41.8 31 51 24.5 46.2 44.5H17.8z' fill='url(%23cr)'/%3E%3Cpath d='M18.8 46.5h26.4v4.5H18.8z' rx='2' fill='%23b50f3d'/%3E%3Cpath d='M20 38.5h24' stroke='%23ff6d8d' stroke-opacity='.55' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='31.8' r='2.4' fill='%23f2b75d'/%3E%3Ccircle cx='13' cy='23.5' r='3' fill='%23e52556'/%3E%3Ccircle cx='32' cy='13.5' r='3.2' fill='%23f03a67'/%3E%3Ccircle cx='51' cy='23.5' r='3' fill='%23e52556'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
-<link href="app.css?v=V1.1.145" rel="stylesheet"/>
-<script src="bootstrap.js?v=V1.1.145"></script>
-<script defer src="profiles.js?v=V1.1.145"></script>
-<script defer src="interaction-model.js?v=V1.1.145"></script>
-<script defer src="practice-catalog.js?v=V1.1.145"></script>
-<script defer src="storage.js?v=V1.1.145"></script>
-<script defer src="app.js?v=V1.1.145"></script>
+<link href="app.css?v=V1.1.147" rel="stylesheet"/>
+<script src="bootstrap.js?v=V1.1.147"></script>
+<script defer src="profiles.js?v=V1.1.147"></script>
+<script defer src="interaction-model.js?v=V1.1.147"></script>
+<script defer src="practice-catalog.js?v=V1.1.147"></script>
+<script defer src="storage.js?v=V1.1.147"></script>
+<script defer src="app.js?v=V1.1.147"></script>
 </head>
-<!-- Checklist BDSM unifiée V1.1.145 -->
+<!-- Checklist BDSM unifiée V1.1.147 -->
 <body data-view-mode="edit">
 <div aria-labelledby="adultGateTitleFr" aria-modal="true" class="adult-gate" id="adultGate" role="dialog">
 <div aria-hidden="true" class="adult-gate-backdrop"></div>
@@ -46,7 +46,7 @@
 <header>
 <div class="top">
 <div class="title-role-row">
-<h1><span data-i18n="appTitle">Checklist BDSM — Personnes A &amp; B</span> <span class="version-badge">V1.1.145</span> <span class="title-extra" data-i18n="titleExtra"></span></h1>
+<h1><span data-i18n="appTitle">Checklist BDSM — Personnes A &amp; B</span> <span class="version-badge">V1.1.147</span> <span class="title-extra" data-i18n="titleExtra"></span></h1>
 <div class="title-actions">
 <a aria-label="Accueil / Home" class="home-button" href="index.html" title="Accueil / Home"><span class="adult-lang-fr">⌂ Accueil</span><span class="adult-lang-en">⌂ Home</span></a>
 <div aria-label="Personne qui répond" class="role-switch" role="group">
@@ -86,7 +86,7 @@
 </div>
 
 <details class="all-tools" id="allTools">
-<summary><span data-i18n="toolsOptions">☰ Outils &amp; options</span><span class="compat-summary" id="compatIndicator">0 au critère : 🔥 Envie + Neutre</span></summary>
+<summary><span data-i18n="toolsOptions">☰ Outils &amp; options</span><span class="individual-editor-progress editor-tools-progress" id="individualEditorProgress">—</span><span class="compat-summary" id="compatIndicator">0 au critère : 🔥 Envie + Neutre</span></summary>
 <div class="all-tools-content">
 <section class="tool-section exploration-tool-section">
 <h2 data-i18n="explorationDisplay">🧭 Exploration &amp; affichage</h2>
@@ -260,6 +260,11 @@
 </div>
 </div>
 </details>
+<div class="editor-top-dock" id="editorTopDock">
+  <button class="individual-editor-bulk-btn" id="individualEditorCollapseAll" type="button"><span class="adult-lang-fr">▸ Tout replier</span><span class="adult-lang-en">▸ Collapse all</span></button>
+  <button class="individual-editor-bulk-btn" id="individualEditorExpandAll" type="button"><span class="adult-lang-fr">▾ Tout déplier</span><span class="adult-lang-en">▾ Expand all</span></button>
+  <button class="profile-edit-button" id="individualEditorProfile" type="button"><span class="adult-lang-fr">⚙ Profils</span><span class="adult-lang-en">⚙ Profiles</span></button>
+</div>
 <div class="reader-top-dock" id="readerTopDock">
     <details class="reader-filter-dock" id="readerFilterDock" open>
     <summary class="reader-filter-summary-row">
@@ -306,12 +311,12 @@
 <section class="help-section"><h3>2. Donner, recevoir et rôles D/s</h3><p>Selon la pratique, vous indiquez soit votre <strong>intérêt</strong>, soit ce que vous aimez <strong>donner / recevoir</strong>, soit ce que vous aimez en position <strong>dominante / soumise</strong>. Donner et dominer sont deux notions indépendantes. Pour une dynamique fixe, les pratiques D/s n’affichent que le rôle configuré ; en switch, les deux rôles restent disponibles.</p></section>
 <section class="help-section"><h3>3. Préférences et expérience</h3><p><strong>?</strong> = non renseigné · 🚫 = limite · ⏳ = pas maintenant · 💭 = fantasme uniquement · 😐 = neutre · 🔥 = envie · 👑 = favori. « Après expérience » remplace la préférence initiale dans le calcul lorsqu’une expérience réelle est renseignée.</p></section>
 <section class="help-section"><h3>4. Catalogue unique</h3><p>Le site charge désormais un seul catalogue technique. Les formulations spécifiques à A dominant et B dominant sont conservées quand elles diffèrent. Les anciennes entrées manifestement différentes malgré un même numéro ont été séparées pour qu’aucune pratique ne soit perdue.</p></section>
-<section class="help-section"><h3>5. Fait ensemble, notes et sécurité</h3><p>« Fait ensemble » appartient à chaque variante réelle de la pratique. Les notes restent personnelles. Les réglages de sécurité sont communs au couple.</p></section>
+<section class="help-section"><h3>5. Fait ensemble, notes et sécurité</h3><p>« Fait ensemble » appartient à chaque variante réelle de la pratique. Chaque personne dispose d’une seule note personnelle par pratique. Les réglages de sécurité sont communs au couple.</p></section>
 <section class="help-section"><h3>6. Filtres, tirage et séance</h3><p>Recherche, catégories et filtres fonctionnent dans les deux modes. Le tirage, les épingles et le Mode séance travaillent directement sur les variantes réelles de chaque pratique.</p></section>
 <section class="help-section"><h3>7. Configuration & sauvegardes</h3><p><strong>🔗 Partager la configuration</strong> sert surtout si vous utilisez deux appareils : le bouton crée un lien contenant uniquement les deux profils, leurs attributs, couleurs et la dynamique D/s, sans réponses. Envoyez-le par SMS, Discord, WhatsApp, Mail, AirDrop… ; votre partenaire l’ouvre simplement avant de répondre. <strong>💾 Complète</strong> exporte tout le couple. Les sauvegardes <strong>Personne A/B</strong> contiennent les réponses de la personne ainsi qu’une copie de la configuration utilisée, afin de détecter une éventuelle différence lors de la fusion.</p></section>
 <section class="help-section"><h3>8. Mode lecture</h3><p>Le mode Lecture affiche les deux réponses complémentaires et le résultat du couple. Les réponses personnelles sont verrouillées ; les actions communes « Fait ensemble » et séance restent disponibles.</p></section>
 <section class="help-section"><h3>9. Données locales</h3><p>Les réponses sont enregistrées localement dans le navigateur. Un autre appareil ne reçoit rien automatiquement : utilisez les sauvegardes JSON pour transférer les données.</p></section>
-<div class="help-end">V1.1.145</div>
+<div class="help-end">V1.1.147</div>
 </div>
 <div class="help-lang" data-help-lang="en">
 <p class="help-intro">The checklist has two distinct uses: <strong>Edit</strong> for each person to answer separately without seeing their partner’s choices, and <strong>Reading</strong> to match complementary answers and show couple results. Names, relevant anatomy and the couple dynamic are defined in the profile.</p>
@@ -319,12 +324,12 @@
 <section class="help-section"><h3>2. Give, receive and D/s roles</h3><p>Depending on the practice, you rate either your general <strong>interest</strong>, what you like to <strong>give / receive</strong>, or what you like in a <strong>dominant / submissive</strong> role. Giving and dominating are independent concepts. With a fixed dynamic, D/s practices only show the configured role; switch mode keeps both roles available.</p></section>
 <section class="help-section"><h3>3. Preferences and experience</h3><p><strong>?</strong> = unrated · 🚫 = limit · ⏳ = not now · 💭 = fantasy only · 😐 = neutral · 🔥 = want to · 👑 = favorite. After-experience ratings replace initial preference in calculations once real experience is recorded.</p></section>
 <section class="help-section"><h3>4. Unified catalogue</h3><p>The site now loads one technical catalogue. Scenario-specific wording is retained when needed. Legacy slots that clearly contained different practices were split so no content is lost.</p></section>
-<section class="help-section"><h3>5. Done together, notes and safety</h3><p>Done together belongs to each real practice variant. Notes remain personal and safety settings are shared at couple level.</p></section>
+<section class="help-section"><h3>5. Done together, notes and safety</h3><p>Done together belongs to each real practice variant. Each person has one personal note per practice, and safety settings are shared at couple level.</p></section>
 <section class="help-section"><h3>6. Filters, random draw and session</h3><p>Search, categories and filters work in both modes. Random draw, pins and Session mode operate directly on each real practice variant.</p></section>
 <section class="help-section"><h3>7. Configuration & backups</h3><p><strong>🔗 Share configuration</strong> is mainly for two-device use: it creates a link containing only both profiles, anatomy, colors and the D/s dynamic, with no answers. Send it by SMS, Discord, WhatsApp, Mail, AirDrop…; your partner simply opens it before answering. <strong>💾 Full</strong> exports the entire couple. <strong>Person A/B</strong> backups include that person's answers plus a copy of the configuration used, so configuration differences can be detected during a merge.</p></section>
 <section class="help-section"><h3>8. Reading mode</h3><p>Reading mode shows both complementary answers and the couple result. Personal answers stay locked while shared Done together and session actions remain available.</p></section>
 <section class="help-section"><h3>9. Local data</h3><p>Answers are stored locally in this browser. Another device receives nothing automatically; use JSON backups to transfer data.</p></section>
-<div class="help-end">V1.1.145</div>
+<div class="help-end">V1.1.147</div>
 </div>
 </div>
 </section>
@@ -397,22 +402,7 @@
 </div>
 <main>
 <section class="individual-editor" id="individualEditor" hidden>
-  <div class="individual-editor-head">
-    <div>
-      <span class="individual-editor-kicker"><span class="adult-lang-fr">Mode édition individuel</span><span class="adult-lang-en">Individual edit mode</span></span>
-      <h2 id="individualEditorTitle">Mes réponses</h2>
-      <p id="individualEditorIntro"><span class="adult-lang-fr">Seules vos réponses sont visibles. Les choix de l’autre personne restent masqués.</span><span class="adult-lang-en">Only your answers are visible. The other person's choices remain hidden.</span></p>
-    </div>
-    <div class="individual-editor-actions">
-      <span class="individual-editor-progress" id="individualEditorProgress">—</span>
-      <button class="profile-edit-button" id="individualEditorProfile" type="button"><span class="adult-lang-fr">⚙ Profils</span><span class="adult-lang-en">⚙ Profiles</span></button>
-    </div>
-  </div>
   <div class="individual-editor-legend" id="individualEditorLegend"></div>
-  <div class="individual-editor-bulk" id="individualEditorBulk">
-    <button class="individual-editor-bulk-btn" id="individualEditorCollapseAll" type="button"><span class="adult-lang-fr">▸ Tout replier</span><span class="adult-lang-en">▸ Collapse all</span></button>
-    <button class="individual-editor-bulk-btn" id="individualEditorExpandAll" type="button"><span class="adult-lang-fr">▾ Tout déplier</span><span class="adult-lang-en">▾ Expand all</span></button>
-  </div>
   <div class="individual-editor-list" id="individualEditorList"></div>
   <div class="individual-editor-empty" id="individualEditorEmpty" hidden><span class="adult-lang-fr">Aucune pratique ne correspond aux filtres actuels.</span><span class="adult-lang-en">No practice matches the current filters.</span></div>
 </section>

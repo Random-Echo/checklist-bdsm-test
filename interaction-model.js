@@ -2,7 +2,7 @@
   'use strict';
 
   const MODEL_SCHEMA_VERSION = 1;
-  const RESPONSE_SCHEMA_VERSION = 1;
+  const RESPONSE_SCHEMA_VERSION = 2;
   const AXIS = Object.freeze({
     SINGLE: 'single',
     DIRECTION: 'give-receive',
