@@ -5,7 +5,7 @@
   const INTERACTION = window.CHECKLIST_INTERACTION_MODEL;
   if (!CATALOG || !INTERACTION) throw new Error('Checklist storage requires catalog and interaction model.');
 
-  const SCHEMA_VERSION = 4;
+  const SCHEMA_VERSION = 5;
   const SITE_BACKUP_ID = 'bdsm-checklists-couple-v2';
   const LEGACY_SITE_BACKUP_ID = 'bdsm-checklists-couple';
   const LEGACY_BACKUP_VERSION = 2;
@@ -309,25 +309,77 @@
   function loadableDisplay(raw){return{schemaVersion:2,common:raw?.common&&typeof raw.common==='object'?clone(raw.common):{}};}
   function loadableRandom(raw){return{schemaVersion:2,preferences:raw?.preferences&&typeof raw.preferences==='object'?clone(raw.preferences):null,history:normalizeVariantEntries(raw?.history)};}
 
-  function validateV4Backup(payload){if(!payload||typeof payload!=='object'||Array.isArray(payload)||payload.schemaVersion!==4||payload.siteBackupId!==SITE_BACKUP_ID)return null;if(!['full','person-a','person-b'].includes(payload.backupType)||!payload.data||typeof payload.data!=='object')throw new Error('Invalid V1.1.62 backup.');return{format:'v4',type:payload.backupType};}
-  function validateV3Backup(payload){if(!payload||typeof payload!=='object'||Array.isArray(payload)||payload.schemaVersion!==3||payload.siteBackupId!==SITE_BACKUP_ID)return null;if(!['full','person-a','person-b'].includes(payload.backupType)||!payload.data||typeof payload.data!=='object')throw new Error('Invalid V1.1.58–V1.1.61 backup.');return{format:'v3',type:payload.backupType};}
-  function validateLegacyBackup(payload){if(!payload||typeof payload!=='object'||Array.isArray(payload)||payload.version!==LEGACY_BACKUP_VERSION||payload.siteBackupId!==LEGACY_SITE_BACKUP_ID)return null;const type=['full','male','female'].includes(payload.backupType)?payload.backupType:null;if(!type||!payload.variants||typeof payload.variants!=='object')throw new Error('Invalid V1.1.55 backup.');for(const id of Object.keys(LEGACY_VARIANT_FORMATS)){const block=payload.variants[id];if(!block||typeof block!=='object'||!Array.isArray(block.items))throw new Error('Invalid V1.1.55 backup.');}return{format:'legacy-v2',type};}
-  function inspectBackup(payload){return validateV4Backup(payload)||validateV3Backup(payload)||validateLegacyBackup(payload)||(()=>{throw new Error('Sauvegarde incompatible / incompatible backup.');})();}
+  function validateV5Backup(payload){
+    if(!payload||typeof payload!=='object'||Array.isArray(payload)||payload.schemaVersion!==5||payload.siteBackupId!==SITE_BACKUP_ID)return null;
+    if(!['full','person-a','person-b'].includes(payload.backupType)||!payload.data||typeof payload.data!=='object')throw new Error('Invalid V1.1.141 backup.');
+    if(['person-a','person-b'].includes(payload.backupType)&&(!payload.coupleConfiguration||typeof payload.coupleConfiguration!=='object'))throw new Error('Invalid V1.1.141 personal backup: couple configuration missing.');
+    if(payload.coupleConfiguration&&window.CHECKLIST_PROFILE_API?.configurationFingerprint){
+      const actual=window.CHECKLIST_PROFILE_API.configurationFingerprint(payload.coupleConfiguration);
+      if(payload.coupleConfigFingerprint&&payload.coupleConfigFingerprint!==actual)throw new Error('Invalid V1.1.141 backup: couple configuration fingerprint mismatch.');
+    }
+    return{format:'v5',type:payload.backupType,hasCoupleConfiguration:!!payload.coupleConfiguration};
+  }
+  function validateV4Backup(payload){if(!payload||typeof payload!=='object'||Array.isArray(payload)||payload.schemaVersion!==4||payload.siteBackupId!==SITE_BACKUP_ID)return null;if(!['full','person-a','person-b'].includes(payload.backupType)||!payload.data||typeof payload.data!=='object')throw new Error('Invalid V1.1.62 backup.');return{format:'v4',type:payload.backupType,hasCoupleConfiguration:false};}
+  function validateV3Backup(payload){if(!payload||typeof payload!=='object'||Array.isArray(payload)||payload.schemaVersion!==3||payload.siteBackupId!==SITE_BACKUP_ID)return null;if(!['full','person-a','person-b'].includes(payload.backupType)||!payload.data||typeof payload.data!=='object')throw new Error('Invalid V1.1.58–V1.1.61 backup.');return{format:'v3',type:payload.backupType,hasCoupleConfiguration:false};}
+  function validateLegacyBackup(payload){if(!payload||typeof payload!=='object'||Array.isArray(payload)||payload.version!==LEGACY_BACKUP_VERSION||payload.siteBackupId!==LEGACY_SITE_BACKUP_ID)return null;const type=['full','male','female'].includes(payload.backupType)?payload.backupType:null;if(!type||!payload.variants||typeof payload.variants!=='object')throw new Error('Invalid V1.1.55 backup.');for(const id of Object.keys(LEGACY_VARIANT_FORMATS)){const block=payload.variants[id];if(!block||typeof block!=='object'||!Array.isArray(block.items))throw new Error('Invalid V1.1.55 backup.');}return{format:'legacy-v2',type,hasCoupleConfiguration:false};}
+  function inspectBackup(payload){return validateV5Backup(payload)||validateV4Backup(payload)||validateV3Backup(payload)||validateLegacyBackup(payload)||(()=>{throw new Error('Sauvegarde incompatible / incompatible backup.');})();}
 
   function buildPersonalModelForPerson(person){const src=loadPersonalResponses(),out=emptyPersonalResponses();for(const [id,p] of Object.entries(src.practices||{})){const kept={};for(const [slot,state] of Object.entries(p?.persons?.[person]||{}))if(participantHasData(state))kept[slot]=normalizeParticipant(state);if(Object.keys(kept).length){out.practices[id]={persons:{personA:{},personB:{}}};out.practices[id].persons[person]=kept;}}return out;}
   function buildLegacyArchiveForPerson(person){const src=normalizeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive())),out=emptyLegacyArchive();for(const entry of src.entries){const next={source:entry.source,at:entry.at,personOnly:person,responses:normalizeLegacyResponses(entry.responses||emptyLegacyResponses())};for(const p of Object.values(next.responses.practices||{}))for(const state of Object.values(p.scenarios||{}))for(const other of ['personA','personB'])if(other!==person)state.participants[other]={};out.entries.push(next);}return out;}
-  function buildBackup(type,appVersion){const backupType=type==='full'?'full':type==='male'||type==='person-a'?'person-a':'person-b',exportedAt=nowIso(),meta=getMeta();if(backupType==='full')return{schemaVersion:4,siteBackupId:SITE_BACKUP_ID,appVersion,catalogVersion:CATALOG.schemaVersion||1,backupType,exportedAt,profile:clone(currentProfile()),data:{personalResponses:loadPersonalResponses(),coupleState:loadCoupleState(),safety:readJson(KEYS.safety,emptySafety()),sessions:loadSessions(),display:loadDisplay(),random:loadRandom(),meta:clone(meta),legacyArchive:readJson(KEYS.legacyArchive,emptyLegacyArchive())}};const person=backupType==='person-a'?'personA':'personB',profile=currentProfile(),identity=profile?.[person]||{};return{schemaVersion:4,siteBackupId:SITE_BACKUP_ID,appVersion,catalogVersion:CATALOG.schemaVersion||1,backupType,exportedAt,participant:{slot:backupType,identityId:identity.identityId||null,name:identity.name||null},data:{personalResponses:buildPersonalModelForPerson(person),coupleState:loadCoupleState(),safety:readJson(KEYS.safety,emptySafety()),modifiedAt:{person:meta.modifiedAt?.[person]||'',common:meta.modifiedAt?.common||''},legacyArchive:buildLegacyArchiveForPerson(person)}};}
+  function buildBackup(type,appVersion){
+    const backupType=type==='full'?'full':type==='male'||type==='person-a'?'person-a':'person-b',exportedAt=nowIso(),meta=getMeta(),profile=currentProfile();
+    const coupleConfiguration=window.CHECKLIST_PROFILE_API?.coupleConfiguration?.(profile)||null;
+    const coupleConfigFingerprint=coupleConfiguration&&window.CHECKLIST_PROFILE_API?.configurationFingerprint?.(coupleConfiguration)||null;
+    if(backupType==='full')return{schemaVersion:5,siteBackupId:SITE_BACKUP_ID,appVersion,catalogVersion:CATALOG.schemaVersion||1,backupType,exportedAt,profile:clone(profile),coupleConfiguration:clone(coupleConfiguration),coupleConfigFingerprint,data:{personalResponses:loadPersonalResponses(),coupleState:loadCoupleState(),safety:readJson(KEYS.safety,emptySafety()),sessions:loadSessions(),display:loadDisplay(),random:loadRandom(),meta:clone(meta),legacyArchive:readJson(KEYS.legacyArchive,emptyLegacyArchive())}};
+    const person=backupType==='person-a'?'personA':'personB',identity=profile?.[person]||{};
+    return{schemaVersion:5,siteBackupId:SITE_BACKUP_ID,appVersion,catalogVersion:CATALOG.schemaVersion||1,backupType,exportedAt,participant:{slot:backupType,identityId:identity.identityId||null,name:identity.name||null},coupleConfiguration:clone(coupleConfiguration),coupleConfigFingerprint,data:{personalResponses:buildPersonalModelForPerson(person),coupleState:loadCoupleState(),safety:readJson(KEYS.safety,emptySafety()),modifiedAt:{person:meta.modifiedAt?.[person]||'',common:meta.modifiedAt?.common||''},legacyArchive:buildLegacyArchiveForPerson(person)}};
+  }
+
+  function compareBackupCoupleConfiguration(payload){
+    const info=inspectBackup(payload);
+    if(!['person-a','person-b'].includes(info.type)||!payload.coupleConfiguration||!window.CHECKLIST_PROFILE_API?.compareCoupleConfiguration)return null;
+    return window.CHECKLIST_PROFILE_API.compareCoupleConfiguration(payload.coupleConfiguration,currentProfile());
+  }
 
   function mergePersonalActive(data,person,exportedAt){const local=loadPersonalResponses(),incoming=normalizePersonalResponses(data?.personalResponses);for(const p of Object.values(local.practices||{}))if(p?.persons)p.persons[person]={};for(const [id,p] of Object.entries(incoming.practices||{})){const slots=p?.persons?.[person]||{};if(!Object.keys(slots).length)continue;const dst=local.practices[id]||{persons:{personA:{},personB:{}}};dst.persons[person]=clone(slots);local.practices[id]=dst;}for(const [id,p] of Object.entries(local.practices||{}))if(!Object.keys(p.persons?.personA||{}).length&&!Object.keys(p.persons?.personB||{}).length)delete local.practices[id];savePersonalResponses(local);saveCoupleState(mergeCoupleAdditive(loadCoupleState(),data?.coupleState));if(data?.legacyArchive)writeJson(KEYS.legacyArchive,mergeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive()),data.legacyArchive));const localSafety=clone(safetyStore()),incomingSafety=data?.safety||emptySafety(),merged=mergeSafetyPrudent(localSafety.values||{},incomingSafety.values||{});localSafety.values=merged.merged;localSafety.conflicts=[...(localSafety.conflicts||[]),...merged.conflicts];safetyCache=localSafety;writeJson(KEYS.safety,localSafety);const meta=getMeta();meta.modifiedAt[person]=data?.modifiedAt?.person||exportedAt||nowIso();meta.modifiedAt.common=data?.modifiedAt?.common||meta.modifiedAt.common||nowIso();meta.lastModifiedAt=nowIso();meta.initialized=true;setMeta(meta);return{conflicts:merged.conflicts};}
 
   function convertV3Payload(payload){if(payload.backupType==='full')return convertScenarioDataToActive(payload.data||{},`V1.1.58–V1.1.61 backup (${payload.appVersion||'schema3'})`);const person=payload.backupType==='person-a'?'personA':'personB',legacyResponses=normalizeLegacyResponses(payload.data?.responses||emptyLegacyResponses()),personal=payload.data?.personalResponses?normalizePersonalResponses(payload.data.personalResponses):projectLegacyResponsesToPersonal(legacyResponses);return{personalResponses:personal,coupleState:projectLegacyResponsesToCouple(legacyResponses),safety:payload.data?.safety||emptySafety(),modifiedAt:payload.data?.modifiedAt||{},legacyArchive:archiveScenarioData(payload.data||{},`V1.1.58–V1.1.61 personal backup (${payload.appVersion||'schema3'})`,person),person};}
   function convertLegacyPersonal(payload,legacyType){const person=legacyTypeToPerson(legacyType),responses=emptyLegacyResponses();let mergedSafety={},conflicts=[];for(const [variantId,def] of Object.entries(LEGACY_VARIANT_FORMATS)){const block=payload.variants?.[variantId]||{};addLegacyVariantToResponses(responses,def.scenario,block.items,person);const m=mergeSafetyPrudent(mergedSafety,block.safety||{});mergedSafety=m.merged;conflicts.push(...m.conflicts.map(x=>({...x,scenario:def.scenario})));}return{person,personalResponses:projectLegacyResponsesToPersonal(responses),coupleState:projectLegacyResponsesToCouple(responses),safety:{schemaVersion:1,values:mergedSafety,legacySources:{},conflicts},modifiedAt:{person:payload.exportedAt||'',common:payload.exportedAt||''},legacyArchive:archiveScenarioData({responses},`V1.1.55 personal backup (${legacyType})`,person)};}
 
-  function importBackup(payload){const info=inspectBackup(payload);let result;if(info.format==='v4'){if(info.type==='full'){const data=normalizeCurrentFullData(payload.data);installActiveData(data,`V1.1.62 backup (${payload.appVersion||'schema4'})`);if(payload.profile&&window.CHECKLIST_PROFILE_API?.save)window.CHECKLIST_PROFILE_API.save(payload.profile);result={type:'full',format:'v4',conflicts:[]};}else{const person=info.type==='person-a'?'personA':'personB',r=mergePersonalActive(payload.data,person,payload.exportedAt);result={type:info.type,format:'v4',conflicts:r.conflicts};}}
-    else if(info.format==='v3'){const converted=convertV3Payload(payload);if(info.type==='full'){installActiveData(converted,converted.source);if(payload.profile&&window.CHECKLIST_PROFILE_API?.save)window.CHECKLIST_PROFILE_API.save(payload.profile);result={type:'full',format:'v3',conflicts:converted.safety?.conflicts||[]};}else{const person=info.type==='person-a'?'personA':'personB',r=mergePersonalActive(converted,person,payload.exportedAt);result={type:info.type,format:'v3',conflicts:r.conflicts};}}
-    else if(info.type==='full'){const data=mergeLegacyFullSnapshots(payload.variants,'V1.1.55 backup');installActiveData(data,data.source);result={type:'full',format:'legacy-v2',conflicts:data.safety?.conflicts||[]};}
-    else{const converted=convertLegacyPersonal(payload,info.type),r=mergePersonalActive(converted,converted.person,payload.exportedAt);result={type:personToBackupType(converted.person),format:'legacy-v2',conflicts:r.conflicts};}
-    const exchange={type:'import',backupType:result.type,exportedAt:payload.exportedAt||null,lastModifiedAt:nowIso(),appVersion:payload.appVersion||'V1.1.55',sourceFormat:result.format};setLastExchange(exchange);result.info=exchange;return result;}
+  function importBackup(payload,options={}){
+    const info=inspectBackup(payload);
+    let result;
+    if(info.format==='v5'){
+      if(info.type==='full'){
+        const data=normalizeCurrentFullData(payload.data);
+        installActiveData(data,`V1.1.141 backup (${payload.appVersion||'schema5'})`);
+        if(payload.profile&&window.CHECKLIST_PROFILE_API?.save)window.CHECKLIST_PROFILE_API.save(payload.profile);
+        result={type:'full',format:'v5',conflicts:[],configComparison:null};
+      }else{
+        const comparison=compareBackupCoupleConfiguration(payload);
+        if(comparison&&!comparison.same&&options.allowProfileMismatch!==true){
+          const error=new Error('La configuration du couple de cette sauvegarde est différente de celle de cet appareil.');
+          error.code='COUPLE_CONFIG_MISMATCH';
+          error.comparison=comparison;
+          throw error;
+        }
+        const person=info.type==='person-a'?'personA':'personB',r=mergePersonalActive(payload.data,person,payload.exportedAt);
+        result={type:info.type,format:'v5',conflicts:r.conflicts,configComparison:comparison};
+      }
+    }else if(info.format==='v4'){
+      if(info.type==='full'){const data=normalizeCurrentFullData(payload.data);installActiveData(data,`V1.1.62 backup (${payload.appVersion||'schema4'})`);if(payload.profile&&window.CHECKLIST_PROFILE_API?.save)window.CHECKLIST_PROFILE_API.save(payload.profile);result={type:'full',format:'v4',conflicts:[]};}
+      else{const person=info.type==='person-a'?'personA':'personB',r=mergePersonalActive(payload.data,person,payload.exportedAt);result={type:info.type,format:'v4',conflicts:r.conflicts};}
+    }else if(info.format==='v3'){
+      const converted=convertV3Payload(payload);
+      if(info.type==='full'){installActiveData(converted,converted.source);if(payload.profile&&window.CHECKLIST_PROFILE_API?.save)window.CHECKLIST_PROFILE_API.save(payload.profile);result={type:'full',format:'v3',conflicts:converted.safety?.conflicts||[]};}
+      else{const person=info.type==='person-a'?'personA':'personB',r=mergePersonalActive(converted,person,payload.exportedAt);result={type:info.type,format:'v3',conflicts:r.conflicts};}
+    }else if(info.type==='full'){
+      const data=mergeLegacyFullSnapshots(payload.variants,'V1.1.55 backup');installActiveData(data,data.source);result={type:'full',format:'legacy-v2',conflicts:data.safety?.conflicts||[]};
+    }else{
+      const converted=convertLegacyPersonal(payload,info.type),r=mergePersonalActive(converted,converted.person,payload.exportedAt);result={type:personToBackupType(converted.person),format:'legacy-v2',conflicts:r.conflicts};
+    }
+    const exchange={type:'import',backupType:result.type,exportedAt:payload.exportedAt||null,lastModifiedAt:nowIso(),appVersion:payload.appVersion||'V1.1.55',sourceFormat:result.format};setLastExchange(exchange);result.info=exchange;return result;
+  }
 
   function getScenarioSummary(scenario){const personal=loadPersonalResponses(),couple=loadCoupleState(),sessions=loadSessions(),random=loadRandom();let total=0,touched=0,ratedByBoth=0,doneTogether=0,experienced=0,sessionCount=0,randomCount=0;const seenSession=new Set(),seenRandom=new Set();for(const entity of CATALOG.entities||[]){const key=scenario==='b-dom'?'bDom':'aDom';if(!entity?.scenarios?.[key])continue;total++;const variant=INTERACTION.variantForLegacyScenario(entity,scenario),slots=variant?INTERACTION.participantSlotsForVariant(entity,variant):null;if(!variant||!slots)continue;const a=normalizeParticipant(personal.practices?.[entity.id]?.persons?.personA?.[slots.personA]),b=normalizeParticipant(personal.practices?.[entity.id]?.persons?.personB?.[slots.personB]),done=couple.practices?.[entity.id]?.variants?.[variant]?.doneTogether===true;const pt=p=>participantHasData(p),rated=p=>Number.isInteger(p.after)||Number.isInteger(p.preference);if(pt(a)||pt(b)||done)touched++;if(rated(a)&&rated(b))ratedByBoth++;if(done)doneTogether++;if(a.prior===true||b.prior===true||Number.isInteger(a.after)||Number.isInteger(b.after)||done)experienced++;const k=`${entity.id}|${variant}`;if(sessions.entries.some(e=>sessionKey(e)===k)&&!seenSession.has(k)){seenSession.add(k);sessionCount++;}if(random.history.some(e=>sessionKey(e)===k)&&!seenRandom.has(k)){seenRandom.add(k);randomCount++;}}
     return{scenario,total,touched,ratedByBoth,doneTogether,experienced,sessionCount,randomCount};}
@@ -343,7 +395,7 @@
     getRandomHistoryEntries,setRandomHistoryEntries,getRandomPreferences,setRandomPreferences,
     getDisplay,setDisplay,getLastModified,getLastExchange,setLastExchange,
     getPersonalSlotState,setPersonalSlotState,getPersonalPractice,getVariantCommonState,setVariantCommonState,getReaderPractice,getPersonalSummary,
-    buildBackup,inspectBackup,importBackup,resetAllUserData,
+    buildBackup,inspectBackup,compareBackupCoupleConfiguration,importBackup,resetAllUserData,
     _legacy:{getScenarioItems,saveScenarioItems,getScenarioSessionLegacyIds,setScenarioSessionLegacyIds,getRandomHistoryLegacyIds,setRandomHistoryLegacyIds,getScenarioSummary},
     _debug:{loadPersonalResponses,loadCoupleState,loadSessions,loadRandom,projectLegacyResponsesToPersonal,projectLegacyResponsesToCouple,convertScenarioDataToActive,mergeLegacyFullSnapshots,v2ByScenarioLegacy,entityByV2,legacyActiveKeys:LEGACY_ACTIVE_KEYS,loadLegacyArchive:()=>normalizeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive()))}
   });

@@ -5533,3 +5533,37 @@ body[data-view-mode="read"] header .all-tools-content{
     border-radius:16px !important;
   }
 }
+
+/* V1.1.141 — couple configuration exchange */
+.filters-backup-section .config-backup{
+  grid-column:1 / -1;
+  justify-self:end;
+  width:min(100%,520px);
+  min-height:38px;
+  border-color:#8d7046;
+  background:linear-gradient(180deg,#f8f1e6,#eee1cf);
+  color:#60471f;
+  font-weight:900;
+}
+.filters-backup-section .config-backup:hover{background:linear-gradient(180deg,#fff8ed,#f3e5d1)}
+
+.config-conflict-modal{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:16px}
+.config-conflict-backdrop{position:absolute;inset:0;background:rgba(20,14,18,.72);backdrop-filter:blur(4px)}
+.config-conflict-dialog{position:relative;width:min(660px,100%);max-height:min(88dvh,720px);overflow:auto;padding:18px;border:1px solid #b9a5ae;border-radius:18px;background:#fff;color:#30262b;box-shadow:0 28px 80px rgba(0,0,0,.38)}
+.config-conflict-kicker{display:inline-flex;margin-bottom:7px;padding:4px 8px;border:1px solid #d8c3aa;border-radius:999px;background:#f7efe4;color:#73552c;font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.055em}
+.config-conflict-dialog h2{margin:0 0 7px;font-size:1.25rem}
+.config-conflict-dialog p{margin:0;color:#665a60;font-size:.86rem;line-height:1.48}
+.config-conflict-list{display:grid;gap:5px;margin-top:13px;padding:10px;border:1px solid #ddd2d7;border-radius:12px;background:#f7f4f5}
+.config-conflict-list div{padding:7px 8px;border-radius:8px;background:#fff;color:#4b3f45;font-size:.8rem;font-weight:750}
+.config-conflict-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.config-conflict-actions button{min-height:42px;border-radius:11px;padding:7px 10px;font:inherit;font-size:.8rem;font-weight:900;cursor:pointer}
+.config-conflict-local{border:1px solid #6c8795;background:#eef5f8;color:#254d61}
+.config-conflict-incoming{border:1px solid #9b6b79;background:#f7edf1;color:#71374b}
+.config-conflict-cancel{grid-column:1/-1;border:1px solid #cfc5c9;background:#f5f3f4;color:#62575c}
+@media(max-width:620px){
+  .config-conflict-dialog{padding:14px;border-radius:15px}
+  .config-conflict-actions{grid-template-columns:1fr}
+  .config-conflict-cancel{grid-column:auto}
+  .config-conflict-actions button{min-height:40px}
+  .filters-backup-section .config-backup{width:100%}
+}

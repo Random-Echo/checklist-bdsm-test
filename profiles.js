@@ -2,6 +2,8 @@
   'use strict';
 
   const KEY = 'bdsmChecklistV2_profile_v1';
+  const CONFIG_BACKUP_ID = 'bdsm-checklists-couple-config-v1';
+  const CONFIG_SCHEMA_VERSION = 1;
   const PROFILE_COLORS = [
     {id:'blue',main:'#2F6F8F',dark:'#1E536C',soft:'#E8F2F7'},
     {id:'plum',main:'#8B3F6F',dark:'#67294D',soft:'#F7EAF2'},
@@ -78,6 +80,117 @@
     return profile;
   }
 
+  function coupleConfiguration(value = profile) {
+    const normalized = normalize(value);
+    const pickPerson = person => ({
+      id: normalized[person].id,
+      identityId: normalized[person].identityId,
+      name: normalized[person].name,
+      color: normalized[person].color,
+      anatomy: Object.fromEntries(ANATOMY_KEYS.map(key => [key, normalized[person].anatomy[key] === true]))
+    });
+    return {
+      schemaVersion: CONFIG_SCHEMA_VERSION,
+      personA: pickPerson('personA'),
+      personB: pickPerson('personB'),
+      dynamic: {mode: normalized.dynamic.mode},
+      anatomyConfigured: true
+    };
+  }
+
+  function configurationComparisonShape(value = profile) {
+    const config = value?.personA && value?.personB ? coupleConfiguration(value) : value;
+    const person = side => ({
+      name: safeName(config?.[side]?.name, side === 'personA' ? 'Personne A' : 'Personne B'),
+      color: colorById(config?.[side]?.color)?.id || (side === 'personA' ? 'blue' : 'plum'),
+      anatomy: Object.fromEntries(ANATOMY_KEYS.map(key => [key, config?.[side]?.anatomy?.[key] === true]))
+    });
+    return {
+      personA: person('personA'),
+      personB: person('personB'),
+      dynamic: {mode: ['a-dom','b-dom','switch'].includes(config?.dynamic?.mode) ? config.dynamic.mode : 'switch'}
+    };
+  }
+
+  function configurationFingerprint(value = profile) {
+    const text = JSON.stringify(configurationComparisonShape(value));
+    let hash = 0x811c9dc5;
+    for (let i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    return `cfg1-${hash.toString(16).padStart(8,'0')}`;
+  }
+
+  function normalizeCoupleConfiguration(raw, base = profile) {
+    const source = raw?.profile || raw?.coupleConfiguration || raw;
+    if (!source || typeof source !== 'object' || !source.personA || !source.personB) throw new Error('Configuration du couple invalide / invalid couple configuration.');
+    const next = normalize(base);
+    for (const side of ['personA','personB']) {
+      const incoming = source[side] || {};
+      next[side].name = safeName(incoming.name, side === 'personA' ? 'Personne A' : 'Personne B');
+      next[side].color = colorById(incoming.color)?.id || next[side].color;
+      if (typeof incoming.identityId === 'string' && incoming.identityId) next[side].identityId = incoming.identityId;
+      for (const key of ANATOMY_KEYS) next[side].anatomy[key] = incoming.anatomy?.[key] === true;
+    }
+    next.dynamic.mode = ['a-dom','b-dom','switch'].includes(source.dynamic?.mode) ? source.dynamic.mode : 'switch';
+    next.dynamic.dominant = next.dynamic.mode === 'a-dom' ? 'person-a' : next.dynamic.mode === 'b-dom' ? 'person-b' : null;
+    next.anatomyConfigured = true;
+    return normalize(next);
+  }
+
+  function compareCoupleConfiguration(incoming, local = profile) {
+    const remote = normalizeCoupleConfiguration(incoming, local);
+    const a = configurationComparisonShape(local);
+    const b = configurationComparisonShape(remote);
+    const differences = [];
+    for (const side of ['personA','personB']) {
+      if (a[side].name !== b[side].name) differences.push({kind:'name',side,local:a[side].name,incoming:b[side].name});
+      if (a[side].color !== b[side].color) differences.push({kind:'color',side,local:a[side].color,incoming:b[side].color});
+      for (const key of ANATOMY_KEYS) {
+        if (a[side].anatomy[key] !== b[side].anatomy[key]) differences.push({kind:'anatomy',side,key,local:a[side].anatomy[key],incoming:b[side].anatomy[key]});
+      }
+    }
+    if (a.dynamic.mode !== b.dynamic.mode) differences.push({kind:'dynamic',local:a.dynamic.mode,incoming:b.dynamic.mode});
+    return {
+      same:differences.length === 0,
+      differences,
+      localFingerprint:configurationFingerprint(local),
+      incomingFingerprint:configurationFingerprint(remote),
+      incomingProfile:remote
+    };
+  }
+
+  function buildCoupleConfigBackup(appVersion = '') {
+    const config = coupleConfiguration(profile);
+    return {
+      schemaVersion: CONFIG_SCHEMA_VERSION,
+      siteBackupId: CONFIG_BACKUP_ID,
+      backupType:'couple-config',
+      appVersion:String(appVersion || ''),
+      exportedAt:new Date().toISOString(),
+      configFingerprint:configurationFingerprint(config),
+      profile:config
+    };
+  }
+
+  function inspectCoupleConfigBackup(payload) {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload) || payload.siteBackupId !== CONFIG_BACKUP_ID || payload.schemaVersion !== CONFIG_SCHEMA_VERSION || payload.backupType !== 'couple-config') {
+      throw new Error('Ce fichier n’est pas une configuration de couple compatible.');
+    }
+    const incomingProfile = normalizeCoupleConfiguration(payload.profile, profile);
+    const fingerprint = configurationFingerprint(incomingProfile);
+    if (payload.configFingerprint && payload.configFingerprint !== fingerprint) throw new Error('Configuration du couple corrompue / corrupted couple configuration.');
+    return {
+      type:'couple-config',
+      format:'couple-config-v1',
+      appVersion:payload.appVersion || '',
+      exportedAt:payload.exportedAt || null,
+      fingerprint,
+      incomingProfile
+    };
+  }
+
   function openProfilePage() {
     location.href = 'index.html#profiles';
   }
@@ -85,16 +198,24 @@
   applyProfileColors(profile);
   window.CHECKLIST_PROFILE_API = {
     key:KEY,
+    configBackupId:CONFIG_BACKUP_ID,
+    configSchemaVersion:CONFIG_SCHEMA_VERSION,
     get:() => profile,
     save,
     normalize,
     colors:PROFILE_COLORS.map(color => ({...color})),
     anatomyKeys:[...ANATOMY_KEYS],
     safeName,
+    coupleConfiguration,
+    normalizeCoupleConfiguration,
+    configurationFingerprint,
+    compareCoupleConfiguration,
+    buildCoupleConfigBackup,
+    inspectCoupleConfigBackup,
     open:openProfilePage
   };
 
-  // Profiles are configured on index.html now. Direct checklist access without
+  // Profiles are configured on index.html. Direct checklist access without
   // a configured anatomy profile is redirected there after the adult gate.
   document.addEventListener('DOMContentLoaded', () => {
     const onChecklist = /(?:^|\/)checklist\.html$/i.test(location.pathname);

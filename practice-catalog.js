@@ -15,7 +15,8 @@
     d.personB = personBName;
     d.backupPersonA = '🔵 ' + personAName;
     d.backupPersonB = '🟣 ' + personBName;
-    d.backupHint = fr ? 'Complète = profils, réponses des deux personnes et données du couple · Personne A/B = réponses personnelles uniquement.' : 'Full = profiles, both people’s answers and couple data · Person A/B = personal answers only.';
+    d.shareCoupleConfig = fr ? '🔗 Partager la configuration' : '🔗 Share configuration';
+    d.backupHint = fr ? 'Deux appareils : partagez d’abord la configuration du couple · Personne A/B = réponses personnelles + copie de la configuration utilisée · Complète = tout le couple.' : 'Two devices: share the couple configuration first · Person A/B = personal answers + a copy of the configuration used · Full = the entire couple.';
     d.minFilterAria = fr ? 'Filtrer par niveau effectif minimal' : 'Filter by minimum effective level';
     d.readingLegendResults = fr ? personAName + ' à gauche, ' + personBName + ' à droite, avec le résultat du couple pour chaque variante.' : personAName + ' on the left, ' + personBName + ' on the right, with the couple result for each variant.';
     d.readingLegendCheckPersonA = fr ? '✓ sous ' + personAName + ' : déjà essayé par cette personne.' : '✓ under ' + personAName + ': already tried by this person.';

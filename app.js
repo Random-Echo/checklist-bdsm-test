@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.138";
+const APP_VERSION = "V1.1.141";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -443,6 +443,7 @@ const randomBtn = document.getElementById("randomBtn");
 const randomResult = document.getElementById("randomResult");
 const importJsonBtn = document.getElementById("importJson");
 const importJsonFile = document.getElementById("importJsonFile");
+const exportCoupleConfigBtn = document.getElementById("exportCoupleConfig");
 const exportFullBtn = document.getElementById("exportFull");
 const exportPersonABtn = document.getElementById("exportPersonA");
 const exportPersonBBtn = document.getElementById("exportPersonB");
@@ -547,6 +548,7 @@ let lastExchange = V2_STORAGE.getLastExchange() || null;
 function backupTypeLabel(type) {
   if (type === "male" || type === "person-a") return currentLang === "fr" ? "Personne A" : "Person A";
   if (type === "female" || type === "person-b") return currentLang === "fr" ? "Personne B" : "Person B";
+  if (type === "couple-config") return currentLang === "fr" ? "Configuration du couple" : "Couple configuration";
   return currentLang === "fr" ? "Complète" : "Full";
 }
 
@@ -565,6 +567,7 @@ function globalBackupConfirmationText(type, payload, inspection=null) {
       const other = normalized === "person-a" ? "Personne B" : "Personne A";
       message = `Sauvegarde ${who.toUpperCase()}${legacy ? " V1.1.55" : " actuelle"}.\n\nElle remplacera uniquement les réponses personnelles de ${who}. Les réponses de ${other} resteront intactes. Les données communes restent additives et la sécurité est fusionnée prudemment.`;
     }
+    if (normalized !== "full" && inspection && inspection.hasCoupleConfiguration === false) message += `\n\n⚠️ Cette ancienne sauvegarde personnelle ne contient pas la configuration du couple : les attributs et la dynamique utilisés lors de sa création ne peuvent pas être vérifiés automatiquement.`;
     if (older) message += `\n\n⚠️ Ce fichier semble plus ancien que les données locales.`;
     return message + `\n\nContinuer ?`;
   }
@@ -575,6 +578,7 @@ function globalBackupConfirmationText(type, payload, inspection=null) {
     const other = normalized === "person-a" ? "Person B" : "Person A";
     message = `${who.toUpperCase()} ${legacy ? "V1.1.55" : "CURRENT"} BACKUP.\n\nIt will replace only ${who}'s personal answers for all applicable directions and D/s roles. ${other}'s answers remain intact. Done together remains additive and safety is merged conservatively.`;
   }
+  if (normalized !== "full" && inspection && inspection.hasCoupleConfiguration === false) message += `\n\n⚠️ This older personal backup does not contain the couple configuration, so the anatomy and D/s dynamic used when it was created cannot be checked automatically.`;
   if (older) message += `\n\n⚠️ This file appears older than the local data.`;
   return message + `\n\nContinue?`;
 }
@@ -621,15 +625,15 @@ function firstUseGuideCopy() {
   if (currentLang === "fr") {
     return {
       kicker:"Première utilisation",
-      title:"Remplissez d’abord séparément, puis fusionnez",
-      intro:"Pour limiter l’influence des réponses de l’autre, chaque personne peut remplir sa partie de son côté, idéalement sur son propre appareil.",
+      title:"Un appareil ou deux : même configuration, réponses séparées",
+      intro:"Vous pouvez remplir la checklist sur un seul appareil ou chacun de votre côté. Sur deux appareils, commencez avec la même configuration du couple pour afficher exactement les mêmes pratiques.",
       cards:[
-        ["1 · Chacun de son côté","La Personne A et la Personne B renseignent chacune leurs propres choix sans voir ceux de l’autre : intérêt, donner/recevoir ou rôle D/s selon la pratique."],
-        ["2 · Édition vraiment individuelle","Le mode Édition n’affiche que les choix de la personne active. Passez ensuite en Lecture pour croiser les réponses et renseigner les données communes."],
-        ["3 · Fusionnez avec les sauvegardes","Exportez 🔵 Personne A ou 🟣 Personne B, envoyez le JSON à l’autre appareil puis utilisez 📂 Restaurer. L’import remplace uniquement les réponses personnelles de la personne concernée."],
-        ["4 · Vérifiez ensemble avant une séance","En mode Lecture, relisez les résultats, marquez les configurations déjà faites, préparez la séance et vérifiez surtout Sécurité / limites / aftercare."]
+        ["1 · Deux appareils ? Partagez la configuration","Configurez les deux profils sur un appareil puis utilisez 🔗 Partager la configuration. Importez ce fichier depuis l’accueil du second appareil avant de répondre."],
+        ["2 · Chacun répond séparément","En Édition, choisissez la personne qui répond. Seules ses réponses et notes sont visibles ; celles du partenaire restent masquées."],
+        ["3 · Échangez les sauvegardes personnelles","Exportez Personne A ou Personne B puis restaurez le fichier sur l’autre appareil. Chaque sauvegarde contient aussi une copie de la configuration utilisée pour détecter une différence avant fusion."],
+        ["4 · Vérifiez ensemble avant une séance","En Lecture, relisez les résultats, marquez ce qui a été fait ensemble, préparez la séance et vérifiez surtout Sécurité / limites / aftercare."]
       ],
-      local:"Séance, ordre de séance, niveau d’exploration, affichage et réglages du tirage restent locaux lors d’un échange Personne A/B. Une sauvegarde 💾 Complète permet ensuite d’aligner entièrement deux appareils.",
+      local:"Sur un seul appareil, aucun partage de configuration n’est nécessaire. La sauvegarde 💾 Complète contient la configuration, les deux réponses et toutes les données communes.",
       understand:"J’ai compris",
       guide:"Lire le mode d’emploi complet",
       once:"Ce message n’apparaît automatiquement qu’une fois sur cet appareil. Le mode d’emploi reste accessible avec « ? »."
@@ -637,15 +641,15 @@ function firstUseGuideCopy() {
   }
   return {
     kicker:"First use",
-    title:"Fill your answers separately first, then merge",
-    intro:"To reduce influence from the other person’s answers, each person can fill their own part separately, preferably on their own device.",
+    title:"One or two devices: same configuration, separate answers",
+    intro:"You can use the checklist on one device or separately. With two devices, start from the same couple configuration so both people see exactly the same applicable practices.",
     cards:[
-      ["1 · Fill separately","Person A and Person B each fill only their own interest, give/receive or D/s-role answers, depending on the practice."],
-      ["2 · Truly individual editing","Edit mode shows only the active person’s answers. Then switch to Reading to compare answers and manage shared couple data."],
-      ["3 · Merge with backups","Export 🔵 Person A or 🟣 Person B, send the JSON file to the other device, then use 📂 Restore. The import replaces only that person’s personal answers."],
-      ["4 · Review together before a session","In Reading mode, review the results, mark configurations already done, prepare the session, and especially verify Safety / limits / aftercare."]
+      ["1 · Two devices? Share configuration","Configure both profiles on one device, then use 🔗 Share configuration. Import that file from the home page on the second device before answering."],
+      ["2 · Answer separately","In Edit mode, choose who is answering. Only that person's answers and notes are visible; the partner's remain hidden."],
+      ["3 · Exchange personal backups","Export Person A or Person B and restore it on the other device. Each personal backup also contains a copy of the configuration used, so differences can be detected before merging."],
+      ["4 · Review together before a session","In Reading mode, review the results, mark what you have done together, prepare the session and especially check Safety / limits / aftercare."]
     ],
-    local:"Session selection/order, exploration level, display and random-draw settings remain local during Person A/B exchanges. A 💾 Full backup can then be used to align both devices completely.",
+    local:"On one device, no configuration sharing is needed. A 💾 Full backup contains the configuration, both people's answers and all shared data.",
     understand:"Got it",
     guide:"Read the complete user guide",
     once:"This message is shown automatically only once on this device. The complete guide remains available from “?”."
@@ -2417,10 +2421,67 @@ function setGlobalLastExchange(info) {
   renderExchangeInfo();
 }
 
-function importGlobalBackup(payload) {
-  const result = V2_STORAGE.importBackup(payload);
+function importGlobalBackup(payload, options={}) {
+  const result = V2_STORAGE.importBackup(payload, options);
   lastExchange = result.info || V2_STORAGE.getLastExchange();
   return result;
+}
+
+function configurationDifferenceLabel(diff, comparison) {
+  const fr = currentLang === "fr";
+  const incoming = comparison?.incomingProfile || {};
+  const local = runtimeProfile();
+  const sideName = side => {
+    const key = side === "personA" ? "personA" : "personB";
+    return local?.[key]?.name || incoming?.[key]?.name || (fr ? (key === "personA" ? "Personne A" : "Personne B") : (key === "personA" ? "Person A" : "Person B"));
+  };
+  const anatomy = fr
+    ? {penis:"Pénis",testicles:"Testicules",prostate:"Prostate",breasts:"Poitrine / seins",vulva:"Vulve",vagina:"Vagin"}
+    : {penis:"Penis",testicles:"Testicles",prostate:"Prostate",breasts:"Chest / breasts",vulva:"Vulva",vagina:"Vagina"};
+  const yesNo = value => value ? (fr ? "Oui" : "Yes") : (fr ? "Non" : "No");
+  const dynamic = value => value === "a-dom" ? (fr ? "A domine B" : "A dominates B") : value === "b-dom" ? (fr ? "B domine A" : "B dominates A") : "Switch";
+  if (diff.kind === "name") return `${sideName(diff.side)} · ${fr ? "pseudo" : "name"}: “${diff.local}” → “${diff.incoming}”`;
+  if (diff.kind === "color") return `${sideName(diff.side)} · ${fr ? "couleur" : "color"}: ${diff.local} → ${diff.incoming}`;
+  if (diff.kind === "anatomy") return `${sideName(diff.side)} · ${anatomy[diff.key] || diff.key}: ${yesNo(diff.local)} → ${yesNo(diff.incoming)}`;
+  if (diff.kind === "dynamic") return `${fr ? "Dynamique D/s" : "D/s dynamic"}: ${dynamic(diff.local)} → ${dynamic(diff.incoming)}`;
+  return fr ? "Différence de configuration" : "Configuration difference";
+}
+
+function resolveCoupleConfigurationMismatch(comparison) {
+  return new Promise(resolve => {
+    const fr = currentLang === "fr";
+    const wrap = document.createElement("div");
+    wrap.className = "config-conflict-modal";
+    const shown = (comparison?.differences || []).slice(0, 12);
+    const extra = Math.max(0, (comparison?.differences || []).length - shown.length);
+    wrap.innerHTML = `<div class="config-conflict-backdrop" data-config-choice="cancel"></div>
+      <section class="config-conflict-dialog" role="dialog" aria-modal="true" aria-labelledby="configConflictTitle">
+        <span class="config-conflict-kicker">${fr ? "Fusion protégée" : "Protected merge"}</span>
+        <h2 id="configConflictTitle">${fr ? "Configurations du couple différentes" : "Different couple configurations"}</h2>
+        <p>${fr ? "Cette sauvegarde personnelle n’a pas été remplie avec exactement la même configuration que celle de cet appareil. Choisissez d’abord quelle configuration doit servir de référence. Aucune réponse n’est supprimée : les pratiques incompatibles restent stockées mais peuvent être masquées." : "This personal backup was not filled using exactly the same configuration as this device. First choose which configuration should be the reference. No answers are deleted: incompatible practices remain stored but may be hidden."}</p>
+        <div class="config-conflict-list">${shown.map(diff => `<div>${esc(configurationDifferenceLabel(diff, comparison))}</div>`).join("")}${extra ? `<div>+ ${extra} ${fr ? "autre(s) différence(s)" : "other difference(s)"}</div>` : ""}</div>
+        <div class="config-conflict-actions">
+          <button type="button" class="config-conflict-local" data-config-choice="local">${fr ? "Garder ma configuration" : "Keep my configuration"}</button>
+          <button type="button" class="config-conflict-incoming" data-config-choice="incoming">${fr ? "Utiliser celle du fichier" : "Use file configuration"}</button>
+          <button type="button" class="config-conflict-cancel" data-config-choice="cancel">${fr ? "Annuler" : "Cancel"}</button>
+        </div>
+      </section>`;
+    document.body.appendChild(wrap);
+    setAppBackgroundInert(true);
+    const finish = choice => {
+      document.removeEventListener("keydown", onKey);
+      wrap.remove();
+      setAppBackgroundInert(false);
+      resolve(choice);
+    };
+    const onKey = event => { if (event.key === "Escape") finish(null); };
+    document.addEventListener("keydown", onKey);
+    wrap.querySelectorAll("[data-config-choice]").forEach(button => button.addEventListener("click", () => {
+      const choice = button.dataset.configChoice;
+      finish(choice === "local" || choice === "incoming" ? choice : null);
+    }));
+    requestAnimationFrame(() => wrap.querySelector(".config-conflict-local")?.focus());
+  });
 }
 
 importJsonBtn.addEventListener("click", () => {
@@ -2442,6 +2503,22 @@ importJsonFile.addEventListener("change", async () => {
     const parsed = JSON.parse(await file.text());
     const inspection = validateGlobalBackup(parsed);
     const backupType = inspection.type;
+    let configChoice = null;
+    let configComparison = null;
+
+    if (["person-a","person-b"].includes(backupType) && inspection.hasCoupleConfiguration) {
+      configComparison = V2_STORAGE.compareBackupCoupleConfiguration(parsed);
+      if (configComparison && !configComparison.same) {
+        configChoice = await resolveCoupleConfigurationMismatch(configComparison);
+        if (!configChoice) {
+          randomResult.innerHTML = currentLang === "fr"
+            ? "<strong>Import annulé.</strong> Aucune donnée n’a été modifiée."
+            : "<strong>Import cancelled.</strong> No data was changed.";
+          return;
+        }
+      }
+    }
+
     if (!window.confirm(globalBackupConfirmationText(backupType, parsed, inspection))) {
       randomResult.innerHTML = currentLang === "fr"
         ? "<strong>Restauration annulée.</strong> Aucune donnée n’a été modifiée."
@@ -2449,7 +2526,12 @@ importJsonFile.addEventListener("change", async () => {
       return;
     }
 
-    const result = importGlobalBackup(parsed);
+    if (configChoice === "incoming" && configComparison?.incomingProfile && PROFILE_API?.save) {
+      PROFILE_API.save(configComparison.incomingProfile);
+      runtimeProfileCache = null;
+    }
+
+    const result = importGlobalBackup(parsed, {allowProfileMismatch: configChoice === "local" || configChoice === "incoming"});
     if (["person-a","person-b","male","female"].includes(result.type)) {
       try { sessionStorage.setItem(MERGE_REVIEW_KEY, JSON.stringify({type:result.type, at:new Date().toISOString()})); } catch (_) {}
     }
@@ -2458,10 +2540,15 @@ importJsonFile.addEventListener("change", async () => {
     const conflictText = conflictCount
       ? (currentLang === "fr" ? ` · ⚠️ ${conflictCount} conflit(s) sécurité conservé(s)` : ` · ⚠️ ${conflictCount} safety conflict(s) preserved`)
       : "";
+    const configText = configChoice === "incoming"
+      ? (currentLang === "fr" ? " · configuration du fichier appliquée" : " · file configuration applied")
+      : configChoice === "local"
+        ? (currentLang === "fr" ? " · configuration locale conservée" : " · local configuration kept")
+        : "";
     const migrated = result.format === "legacy-v2";
     const message = currentLang === "fr"
-      ? `Sauvegarde ${label} restaurée${migrated ? " et migrée depuis V1.1.55" : ""}${conflictText}. La page va être actualisée.`
-      : `${label} backup restored${migrated ? " and migrated from V1.1.55" : ""}${conflictText}. The page will now refresh.`;
+      ? `Sauvegarde ${label} restaurée${migrated ? " et migrée depuis V1.1.55" : ""}${conflictText}${configText}. La page va être actualisée.`
+      : `${label} backup restored${migrated ? " and migrated from V1.1.55" : ""}${conflictText}${configText}. The page will now refresh.`;
     window.alert(message);
     window.location.reload();
   } catch (err) {
@@ -2547,6 +2634,19 @@ function buildGlobalBackupPayload(type) {
   return V2_STORAGE.buildBackup(type, APP_VERSION);
 }
 
+function exportCoupleConfiguration() {
+  if (!PROFILE_API?.buildCoupleConfigBackup) return;
+  const payload = PROFILE_API.buildCoupleConfigBackup(APP_VERSION);
+  const d = new Date();
+  const dateStamp = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"), String(d.getDate()).padStart(2, "0")].join("-");
+  const timeStamp = [String(d.getHours()).padStart(2, "0"), String(d.getMinutes()).padStart(2, "0")].join("-");
+  download(`Checklist_BDSM_CONFIGURATION_${dateStamp}_${timeStamp}.json`, JSON.stringify(payload,null,2), "application/json");
+  setGlobalLastExchange({type:"export",backupType:"couple-config",exportedAt:payload.exportedAt,lastModifiedAt:payload.exportedAt,appVersion:APP_VERSION,schemaVersion:payload.schemaVersion});
+  randomResult.innerHTML = currentLang === "fr"
+    ? `<strong>Configuration du couple exportée.</strong> Ce fichier ne contient aucune réponse. Importez-le depuis la page d’accueil du second appareil avant de commencer.`
+    : `<strong>Couple configuration exported.</strong> This file contains no answers. Import it from the home page on the second device before starting.`;
+}
+
 function exportBackup(type) {
   flushPersonalNoteSaves();
   flushSafetySave();
@@ -2575,19 +2675,20 @@ function exportBackup(type) {
     const content = normalizedType === "full"
       ? "profils, réponses individuelles, données du couple, sécurité et réglages"
       : normalizedType === "person-a"
-        ? "réponses personnelles de la Personne A et sécurité"
-        : "réponses personnelles de la Personne B et sécurité";
+        ? "réponses personnelles de la Personne A + copie de la configuration du couple et sécurité"
+        : "réponses personnelles de la Personne B + copie de la configuration du couple et sécurité";
     randomResult.innerHTML = `<strong>Sauvegarde ${label} créée :</strong> ${content} · schéma ${payload.schemaVersion} · ${APP_VERSION}.`;
   } else {
     const content = normalizedType === "full"
       ? "profiles, individual answers, couple data, safety and settings"
       : normalizedType === "person-a"
-        ? "Person A personal answers and safety"
-        : "Person B personal answers and safety";
+        ? "Person A personal answers + couple configuration copy and safety"
+        : "Person B personal answers + couple configuration copy and safety";
     randomResult.innerHTML = `<strong>${label} backup created:</strong> ${content} · schema ${payload.schemaVersion} · ${APP_VERSION}.`;
   }
 }
 
+exportCoupleConfigBtn?.addEventListener("click", exportCoupleConfiguration);
 exportFullBtn.addEventListener("click", () => exportBackup("full"));
 exportPersonABtn.addEventListener("click", () => exportBackup("person-a"));
 exportPersonBBtn.addEventListener("click", () => exportBackup("person-b"));
