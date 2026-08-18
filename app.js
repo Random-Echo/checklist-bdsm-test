@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.100";
+const APP_VERSION = "V1.1.102";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1381,6 +1381,55 @@ const coupleReaderTitle = document.getElementById("coupleReaderTitle");
 const coupleReaderIntro = document.getElementById("coupleReaderIntro");
 const coupleReaderSummary = document.getElementById("coupleReaderSummary");
 const coupleReaderLegend = document.getElementById("coupleReaderLegend");
+const readerCurrentCategoryDock = document.getElementById("readerCurrentCategoryDock");
+const readerCurrentCategoryHead = document.getElementById("readerCurrentCategoryHead");
+let readerStickyRaf = 0;
+let readerStickyCategoryName = "";
+function clearReaderCurrentCategory(){
+  readerStickyCategoryName = "";
+  if(readerCurrentCategoryDock){
+    readerCurrentCategoryDock.classList.remove("is-active");
+    readerCurrentCategoryDock.setAttribute("aria-hidden","true");
+  }
+  if(readerCurrentCategoryHead){
+    readerCurrentCategoryHead.innerHTML="";
+    readerCurrentCategoryHead.removeAttribute("data-reader-current-category");
+  }
+}
+function updateReaderCurrentCategory(){
+  readerStickyRaf = 0;
+  if(!readerCurrentCategoryDock || !readerCurrentCategoryHead || !coupleReaderList || document.body.dataset.viewMode!=="read" || coupleReader?.hidden){
+    clearReaderCurrentCategory(); return;
+  }
+  const categories=[...coupleReaderList.querySelectorAll(".couple-reader-category")];
+  if(!categories.length){clearReaderCurrentCategory();return;}
+  const filterRect=readerFilterDock?.getBoundingClientRect();
+  const threshold=(filterRect?.bottom ?? document.querySelector("main")?.getBoundingClientRect().top ?? 0)-1;
+  const listRect=coupleReaderList.getBoundingClientRect();
+  if(listRect.top>threshold+1 || listRect.bottom<=threshold){clearReaderCurrentCategory();return;}
+  let active=categories[0];
+  for(const cat of categories){
+    if(cat.getBoundingClientRect().top<=threshold+1) active=cat; else break;
+  }
+  const source=active.querySelector(".couple-reader-category-head");
+  if(!source){clearReaderCurrentCategory();return;}
+  const categoryName=source.dataset.readerCategoryToggle||active.dataset.category||source.querySelector("strong")?.textContent||"";
+  if(readerStickyCategoryName!==categoryName || readerCurrentCategoryHead.dataset.expanded!==source.getAttribute("aria-expanded")){
+    readerStickyCategoryName=categoryName;
+    readerCurrentCategoryHead.innerHTML=source.innerHTML;
+    readerCurrentCategoryHead.dataset.readerCurrentCategory=categoryName;
+    readerCurrentCategoryHead.dataset.expanded=source.getAttribute("aria-expanded")||"";
+    readerCurrentCategoryHead.setAttribute("aria-expanded",source.getAttribute("aria-expanded")||"true");
+  }
+  const color=getComputedStyle(active).getPropertyValue("--reader-category-color").trim()||"#aaa";
+  readerCurrentCategoryDock.style.setProperty("--reader-current-category-color",color);
+  readerCurrentCategoryDock.classList.add("is-active");
+  readerCurrentCategoryDock.setAttribute("aria-hidden","false");
+}
+function queueReaderCurrentCategoryUpdate(){
+  if(readerStickyRaf) return;
+  readerStickyRaf=requestAnimationFrame(updateReaderCurrentCategory);
+}
 function updateStickyCategoryOffsets(){
   const root=document.documentElement;
   if(!root) return;
@@ -1389,15 +1438,15 @@ function updateStickyCategoryOffsets(){
   if(coupleReader && !coupleReader.hidden && readerFilterDock){
     const styles=window.getComputedStyle(readerFilterDock);
     if(styles.display!=="none" && styles.visibility!=="hidden"){
-      const filterRect=readerFilterDock.getBoundingClientRect();
-      readTop=filterRect.height || readerFilterDock.offsetHeight || 0;
-      // Slight overlap prevents practice rows from ever peeking through a
-      // sub-pixel seam between the two sticky bars (notably on Safari/iOS).
-      if(readTop>0) readTop=Math.max(0,readTop-1);
+      readTop=readerFilterDock.offsetHeight || 0;
+      if(readTop>0) readTop=Math.max(0, readTop-1);
     }
   }
-  root.style.setProperty("--read-category-sticky-top", `${Math.max(0,readTop)}px`);
+  root.style.setProperty("--read-category-sticky-top", `${Math.max(0,Math.round(readTop))}px`);
+  queueReaderCurrentCategoryUpdate();
 }
+const appMainScrollport=document.querySelector("main");
+if(appMainScrollport) appMainScrollport.addEventListener("scroll",queueReaderCurrentCategoryUpdate,{passive:true});
 window.addEventListener("resize", updateStickyCategoryOffsets, {passive:true});
 window.addEventListener("orientationchange", updateStickyCategoryOffsets, {passive:true});
 if(readerFilterDock) {
@@ -1839,6 +1888,7 @@ function getReaderModelSnapshot(profile=runtimeProfile()) {
 }
 function hideCoupleReader() {
   if(coupleReader) coupleReader.hidden=true;
+  clearReaderCurrentCategory();
 }
 function renderCoupleReader() {
   if(!coupleReader||!coupleReaderList) return;
@@ -1938,6 +1988,7 @@ function renderCoupleReader() {
     const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${profileNameBadge('person-a', names.personA, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>${profileNameBadge('person-b', names.personB, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b><span class="profile-inline-text">🔗</span></b><small>✓ ${esc(togetherShort)}</small></span></span>`;
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span>${resultHead}</button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
+  queueReaderCurrentCategoryUpdate();
   coupleReaderEmpty.hidden=visiblePractices!==0;
   const summary=currentLang==="fr"?`${visiblePractices} pratiques · ${visibleVariants} configurations · ${completeVariants} résultats complets`:`${visiblePractices} practices · ${visibleVariants} configurations · ${completeVariants} complete results`;
   coupleReaderSummary.textContent=summary;
@@ -1952,6 +2003,12 @@ function renderCoupleReader() {
   window.requestAnimationFrame(updateStickyCategoryOffsets);
   return {visiblePractices,visibleVariants,completeVariants,compatible,strong,fantasies,limits,done,filterCounters:{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo}};
 }
+if(readerCurrentCategoryHead) readerCurrentCategoryHead.addEventListener("click",()=>{
+  const cat=readerCurrentCategoryHead.dataset.readerCurrentCategory;
+  if(!cat) return;
+  if(collapsedCategories.has(cat)) collapsedCategories.delete(cat); else collapsedCategories.add(cat);
+  saveCollapsedCategories(); renderCoupleReader();
+});
 if(coupleReaderList) coupleReaderList.addEventListener("click",e=>{
   const action=e.target.closest("button[data-couple-action]");
   if(action){
