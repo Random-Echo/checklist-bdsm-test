@@ -4882,3 +4882,55 @@ body[data-view-mode="edit"] .individual-note-panel{
   body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main,
   body[data-view-mode="edit"] .individual-after[data-result-key] .individual-score-row{padding:3px 4px}
 }
+
+
+/* V1.1.121 — Edit slot refinement
+   Neutral row background, result color only inside the rounded frame,
+   dominant/editor color on the frame border. */
+body[data-view-mode="edit"] .individual-practice-card > header{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--dominant-color) 56%,#fff 44%) 0%,
+    color-mix(in srgb,var(--dominant-color) 40%,#fff 60%) 100%);
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key],
+body[data-view-mode="edit"] .individual-after[data-result-key]{
+  --edit-fill:linear-gradient(180deg,#ece8e2 0%,#dfd8cf 100%);
+  --edit-outline:color-mix(in srgb,var(--dominant-dark) 68%,#fff 32%);
+  background:transparent;
+  color:#2c2427;
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key="excellent"],
+body[data-view-mode="edit"] .individual-after[data-result-key="excellent"]{--edit-fill:linear-gradient(180deg,#c9d6c1 0%,#b8c8af 100%)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="strong"],
+body[data-view-mode="edit"] .individual-after[data-result-key="strong"]{--edit-fill:linear-gradient(180deg,#d2d09f 0%,#c0bf86 100%)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="compatible"],
+body[data-view-mode="edit"] .individual-after[data-result-key="compatible"]{--edit-fill:linear-gradient(180deg,#dec588 0%,#cfb06a 100%)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="later"],
+body[data-view-mode="edit"] .individual-after[data-result-key="later"]{--edit-fill:linear-gradient(180deg,#d9b08d 0%,#c8956c 100%)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="fantasy"],
+body[data-view-mode="edit"] .individual-after[data-result-key="fantasy"]{--edit-fill:linear-gradient(180deg,#bdc8d8 0%,#a3b1c8 100%)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="limit"],
+body[data-view-mode="edit"] .individual-after[data-result-key="limit"]{--edit-fill:linear-gradient(180deg,#d0adb7 0%,#bb8a98 100%)}
+body[data-view-mode="edit"] .individual-slot[data-result-key="incomplete"],
+body[data-view-mode="edit"] .individual-after[data-result-key="incomplete"]{--edit-fill:linear-gradient(180deg,#ccced2 0%,#b7bbbf 100%)}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main,
+body[data-view-mode="edit"] .individual-after[data-result-key] .individual-score-row{
+  background:var(--edit-fill);
+  border:2px solid var(--edit-outline);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22);
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-label,
+body[data-view-mode="edit"] .individual-after[data-result-key] .individual-field-label,
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-prior,
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-note-toggle,
+body[data-view-mode="edit"] .individual-note-panel textarea{
+  color:#2d2528;
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-prior,
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-note-toggle,
+body[data-view-mode="edit"] .individual-note-panel textarea,
+body[data-view-mode="edit"] .individual-slot[data-result-key] .unknown-score,
+body[data-view-mode="edit"] .individual-after[data-result-key] .unknown-score{
+  background:rgba(255,251,247,.84);
+  border-color:rgba(70,53,59,.16);
+}
