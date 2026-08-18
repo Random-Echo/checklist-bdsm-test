@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.90";
+const APP_VERSION = "V1.1.91";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -977,6 +977,34 @@ function readerFlowHtml(entity, variant, names = readerNames()) {
   if (variant === INTERACTION_MODEL.VARIANT.B_TO_A || variant === INTERACTION_MODEL.VARIANT.B_DOMINANT) return `${profileNameBadge('person-b', names.personB, true)} <span class="flow-arrow">→</span> ${profileNameBadge('person-a', names.personA, true)}`;
   return `${profileNameBadge('person-a', names.personA, true)} <span class="flow-arrow">+</span> ${profileNameBadge('person-b', names.personB, true)}`;
 }
+function readerVariantPeople(entity, variant, names = readerNames()) {
+  if (variant === INTERACTION_MODEL.VARIANT.A_TO_B || variant === INTERACTION_MODEL.VARIANT.A_DOMINANT) {
+    return { fromPerson: 'person-a', toPerson: 'person-b', fromName: names.personA, toName: names.personB };
+  }
+  if (variant === INTERACTION_MODEL.VARIANT.B_TO_A || variant === INTERACTION_MODEL.VARIANT.B_DOMINANT) {
+    return { fromPerson: 'person-b', toPerson: 'person-a', fromName: names.personB, toName: names.personA };
+  }
+  return null;
+}
+function stripEndingPunctuation(text) {
+  return String(text || '').trim().replace(/\s*[.!?…]+$/u, '');
+}
+function readerContextualExplanationHtml(entity, pair, info, names = readerNames()) {
+  const raw = String(info?.explanation || '').trim();
+  const people = readerVariantPeople(entity, pair?.variant, names);
+  if (!people) return raw ? esc(raw) : '';
+  const cleaned = stripEndingPunctuation(raw);
+  if (currentLang === 'fr') {
+    if (cleaned) {
+      return `${profileNameBadge(people.toPerson, people.toName, true)} <span class="profile-inline-text">:</span> ${esc(cleaned)} <span class="profile-inline-text">de la part de</span> ${profileNameBadge(people.fromPerson, people.fromName, true)}.`;
+    }
+    return `${profileNameBadge(people.fromPerson, people.fromName, true)} <span class="flow-arrow">→</span> ${profileNameBadge(people.toPerson, people.toName, true)}`;
+  }
+  if (cleaned) {
+    return `${profileNameBadge(people.toPerson, people.toName, true)} <span class="profile-inline-text">:</span> ${esc(cleaned)} <span class="profile-inline-text">from</span> ${profileNameBadge(people.fromPerson, people.fromName, true)}.`;
+  }
+  return `${profileNameBadge(people.fromPerson, people.fromName, true)} <span class="flow-arrow">→</span> ${profileNameBadge(people.toPerson, people.toName, true)}`;
+}
 function variantEntryKey(entryOrPracticeId, variant=null) {
   if (typeof entryOrPracticeId === "object" && entryOrPracticeId) return `${entryOrPracticeId.practiceId}|${entryOrPracticeId.variant}`;
   return `${entryOrPracticeId}|${variant}`;
@@ -1584,13 +1612,11 @@ function renderCoupleReader() {
     const entries=grouped.get(categoryName), collapsed=collapsedCategories.has(categoryName), color=categoryColors[categoryName]||"#aaa";
     const practiceHtml=entries.map(({entity,variants})=>{
       if(readerCanGroupDirectionVariants(entity,variants)) {
-        const base=variants[0].info, explanation=readerGroupedDescription(variants);
+        const base=variants[0].info;
         const rows=variants.map(({pair,info},index)=>{
-          const flow=readerCompactFlowLabel(entity,pair.variant,names);
-          const notes=readerNotesHtml(pair,names,flow);
-          const copy=index===0
-            ? `<div class="couple-practice-copy" title="${esc(explanation||base.title||entity.id)}"><div class="couple-practice-title-line"><strong>${esc(base.title||entity.id)}</strong><span class="couple-practice-flow">${readerFlowHtml(entity,pair.variant,names)}</span></div>${explanation?`<div class="couple-practice-description">${esc(explanation)}</div>`:""}</div>`
-            : `<div class="couple-group-flow" title="${esc(readerVariantLabel(entity,pair.variant,names))}"><span>${readerFlowHtml(entity,pair.variant,names)}</span></div>`;
+          const explanationHtml=readerContextualExplanationHtml(entity,pair,info,names);
+          const notes=readerNotesHtml(pair,names);
+          const copy=`<div class="couple-practice-copy" title="${esc((info.explanation||base.title||entity.id))}"><div class="couple-practice-title-line"><strong>${esc(base.title||entity.id)}</strong></div>${explanationHtml?`<div class="couple-practice-description">${explanationHtml}</div>`:""}</div>`;
           return `<div class="couple-group-variant-block" data-reader-variant="${esc(pair.variant)}" data-result="${esc(pair.compatibility?.status||'incomplete')}">
             <div class="couple-group-variant-row">
               <div class="couple-practice-rail">${readerPinButton(entity,pair)}${index===0?readerRiskHtml(base):""}</div>
@@ -1603,15 +1629,14 @@ function renderCoupleReader() {
         return `<article class="couple-practice couple-practice-grouped" data-v2-id="${esc(entity.id)}" data-reader-grouped="true"><div class="couple-group-variants">${rows}</div></article>`;
       }
       return variants.map(({pair,info})=>{
-        const flow=readerCompactFlowLabel(entity,pair.variant,names);
-        const explanation=String(info.explanation||"").trim();
+        const explanationHtml=readerContextualExplanationHtml(entity,pair,info,names);
         const notes=readerNotesHtml(pair,names);
         return `<article class="couple-practice" data-v2-id="${esc(entity.id)}" data-reader-variant="${esc(pair.variant)}" data-result="${esc(pair.compatibility?.status||'incomplete')}">
           <div class="couple-practice-row">
             ${readerPinRail(entity,pair,info)}
-            <div class="couple-practice-copy" title="${esc(explanation||info.title||entity.id)}">
-              <div class="couple-practice-title-line"><strong>${esc(info.title||entity.id)}</strong><span class="couple-practice-flow">${readerFlowHtml(entity,pair.variant,names)}</span></div>
-              ${explanation?`<div class="couple-practice-description">${esc(explanation)}</div>`:""}
+            <div class="couple-practice-copy" title="${esc((info.explanation||info.title||entity.id))}">
+              <div class="couple-practice-title-line"><strong>${esc(info.title||entity.id)}</strong></div>
+              ${explanationHtml?`<div class="couple-practice-description">${explanationHtml}</div>`:""}
             </div>
             ${readerResultPanel(entity,pair,names)}
           </div>

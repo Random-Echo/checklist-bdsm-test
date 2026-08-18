@@ -3855,7 +3855,7 @@ button.risk-badge:hover,button.risk-badge:focus-visible{filter:brightness(.97);o
   .couple-group-flow>span{font-size:.41rem;padding-inline:4px}
 }
 
-/* V1.1.90 — stronger profile color cues across names and edit mode */
+/* V1.1.91 — stronger profile color cues across names and edit mode */
 .profile-inline-name{
   display:inline-flex;
   align-items:center;
