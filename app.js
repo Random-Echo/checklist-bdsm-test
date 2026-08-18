@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.89";
+const APP_VERSION = "V1.1.90";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -59,8 +59,8 @@ function applyProfileLabels() {
   const nameA = p.personA?.name || (currentLang === "fr" ? "Personne A" : "Person A");
   const nameB = p.personB?.name || (currentLang === "fr" ? "Personne B" : "Person B");
   const a = document.getElementById("exportPersonA"), b = document.getElementById("exportPersonB");
-  if (a) a.textContent = `🔵 ${nameA}`;
-  if (b) b.textContent = `🟣 ${nameB}`;
+  if (a) a.innerHTML = profileNameBadge('person-a', nameA, true);
+  if (b) b.innerHTML = profileNameBadge('person-b', nameB, true);
 }
 
 
@@ -815,6 +815,7 @@ function renderRoleUI() {
 
 
   document.body.dataset.viewMode = isReadingMode ? "read" : "edit";
+  document.body.dataset.activeEditPerson = activeEditPerson;
   if (!isReadingMode && readerHeaderDs) readerHeaderDs.hidden=true;
   if (modeEditBtn) {
     modeEditBtn.textContent = currentLang === "fr" ? "✏️ Édition" : "✏️ Edit";
@@ -946,7 +947,35 @@ if (modeEditBtn) modeEditBtn.addEventListener("click",()=>setViewMode("edit"));
 if (modeReadBtn) modeReadBtn.addEventListener("click",()=>setViewMode("read"));
 
 function esc(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function profilePersonSide(person) {
+  return (person === 'person-b' || person === 'personB') ? 'person-b' : 'person-a';
+}
+function profilePersonClass(person) {
+  return profilePersonSide(person) === 'person-b' ? 'person-b' : 'person-a';
+}
+function profilePersonName(person, names = null) {
+  const side = profilePersonSide(person);
+  if (names) return side === 'person-b' ? names.personB : names.personA;
+  const profile = window.CHECKLIST_PROFILE_API?.get?.() || {};
+  if (side === 'person-b') return profile.personB?.name || (currentLang === 'fr' ? 'Personne B' : 'Person B');
+  return profile.personA?.name || (currentLang === 'fr' ? 'Personne A' : 'Person A');
+}
+function profileNameBadge(person, label = null, compact = false) {
+  const name = label == null ? profilePersonName(person) : label;
+  const cls = `${compact ? 'profile-inline-name is-compact' : 'profile-inline-name'} ${profilePersonClass(person)}`;
+  return `<span class="${cls}">${esc(name)}</span>`;
+}
+function readerDsChipHtml(value, names = readerNames()) {
+  const person = value === 'b-dominant' ? 'person-b' : 'person-a';
+  const verb = currentLang === 'fr' ? 'domine' : 'dominant';
+  return `${profileNameBadge(person, profilePersonName(person, names), true)} <span class="profile-inline-text">${esc(verb)}</span>`;
+}
+function readerFlowHtml(entity, variant, names = readerNames()) {
+  if (variant === INTERACTION_MODEL.VARIANT.A_TO_B || variant === INTERACTION_MODEL.VARIANT.A_DOMINANT) return `${profileNameBadge('person-a', names.personA, true)} <span class="flow-arrow">→</span> ${profileNameBadge('person-b', names.personB, true)}`;
+  if (variant === INTERACTION_MODEL.VARIANT.B_TO_A || variant === INTERACTION_MODEL.VARIANT.B_DOMINANT) return `${profileNameBadge('person-b', names.personB, true)} <span class="flow-arrow">→</span> ${profileNameBadge('person-a', names.personA, true)}`;
+  return `${profileNameBadge('person-a', names.personA, true)} <span class="flow-arrow">+</span> ${profileNameBadge('person-b', names.personB, true)}`;
 }
 function variantEntryKey(entryOrPracticeId, variant=null) {
   if (typeof entryOrPracticeId === "object" && entryOrPracticeId) return `${entryOrPracticeId.practiceId}|${entryOrPracticeId.variant}`;
@@ -1180,8 +1209,9 @@ function renderIndividualEditor() {
   configureEditorStatusOptions();
   configureEditorMinimumOptions();
   const profile=window.CHECKLIST_PROFILE_API?.get?.()||{}; const person=modelPersonKey(),name=editorProfileName(person);
-  individualEditorTitle.textContent=currentLang==="fr"?`Réponses de ${name}`:`${name}'s answers`;
-  individualEditorIntro.textContent=currentLang==="fr"?`Vous modifiez uniquement les choix de ${name}. Les réponses de l’autre personne ne sont jamais affichées ici.`:`You are editing only ${name}'s choices. The other person's answers are never shown here.`;
+  if (individualEditor) individualEditor.dataset.person = person === 'personB' ? 'person-b' : 'person-a';
+  individualEditorTitle.innerHTML=currentLang==="fr"?`Réponses de ${profileNameBadge(person === 'personB' ? 'person-b' : 'person-a', name)}`:`${profileNameBadge(person === 'personB' ? 'person-b' : 'person-a', name)}'s answers`;
+  individualEditorIntro.innerHTML=currentLang==="fr"?`Vous modifiez uniquement les choix de ${profileNameBadge(person === 'personB' ? 'person-b' : 'person-a', name, true)}. Les réponses de l’autre personne ne sont jamais affichées ici.`:`You are editing only ${profileNameBadge(person === 'personB' ? 'person-b' : 'person-a', name, true)}. The other person's answers are never shown here.`;
   individualEditorLegend.innerHTML=currentLang==="fr"?`<strong>Comment répondre :</strong> une pratique peut demander votre intérêt général, ce que vous aimez <b>donner</b>/<b>recevoir</b>, ou ce que vous aimez en position <b>dominante</b>/<b>soumise</b>.`:`<strong>How to answer:</strong> a practice may ask for your general interest, what you like to <b>give</b>/<b>receive</b>, or what you like in a <b>dominant</b>/<b>submissive</b> role.`;
   const q=search.value.trim().toLowerCase(), cat=category.value, risk=riskFilter.value; const maxLevel=experienceMaxLevel();
   const minRaw=minFilterScore.value, minScore=minRaw===""?null:Number(minRaw), statusValue=status.value;
@@ -1309,7 +1339,7 @@ function readerNotesHtml(pair,names=readerNames(),flowLabel="") {
     [names.personB,String(pair?.personB?.state?.note||"").trim()]
   ].filter(([,note])=>note);
   if(!notes.length) return "";
-  return `<div class="couple-reader-notes">${flowLabel?`<div class="couple-reader-note-flow">${esc(flowLabel)}</div>`:""}${notes.map(([name,note])=>`<div class="couple-reader-note"><strong>${esc(name)}</strong><span>${esc(note)}</span></div>`).join("")}</div>`;
+  return `<div class="couple-reader-notes">${flowLabel?`<div class="couple-reader-note-flow">${flowLabel}</div>`:""}${notes.map(([name,note],index)=>`<div class="couple-reader-note"><strong>${profileNameBadge(index===0?'person-a':'person-b', name, true)}</strong><span>${esc(note)}</span></div>`).join("")}</div>`;
 }
 function readerResultPanel(entity,pair,names=readerNames()) {
   const c=pair.compatibility||{status:"incomplete",scoreA:null,scoreB:null};
@@ -1321,8 +1351,8 @@ function readerResultPanel(entity,pair,names=readerNames()) {
   const blocked=c.status==="limit", fantasy=c.status==="fantasy";
   const togetherLabel=done?(currentLang==="fr"?"Déjà fait ensemble":"Already done together"):(currentLang==="fr"?"Marquer fait ensemble":"Mark done together");
   return `<div class="couple-result-grid" data-result="${esc(c.status)}" aria-label="${esc(readerCompatibilityLabel(c.status))}">
-    <span class="couple-result-cell" title="${esc(`${names.personA} · ${readerSlotLabel(pair.personA.slot)} : ${aScore}`)}"><span class="couple-result-emoji">${aScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personA.state)}</span></span>
-    <span class="couple-result-cell" title="${esc(`${names.personB} · ${readerSlotLabel(pair.personB.slot)} : ${bScore}`)}"><span class="couple-result-emoji">${bScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personB.state)}</span></span>
+    <span class="couple-result-cell person-a" title="${esc(`${names.personA} · ${readerSlotLabel(pair.personA.slot)} : ${aScore}`)}"><span class="couple-result-emoji">${aScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personA.state)}</span></span>
+    <span class="couple-result-cell person-b" title="${esc(`${names.personB} · ${readerSlotLabel(pair.personB.slot)} : ${bScore}`)}"><span class="couple-result-emoji">${bScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personB.state)}</span></span>
     <span class="couple-result-cell couple-result-common-cell" title="${esc(readerCompatibilityLabel(c.status))}"><span class="couple-result-emoji">${commonScore}</span><button class="couple-result-tick couple-together-tick${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} aria-label="${esc(togetherLabel)}" title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):togetherLabel)}">${done?'✓':'—'}</button></span>
   </div>`;
 }
@@ -1430,7 +1460,8 @@ function renderReaderHeaderDs(profile,names,dsValue,counters={}) {
     const count=counters?.[value];
     btn.classList.toggle("active",active);
     btn.setAttribute("aria-pressed",active?"true":"false");
-    btn.textContent=`${labels[value]}${Number.isInteger(count)?` · ${count}`:""}`;
+    btn.innerHTML=`${readerDsChipHtml(value,names)}${Number.isInteger(count)?`<span class="reader-header-ds-count"> · ${count}</span>`:""}`;
+    btn.setAttribute("title", labels[value]);
   }
 }
 function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},minimumTwo:{}}) {
@@ -1442,10 +1473,10 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
   renderReaderMinimumChips(readerMinimumTwoChips,minTwo,counters.minimumTwo||{},2);
   if (readerFilterSummary) {
     const parts=[];
-    if (!fixed) parts.push(readerDsChipLabel(dsValue,names));
-    parts.push(minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All'));
-    if (includeFantasy) parts.push('💭');
-    readerFilterSummary.textContent=parts.join(' · ');
+    if (!fixed) parts.push(readerDsChipHtml(dsValue,names));
+    parts.push(`<span class="reader-filter-summary-piece">${esc(minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All'))}</span>`);
+    if (includeFantasy) parts.push('<span class="reader-filter-summary-piece">💭</span>');
+    readerFilterSummary.innerHTML=parts.join('<span class="reader-filter-summary-sep"> · </span>');
   }
   if (!readerFilterDock.dataset.initialized) {
     readerFilterDock.dataset.initialized="true";
@@ -1493,7 +1524,7 @@ function renderCoupleReader() {
   coupleReader.hidden=false;
   hideIndividualEditor();
   const profile=window.CHECKLIST_PROFILE_API?.get?.()||{}, names=readerNames();
-  coupleReaderTitle.textContent=currentLang==="fr"?`Résultats de ${names.personA} & ${names.personB}`:`${names.personA} & ${names.personB} results`;
+  coupleReaderTitle.innerHTML=currentLang==="fr"?`Résultats de ${profileNameBadge('person-a', names.personA)} & ${profileNameBadge('person-b', names.personB)}`:`${profileNameBadge('person-a', names.personA)} & ${profileNameBadge('person-b', names.personB)} results`;
   coupleReaderIntro.textContent=currentLang==="fr"?"Chaque résultat croise uniquement les réponses complémentaires : donner avec recevoir, dominant avec soumis, ou intérêt partagé.":"Each result matches only complementary answers: give with receive, dominant with submissive, or shared interest.";
   coupleReaderLegend.innerHTML=currentLang==="fr"?`<strong>Lecture :</strong> les réponses restent personnelles. Le résultat au centre est calculé pour chaque configuration réellement possible. 🚫 reste une limite prioritaire ; 💭 reste un fantasme et n’est jamais transformé en consentement réel.`:`<strong>Reading:</strong> answers remain personal. The center result is calculated for each actually possible configuration. 🚫 remains a priority limit; 💭 remains a fantasy and is never converted into real-world consent.`;
   const q=search.value.trim().toLowerCase(), maxLevel=experienceMaxLevel(), selectedCategory=category.value, selectedRisk=riskFilter.value;
@@ -1558,8 +1589,8 @@ function renderCoupleReader() {
           const flow=readerCompactFlowLabel(entity,pair.variant,names);
           const notes=readerNotesHtml(pair,names,flow);
           const copy=index===0
-            ? `<div class="couple-practice-copy" title="${esc(explanation||base.title||entity.id)}"><div class="couple-practice-title-line"><strong>${esc(base.title||entity.id)}</strong><span class="couple-practice-flow">${esc(flow)}</span></div>${explanation?`<div class="couple-practice-description">${esc(explanation)}</div>`:""}</div>`
-            : `<div class="couple-group-flow" title="${esc(readerVariantLabel(entity,pair.variant,names))}"><span>${esc(flow)}</span></div>`;
+            ? `<div class="couple-practice-copy" title="${esc(explanation||base.title||entity.id)}"><div class="couple-practice-title-line"><strong>${esc(base.title||entity.id)}</strong><span class="couple-practice-flow">${readerFlowHtml(entity,pair.variant,names)}</span></div>${explanation?`<div class="couple-practice-description">${esc(explanation)}</div>`:""}</div>`
+            : `<div class="couple-group-flow" title="${esc(readerVariantLabel(entity,pair.variant,names))}"><span>${readerFlowHtml(entity,pair.variant,names)}</span></div>`;
           return `<div class="couple-group-variant-block" data-reader-variant="${esc(pair.variant)}" data-result="${esc(pair.compatibility?.status||'incomplete')}">
             <div class="couple-group-variant-row">
               <div class="couple-practice-rail">${readerPinButton(entity,pair)}${index===0?readerRiskHtml(base):""}</div>
@@ -1579,7 +1610,7 @@ function renderCoupleReader() {
           <div class="couple-practice-row">
             ${readerPinRail(entity,pair,info)}
             <div class="couple-practice-copy" title="${esc(explanation||info.title||entity.id)}">
-              <div class="couple-practice-title-line"><strong>${esc(info.title||entity.id)}</strong><span class="couple-practice-flow">${esc(flow)}</span></div>
+              <div class="couple-practice-title-line"><strong>${esc(info.title||entity.id)}</strong><span class="couple-practice-flow">${readerFlowHtml(entity,pair.variant,names)}</span></div>
               ${explanation?`<div class="couple-practice-description">${esc(explanation)}</div>`:""}
             </div>
             ${readerResultPanel(entity,pair,names)}
@@ -1588,7 +1619,7 @@ function renderCoupleReader() {
         </article>`;
       }).join("");
     }).join("");
-    const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${esc(names.personA)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>${esc(names.personB)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>🔗</b><small>✓ ${esc(togetherShort)}</small></span></span>`;
+    const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${profileNameBadge('person-a', names.personA, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>${profileNameBadge('person-b', names.personB, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b><span class="profile-inline-text">🔗</span></b><small>✓ ${esc(togetherShort)}</small></span></span>`;
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span>${resultHead}</button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
   coupleReaderEmpty.hidden=visiblePractices!==0;
