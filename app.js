@@ -6,7 +6,7 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.92";
+const APP_VERSION = "V1.1.93";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -967,6 +967,33 @@ function profileNameBadge(person, label = null, compact = false) {
   const cls = `${compact ? 'profile-inline-name is-compact' : 'profile-inline-name'} ${profilePersonClass(person)}`;
   return `<span class="${cls}">${esc(name)}</span>`;
 }
+function escapeRegExp(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+function profileNamesInTextHtml(text, names = readerNames()) {
+  const raw = String(text || '');
+  const entries = [
+    { person:'person-a', name:String(names?.personA || '').trim() },
+    { person:'person-b', name:String(names?.personB || '').trim() }
+  ].filter(entry => entry.name).sort((a,b) => b.name.length - a.name.length);
+  if (!raw || !entries.length) return esc(raw);
+  const pattern = entries.map(entry => escapeRegExp(entry.name)).join('|');
+  if (!pattern) return esc(raw);
+  let regex;
+  try { regex = new RegExp(pattern, 'giu'); } catch (_) { return esc(raw); }
+  let html = '', last = 0;
+  for (const match of raw.matchAll(regex)) {
+    const index = match.index ?? 0;
+    html += esc(raw.slice(last, index));
+    const matched = String(match[0] || '');
+    const matchedKey = matched.toLocaleLowerCase(currentLang === 'fr' ? 'fr' : 'en');
+    const entry = entries.find(item => item.name.toLocaleLowerCase(currentLang === 'fr' ? 'fr' : 'en') === matchedKey);
+    html += entry ? profileNameBadge(entry.person, matched, true) : esc(matched);
+    last = index + matched.length;
+  }
+  html += esc(raw.slice(last));
+  return html;
+}
 function readerDsChipHtml(value, names = readerNames()) {
   const person = value === 'b-dominant' ? 'person-b' : 'person-a';
   const verb = currentLang === 'fr' ? 'domine' : 'dominant';
@@ -1067,17 +1094,17 @@ function readerContextualExplanationHtml(entity, pair, info, names = readerNames
   const cleaned = stripEndingPunctuation(raw);
   if (!cleaned) return `${profileNameBadge(people.fromPerson, people.fromName, true)} <span class="flow-arrow">→</span> ${profileNameBadge(people.toPerson, people.toName, true)}`;
   if (currentLang !== 'fr') {
-    if (explanationHasExplicitActor(cleaned, names)) return esc(cleaned) + '.';
-    return esc(cleaned) + '.';
+    if (explanationHasExplicitActor(cleaned, names)) return profileNamesInTextHtml(cleaned, names) + '.';
+    return profileNamesInTextHtml(cleaned, names) + '.';
   }
-  if (explanationHasExplicitActor(cleaned, names)) return `${esc(cleaned)}.`;
+  if (explanationHasExplicitActor(cleaned, names)) return `${profileNamesInTextHtml(cleaned, names)}.`;
   const firstVerb = frenchFirstInfinitive(cleaned);
   if (firstVerb && looksLikeInfinitive(firstVerb)) {
     const subject = explanationSubjectSide(cleaned, people);
     const converted = conjugateFrenchPhrase(cleaned);
-    return `${profileNameBadge(subject.person, subject.name, true)} <span class="profile-inline-text">${esc(converted)}</span>.`;
+    return `${profileNameBadge(subject.person, subject.name, true)} <span class="profile-inline-text">${profileNamesInTextHtml(converted, names)}</span>.`;
   }
-  return `${esc(cleaned)}.`;
+  return `${profileNamesInTextHtml(cleaned, names)}.`;
 }
 function variantEntryKey(entryOrPracticeId, variant=null) {
   if (typeof entryOrPracticeId === "object" && entryOrPracticeId) return `${entryOrPracticeId.practiceId}|${entryOrPracticeId.variant}`;
@@ -1121,7 +1148,7 @@ function renderSessionPanel(force=false) {
     const fantasy=x.pair.compatibility?.status==="fantasy";
     return `<div class="session-item${fantasy?' is-fantasy':''}" data-session-key="${esc(x.key)}">
       <span class="session-index">${index+1}</span>
-      <span class="session-name"><strong>${esc(x.info.title||x.entity.id)}</strong><small>${esc(readerVariantLabel(x.entity,x.entry.variant))}</small></span>
+      <span class="session-name"><strong>${esc(x.info.title||x.entity.id)}</strong><small>${profileNamesInTextHtml(readerVariantLabel(x.entity,x.entry.variant), readerNames())}</small></span>
       ${x.info.risk!=="normal"?riskBadge({risk:x.info.risk}):""}
       ${fantasy?`<span class="fantasy-session-badge">💭 ${esc(t("fantasyOnlyShort"))}</span>`:""}
       <button class="session-move" data-session-action="up" data-session-index="${index}" type="button" ${index===0?'disabled':''} title="${t("moveUp")}">↑</button>
@@ -1150,7 +1177,7 @@ function renderSessionMode() {
     const fantasy=x.pair.compatibility?.status==="fantasy",limit=x.pair.compatibility?.status==="limit",done=x.pair.common?.doneTogether===true;
     const names=readerNames();
     return `<article class="session-mode-card${fantasy?' fantasy-only':''}${limit?' has-limit':''}" data-session-key="${esc(x.key)}" style="--category-color:${categoryColors[x.info.category]||'#9aa0a6'}">
-      <div class="session-mode-card-head"><span class="session-mode-index">${index+1}</span><div class="session-mode-title-wrap"><div class="session-mode-category">${esc(localizedCategory(x.info.category))}</div><div class="session-mode-practice">${esc(x.info.title)} ${x.info.risk!=="normal"?riskBadge({risk:x.info.risk}):""}</div><div class="session-mode-variant">${esc(readerVariantLabel(x.entity,x.entry.variant,names))}</div></div><div class="session-mode-meta"><span class="session-mode-compat">${esc(readerCompatibilityLabel(x.pair.compatibility?.status||'incomplete'))}</span></div></div>
+      <div class="session-mode-card-head"><span class="session-mode-index">${index+1}</span><div class="session-mode-title-wrap"><div class="session-mode-category">${esc(localizedCategory(x.info.category))}</div><div class="session-mode-practice">${esc(x.info.title)} ${x.info.risk!=="normal"?riskBadge({risk:x.info.risk}):""}</div><div class="session-mode-variant">${profileNamesInTextHtml(readerVariantLabel(x.entity,x.entry.variant,names),names)}</div></div><div class="session-mode-meta"><span class="session-mode-compat">${esc(readerCompatibilityLabel(x.pair.compatibility?.status||'incomplete'))}</span></div></div>
       ${fantasy?`<div class="session-mode-fantasy-banner">${esc(t("sessionFantasyBanner"))}</div>`:""}
       <div class="session-mode-expl">${esc(x.info.explanation||"")}</div>
       <div class="session-mode-couple-grid">${readerPersonPanel(names.personA,"person-a",x.pair.personA.slot,x.pair.personA.state)}${readerPersonPanel(names.personB,"person-b",x.pair.personB.slot,x.pair.personB.state)}</div>
@@ -1441,7 +1468,7 @@ function readerNotesHtml(pair,names=readerNames(),flowLabel="") {
     [names.personB,String(pair?.personB?.state?.note||"").trim()]
   ].filter(([,note])=>note);
   if(!notes.length) return "";
-  return `<div class="couple-reader-notes">${flowLabel?`<div class="couple-reader-note-flow">${flowLabel}</div>`:""}${notes.map(([name,note],index)=>`<div class="couple-reader-note"><strong>${profileNameBadge(index===0?'person-a':'person-b', name, true)}</strong><span>${esc(note)}</span></div>`).join("")}</div>`;
+  return `<div class="couple-reader-notes">${flowLabel?`<div class="couple-reader-note-flow">${flowLabel}</div>`:""}${notes.map(([name,note],index)=>`<div class="couple-reader-note"><strong>${profileNameBadge(index===0?'person-a':'person-b', name, true)}</strong><span>${profileNamesInTextHtml(note,names)}</span></div>`).join("")}</div>`;
 }
 function readerResultPanel(entity,pair,names=readerNames()) {
   const c=pair.compatibility||{status:"incomplete",scoreA:null,scoreB:null};
@@ -1913,7 +1940,7 @@ function pickRandomPractice() {
   const already=isVariantInSession(picked.entity.id,picked.pair.variant), blocked=picked.pair.compatibility?.status==='limit';
   const fantasy=picked.pair.compatibility?.status==='fantasy';
   const riskInfo=picked.info.risk==='normal'?'':` · <strong>${esc(riskLabel(picked.info.risk))}</strong>`;
-  randomResult.innerHTML=`<strong>${esc(picked.info.title)}</strong> · ${esc(readerVariantLabel(picked.entity,picked.pair.variant))}${riskInfo}<br><span>${esc(readerCompatibilityLabel(picked.pair.compatibility?.status))}</span>${fantasy?`<div class="random-fantasy-warning">${esc(t('randomFantasyWarning'))}</div>`:''}${cycleRestarted?`<div class="random-candidate-info">${currentLang==='fr'?'Nouveau cycle démarré automatiquement.':'A new cycle started automatically.'}</div>`:''}<div class="random-result-actions"><button class="random-session-btn" data-random-practice-id="${esc(picked.entity.id)}" data-random-variant="${esc(picked.pair.variant)}" type="button" ${already||blocked?'disabled':''}>${already?t('alreadyInSession'):t('addRandomToSession')}</button></div>`;
+  randomResult.innerHTML=`<strong>${esc(picked.info.title)}</strong> · ${profileNamesInTextHtml(readerVariantLabel(picked.entity,picked.pair.variant),readerNames())}${riskInfo}<br><span>${esc(readerCompatibilityLabel(picked.pair.compatibility?.status))}</span>${fantasy?`<div class="random-fantasy-warning">${esc(t('randomFantasyWarning'))}</div>`:''}${cycleRestarted?`<div class="random-candidate-info">${currentLang==='fr'?'Nouveau cycle démarré automatiquement.':'A new cycle started automatically.'}</div>`:''}<div class="random-result-actions"><button class="random-session-btn" data-random-practice-id="${esc(picked.entity.id)}" data-random-variant="${esc(picked.pair.variant)}" type="button" ${already||blocked?'disabled':''}>${already?t('alreadyInSession'):t('addRandomToSession')}</button></div>`;
   updateCompatibilityIndicator();
 }
 
