@@ -5459,3 +5459,115 @@ header .all-tools-content{
   }
   header .all-tools-content{margin-top:6px !important;border-radius:14px !important}
 }
+
+
+/* V1.1.131 — Put read result/filter lines above tools band in header */
+header .reader-top-dock{
+  display:none;
+  position:relative;
+  top:auto;
+  z-index:auto;
+  gap:6px;
+  margin:8px 0 0 !important;
+  padding:0;
+  background:transparent;
+}
+header .reader-top-dock::before{display:none}
+body[data-view-mode="read"] header .reader-top-dock{display:grid}
+body[data-view-mode="edit"] header .reader-top-dock{display:none}
+body[data-view-mode="read"] header .couple-reader-head{
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:8px 12px;
+  border:1px solid color-mix(in srgb,var(--read-dominant-line) 60%,#fff 40%);
+  border-radius:16px;
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--read-dominant-panel-2) 88%,#fff 12%) 0%,
+    color-mix(in srgb,var(--read-dominant-panel) 94%,#fff 6%) 100%);
+  box-shadow:0 10px 24px rgba(38,24,34,.12), inset 0 1px 0 rgba(255,255,255,.16);
+}
+body[data-view-mode="read"] header .couple-reader-kicker,
+body[data-view-mode="read"] header .couple-reader-head p{display:none}
+body[data-view-mode="read"] header .couple-reader-head h2{
+  margin:0;
+  font-size:1.02rem;
+  line-height:1.06;
+  color:var(--read-dominant-ink);
+}
+body[data-view-mode="read"] header .couple-reader-summary{
+  padding:5px 10px;
+  border:1px solid color-mix(in srgb,var(--read-dominant-line) 34%,#fff 66%);
+  border-radius:999px;
+  background:rgba(255,250,246,.78);
+  color:color-mix(in srgb,var(--read-dominant-ink) 84%,#675963 16%);
+  font-size:.72rem;
+  font-weight:850;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34);
+}
+body[data-view-mode="read"] header .reader-filter-dock{
+  margin:0;
+  border:1px solid color-mix(in srgb,var(--read-dominant-line) 58%,#fff 42%);
+  border-radius:16px;
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--read-dominant-panel) 88%,#fff 12%) 0%,
+    color-mix(in srgb,var(--read-dominant-panel-3) 94%,#fff 6%) 100%);
+  box-shadow:0 10px 24px rgba(38,24,34,.10), inset 0 1px 0 rgba(255,255,255,.16);
+}
+body[data-view-mode="read"] main .reader-top-dock{display:none !important}
+body[data-view-mode="read"] .couple-reader{padding-top:0}
+@media (max-width:760px){
+  header .reader-top-dock{margin:6px 0 0 !important;gap:5px}
+  body[data-view-mode="read"] header .couple-reader-head{padding:7px 10px;border-radius:14px;gap:8px}
+  body[data-view-mode="read"] header .couple-reader-head h2{font-size:.92rem}
+  body[data-view-mode="read"] header .couple-reader-summary{padding:4px 8px;font-size:.66rem}
+  body[data-view-mode="read"] header .reader-filter-dock{border-radius:14px}
+}
+
+
+/* V1.1.132 — remove read results summary line above reading filters */
+body[data-view-mode="read"] header .reader-top-dock{
+  gap:0;
+}
+body[data-view-mode="read"] header .couple-reader-head{
+  display:none !important;
+}
+body[data-view-mode="read"] header .reader-filter-dock{
+  margin-top:0 !important;
+}
+@media (max-width:760px){
+  body[data-view-mode="read"] header .reader-top-dock{
+    margin:6px 0 0 !important;
+  }
+}
+
+
+/* V1.1.133 — Slightly darker read-mode practice backgrounds for better readability */
+body[data-view-mode="read"] :is(.couple-practice,.couple-group-variant-block)[data-result="excellent"]{
+  --result-panel:linear-gradient(180deg,#c2d1ba 0%,#adc09f 100%);
+}
+body[data-view-mode="read"] :is(.couple-practice,.couple-group-variant-block)[data-result="strong"]{
+  --result-panel:linear-gradient(180deg,#cbc98f 0%,#b8b673 100%);
+}
+body[data-view-mode="read"] :is(.couple-practice,.couple-group-variant-block)[data-result="compatible"]{
+  --result-panel:linear-gradient(180deg,#d7bc78 0%,#c9a85f 100%);
+}
+body[data-view-mode="read"] :is(.couple-practice,.couple-group-variant-block)[data-result="later"]{
+  --result-panel:linear-gradient(180deg,#d2a27d 0%,#c28a60 100%);
+}
+body[data-view-mode="read"] :is(.couple-practice,.couple-group-variant-block)[data-result="fantasy"]{
+  --result-panel:linear-gradient(180deg,#b4c0d2 0%,#97a8c2 100%);
+}
+body[data-view-mode="read"] :is(.couple-practice,.couple-group-variant-block)[data-result="limit"]{
+  --result-panel:linear-gradient(180deg,#ca9faa 0%,#b47f8f 100%);
+}
+body[data-view-mode="read"] :is(.couple-practice,.couple-group-variant-block)[data-result="incomplete"]{
+  --result-panel:linear-gradient(180deg,#c4c7cc 0%,#aeb3b9 100%);
+}
+body[data-view-mode="read"] .couple-practice{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+}
+body[data-view-mode="read"] .couple-practice-description,
+body[data-view-mode="read"] .couple-group-variant-description{
+  color:color-mix(in srgb,var(--result-copy-muted,#3b3f42) 92%,#1f2022 8%);
+}
