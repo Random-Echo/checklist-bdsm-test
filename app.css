@@ -5121,3 +5121,193 @@ body[data-view-mode="edit"] .individual-practice-card[data-result-key="incomplet
   body[data-view-mode="edit"] .individual-category-cards{gap:7px;padding-top:5px}
   body[data-view-mode="edit"] .individual-practice-card{box-shadow:0 0 0 1px color-mix(in srgb,var(--dominant-dark) 12%,transparent 88%),0 4px 11px rgba(34,18,31,.11)}
 }
+
+
+/* V1.1.127 — Practice card color must follow the editor, not the result */
+body[data-view-mode="edit"] .individual-practice-card,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key],
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="excellent"],
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="strong"],
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="compatible"],
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="later"],
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="fantasy"],
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="limit"],
+body[data-view-mode="edit"] .individual-practice-card[data-result-key="incomplete"]{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--dominant-soft) 86%,#fff 14%) 0%,
+    color-mix(in srgb,var(--dominant-soft) 78%,var(--dominant-color) 22%) 100%);
+  border-color:color-mix(in srgb,var(--dominant-color) 52%,#fff 48%);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb,var(--dominant-dark) 14%,transparent 86%),
+    0 5px 14px rgba(34,18,31,.12);
+}
+body[data-view-mode="edit"] .individual-practice-card > header,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] > header{
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--dominant-color) 56%,#fff 44%) 0%,
+    color-mix(in srgb,var(--dominant-color) 42%,#fff 58%) 100%);
+  border-bottom:1px solid color-mix(in srgb,var(--dominant-dark) 24%,#fff 76%);
+}
+body[data-view-mode="edit"] .individual-practice-card .individual-practice-category,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-practice-category{
+  background:color-mix(in srgb,var(--dominant-soft) 78%,#fff 22%);
+  border-color:color-mix(in srgb,var(--dominant-color) 24%,#fff 76%);
+  color:var(--dominant-dark);
+}
+body[data-view-mode="edit"] .individual-practice-card h3,
+body[data-view-mode="edit"] .individual-practice-card .individual-practice-explanation,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] h3,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-practice-explanation{
+  color:#2e2528;
+}
+
+
+/* V1.1.128 — Premium reading filters + remove DS counts */
+body[data-view-mode="read"] .reader-filter-dock{
+  margin:10px 0 2px;
+  border:1px solid color-mix(in srgb,var(--dominant-dark) 22%,#efe4da 78%);
+  border-radius:16px;
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--read-dominant-panel) 82%,#fff 18%) 0%,
+    color-mix(in srgb,var(--read-dominant-panel-2) 88%,#fff 12%) 100%);
+  box-shadow:0 10px 24px rgba(40,24,34,.12), inset 0 1px 0 rgba(255,255,255,.16);
+  overflow:hidden;
+}
+body[data-view-mode="read"] .reader-filter-dock > summary{
+  list-style:none;
+}
+body[data-view-mode="read"] .reader-filter-summary-row{
+  min-height:46px;
+  gap:10px;
+  padding:10px 12px;
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--read-dominant-panel) 66%,#fff 34%) 0%,
+    color-mix(in srgb,var(--read-dominant-panel-2) 78%,#fff 22%) 100%);
+}
+body[data-view-mode="read"] .reader-filter-summary-title{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  font-size:.82rem;
+  font-weight:900;
+  color:var(--read-dominant-ink);
+  letter-spacing:.01em;
+}
+body[data-view-mode="read"] .reader-filter-summary-title > span[aria-hidden="true"]{
+  display:inline-grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--dominant-soft) 76%,#fff 24%);
+  border:1px solid color-mix(in srgb,var(--dominant-color) 24%,#fff 76%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.32);
+}
+body[data-view-mode="read"] .reader-filter-summary-value{
+  justify-self:end;
+  max-width:100%;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--dominant-color) 22%,#fff 78%);
+  background:rgba(255,250,246,.80);
+  color:color-mix(in srgb,var(--read-dominant-ink) 82%,#574b52 18%);
+  font-size:.72rem;
+  font-weight:850;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.38);
+}
+body[data-view-mode="read"] .reader-filter-chevron{
+  font-size:.95rem;
+  color:color-mix(in srgb,var(--dominant-dark) 70%,#fff 30%);
+}
+body[data-view-mode="read"] .reader-filter-content{
+  gap:10px;
+  padding:10px 12px 12px;
+  border-top:1px solid color-mix(in srgb,var(--dominant-color) 18%,#fff 82%);
+  background:linear-gradient(180deg,
+    color-mix(in srgb,var(--read-dominant-panel-2) 84%,#fff 16%) 0%,
+    color-mix(in srgb,var(--read-dominant-panel-3) 90%,#fff 10%) 100%);
+}
+body[data-view-mode="read"] .reader-filter-group{
+  grid-template-columns:124px minmax(0,1fr);
+  gap:10px;
+}
+body[data-view-mode="read"] .reader-filter-label{
+  color:var(--read-dominant-ink);
+  font-size:.69rem;
+  font-weight:900;
+}
+body[data-view-mode="read"] .reader-filter-hint{
+  color:color-mix(in srgb,var(--read-dominant-ink) 56%,#9b8d94 44%);
+}
+body[data-view-mode="read"] .reader-minimum-row{
+  gap:8px;
+  padding:8px 10px;
+  border:1px solid color-mix(in srgb,var(--dominant-color) 14%,#fff 86%);
+  border-radius:12px;
+  background:rgba(255,251,247,.44);
+}
+body[data-view-mode="read"] .reader-minimum-row-label{
+  color:color-mix(in srgb,var(--read-dominant-ink) 76%,#6a5d64 24%);
+  font-weight:800;
+}
+body[data-view-mode="read"] .reader-filter-chip{
+  border-radius:999px;
+  border-color:color-mix(in srgb,var(--dominant-color) 16%,#fff 84%);
+  background:rgba(255,250,246,.88);
+  color:#544a50;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.36);
+}
+body[data-view-mode="read"] .reader-filter-chip:hover{
+  background:color-mix(in srgb,var(--dominant-soft) 28%,#fff 72%);
+  border-color:color-mix(in srgb,var(--dominant-color) 28%,#fff 72%);
+}
+body[data-view-mode="read"] .reader-filter-chip.is-active{
+  border-color:color-mix(in srgb,var(--dominant-dark) 58%,#fff 42%);
+  background:linear-gradient(145deg,
+    color-mix(in srgb,var(--dominant-dark) 82%,#241d21 18%),
+    color-mix(in srgb,var(--dominant-color) 54%,#2b2126 46%));
+  color:#fff9f4;
+  box-shadow:0 3px 10px rgba(43,29,35,.16), inset 0 1px 0 rgba(255,255,255,.12);
+}
+body[data-view-mode="read"] .reader-filter-chip-count{
+  background:rgba(255,250,246,.66);
+  color:color-mix(in srgb,var(--read-dominant-ink) 70%,#77676f 30%);
+}
+body[data-view-mode="read"] .reader-filter-bottom{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding-top:2px;
+}
+body[data-view-mode="read"] .reader-filter-fantasy{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border:1px solid color-mix(in srgb,var(--dominant-color) 14%,#fff 86%);
+  border-radius:12px;
+  background:rgba(255,251,247,.46);
+  color:#5e5359;
+}
+body[data-view-mode="read"] .reader-filter-advanced{
+  border-radius:12px;
+  border:1px solid color-mix(in srgb,var(--dominant-color) 20%,#fff 80%);
+  background:linear-gradient(180deg,#fffdfa 0%,#f2ece8 100%);
+  color:var(--read-dominant-ink);
+  font-weight:850;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34);
+}
+body[data-view-mode="read"] .reader-filter-advanced:hover{
+  background:linear-gradient(180deg,#faf5f0 0%,#ece4df 100%);
+}
+body[data-view-mode="read"] .reader-header-ds-choice .profile-inline-name{max-width:none}
+body[data-view-mode="read"] .reader-header-ds-count{display:none!important}
+@media (max-width:760px){
+  body[data-view-mode="read"] .reader-filter-summary-row{padding:9px 10px;gap:8px}
+  body[data-view-mode="read"] .reader-filter-summary-title{font-size:.78rem}
+  body[data-view-mode="read"] .reader-filter-summary-value{font-size:.68rem;padding:5px 8px}
+  body[data-view-mode="read"] .reader-filter-group{grid-template-columns:1fr;gap:8px}
+  body[data-view-mode="read"] .reader-filter-bottom{flex-direction:column;align-items:stretch}
+}
