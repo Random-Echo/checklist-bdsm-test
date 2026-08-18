@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.128";
+const APP_VERSION = "V1.1.130";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -411,6 +411,7 @@ const status = document.getElementById("status");
 const minFilterScore = document.getElementById("minFilterScore");
 const readerIncludeFantasy = document.getElementById("readerIncludeFantasy");
 const readerFilterDock = document.getElementById("readerFilterDock");
+const readerTopDock = document.getElementById("readerTopDock");
 const readerFilterSummary = document.getElementById("readerFilterSummary");
 const readerHeaderDs = document.getElementById("readerHeaderDs");
 const readerHeaderDsButtons = [...document.querySelectorAll("[data-reader-header-ds]")];
@@ -1426,8 +1427,8 @@ function updateReaderCurrentCategory(){
   }
   const categories=[...coupleReaderList.querySelectorAll(".couple-reader-category")];
   if(!categories.length){clearReaderCurrentCategory();return;}
-  const filterRect=readerFilterDock?.getBoundingClientRect();
-  const threshold=(filterRect?.bottom ?? document.querySelector("main")?.getBoundingClientRect().top ?? 0)-1;
+  const stickyRect=(readerTopDock || readerFilterDock)?.getBoundingClientRect();
+  const threshold=(stickyRect?.bottom ?? document.querySelector("main")?.getBoundingClientRect().top ?? 0)-1;
   const listRect=coupleReaderList.getBoundingClientRect();
   if(listRect.top>threshold+1 || listRect.bottom<=threshold){clearReaderCurrentCategory();return;}
   let active=categories[0];
@@ -1460,10 +1461,11 @@ function updateStickyCategoryOffsets(){
   if(!root) return;
   root.style.setProperty("--edit-category-sticky-top","0px");
   let readTop=0;
-  if(coupleReader && !coupleReader.hidden && readerFilterDock){
-    const styles=window.getComputedStyle(readerFilterDock);
+  const stickySource=(readerTopDock && !readerTopDock.hidden) ? readerTopDock : readerFilterDock;
+  if(coupleReader && !coupleReader.hidden && stickySource){
+    const styles=window.getComputedStyle(stickySource);
     if(styles.display!=="none" && styles.visibility!=="hidden"){
-      readTop=readerFilterDock.offsetHeight || 0;
+      readTop=stickySource.offsetHeight || 0;
       if(readTop>0) readTop=Math.max(0, readTop-1);
     }
   }
