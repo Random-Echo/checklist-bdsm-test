@@ -3,10 +3,13 @@ const CHECKLIST_DATA = window.CHECKLIST_DATA;
 const V2_STORAGE = window.CHECKLIST_V2_STORAGE;
 const INTERACTION_MODEL = window.CHECKLIST_INTERACTION_MODEL;
 const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
+const PROFILE_API = window.CHECKLIST_PROFILE_API;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
+let runtimeProfileCache = null;
+function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.94";
+const APP_VERSION = "V1.1.96";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -54,7 +57,7 @@ function applyStaticLanguage() {
 
 }
 function applyProfileLabels() {
-  const p = window.CHECKLIST_PROFILE_API?.get?.();
+  const p = runtimeProfile();
   if (!p) return;
   const nameA = p.personA?.name || (currentLang === "fr" ? "Personne A" : "Person A");
   const nameB = p.personB?.name || (currentLang === "fr" ? "Personne B" : "Person B");
@@ -206,7 +209,13 @@ function setLanguage(lang, persist = true) {
 
 const FAVORITE_SCORE = 4;
 const FANTASY_SCORE = 5;
-const SCORE_BUTTON_ORDER = [0,1,FANTASY_SCORE,2,3,FAVORITE_SCORE];
+const SCORE_BUTTON_ORDER = Object.freeze([0,1,FANTASY_SCORE,2,3,FAVORITE_SCORE]);
+const SCORE_TEXT=Object.freeze({
+  fr:Object.freeze({full:Object.freeze(["🚫 Limite","Pas maintenant","Neutre","🔥 Envie"]),short:Object.freeze(["🚫","Pas maintenant","Neutre","🔥"])}),
+  en:Object.freeze({full:Object.freeze(["🚫 Limit","Not now","Neutral","🔥 Want to"]),short:Object.freeze(["🚫","Not now","Neutral","🔥"])})
+});
+const SCORE_DESCRIPTION_KEYS=Object.freeze(["scoreLimitDesc","scoreLaterDesc","scoreNeutralDesc","scoreWantDesc"]);
+const RANDOM_THRESHOLD_RANK=Object.freeze({fantasy:1,neutral:2,want:3,favorite:4});
 
 
 // Semantic score helpers used by the unified Edit/Read renderers.
@@ -227,14 +236,8 @@ function scoreLabel(value, compact = false, role = null) {
     const symbol = favoriteSymbol(role);
     return compact ? symbol : `${symbol} ${t("favoriteWord")}`;
   }
-  if (currentLang === "fr") {
-    const full = ["🚫 Limite", "Pas maintenant", "Neutre", "🔥 Envie"];
-    const short = ["🚫", "Pas maintenant", "Neutre", "🔥"];
-    return (compact ? short : full)[v];
-  }
-  const full = ["🚫 Limit", "Not now", "Neutral", "🔥 Want to"];
-  const short = ["🚫", "Not now", "Neutral", "🔥"];
-  return (compact ? short : full)[v];
+  const labels=SCORE_TEXT[currentLang]||SCORE_TEXT.fr;
+  return (compact?labels.short:labels.full)[v];
 }
 
 function scoreButtonLabel(value, role = null) {
@@ -254,7 +257,7 @@ function scoreDescription(value) {
   if (v === null) return t("unknown");
   if (v === FANTASY_SCORE) return t("scoreFantasyDesc");
   if (v === FAVORITE_SCORE) return t("scoreFavoriteDesc");
-  return t(["scoreLimitDesc", "scoreLaterDesc", "scoreNeutralDesc", "scoreWantDesc"][v]);
+  return t(SCORE_DESCRIPTION_KEYS[v]);
 }
 
 function scoreChoiceTitle(value, role = null) {
@@ -315,7 +318,7 @@ function closeRiskInfo() {
 let derivedDataRevision = 0;
 let statsSnapshotCache = { revision:-1, value:null };
 let randomSnapshotCache = { revision:-1, value:null };
-let categoryStateCache = new Map();
+let readerModelCache = { revision:-1, lang:'', value:null };
 let randomStateRevision = 0;
 function invalidateRandomSnapshot() {
   randomStateRevision++;
@@ -324,7 +327,7 @@ function invalidateRandomSnapshot() {
 function invalidateDerivedData() {
   derivedDataRevision++;
   statsSnapshotCache.revision = -1;
-  categoryStateCache.clear();
+  readerModelCache.revision = -1;
   invalidateRandomSnapshot();
 }
 
@@ -710,7 +713,7 @@ function closeFirstUseGuide(markSeen=true, restoreFocus=true) {
 
 function showFirstUseGuideIfNeeded() {
   if (document.documentElement.classList.contains("adult-gate-required")) return;
-  const profile = window.CHECKLIST_PROFILE_API?.get?.();
+  const profile = runtimeProfile();
   if (profile && profile.anatomyConfigured !== true) return;
   let seen = false;
   try { seen = localStorage.getItem(ONBOARDING_KEY) === "true"; } catch (_) {}
@@ -791,7 +794,7 @@ function renderMergeReviewBanner() {
 
 function renderRoleChoiceLabel(btn) {
   const person = btn.dataset.personChoice === "person-b" ? "person-b" : "person-a";
-  const profile = window.CHECKLIST_PROFILE_API?.get?.();
+  const profile = runtimeProfile();
   const name = person === "person-a"
     ? (profile?.personA?.name || (currentLang === "fr" ? "Personne A" : "Person A"))
     : (profile?.personB?.name || (currentLang === "fr" ? "Personne B" : "Person B"));
@@ -829,7 +832,7 @@ function renderRoleUI() {
   }
 
   if (statModeEl) {
-    const profile = window.CHECKLIST_PROFILE_API?.get?.();
+    const profile = runtimeProfile();
     const name = activeEditPerson === "person-a" ? profile?.personA?.name : profile?.personB?.name;
     statModeEl.textContent = isReadingMode ? `${t("mode")} : ${t("readOnlySuffix")}` : `${t("mode")} : ${name || (activeEditPerson === "person-a" ? "A" : "B")}`;
   }
@@ -958,7 +961,7 @@ function profilePersonClass(person) {
 function profilePersonName(person, names = null) {
   const side = profilePersonSide(person);
   if (names) return side === 'person-b' ? names.personB : names.personA;
-  const profile = window.CHECKLIST_PROFILE_API?.get?.() || {};
+  const profile = runtimeProfile();
   if (side === 'person-b') return profile.personB?.name || (currentLang === 'fr' ? 'Personne B' : 'Person B');
   return profile.personA?.name || (currentLang === 'fr' ? 'Personne A' : 'Person A');
 }
@@ -970,39 +973,43 @@ function profileNameBadge(person, label = null, compact = false) {
 function escapeRegExp(value) {
   return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-function profileNamesInTextHtml(text, names = readerNames()) {
-  const raw = String(text || '');
-  const entries = [
-    { person:'person-a', name:String(names?.personA || '').trim() },
-    { person:'person-b', name:String(names?.personB || '').trim() }
-  ].filter(entry => entry.name).sort((a,b) => b.name.length - a.name.length);
-  if (!raw || !entries.length) return esc(raw);
-  const pattern = entries.map(entry => escapeRegExp(entry.name)).join('|');
-  if (!pattern) return esc(raw);
-  let regex;
-  try { regex = new RegExp(pattern, 'giu'); } catch (_) { return esc(raw); }
-  let html = '', last = 0;
-  for (const match of raw.matchAll(regex)) {
-    const index = match.index ?? 0;
-    html += esc(raw.slice(last, index));
-    const matched = String(match[0] || '');
-    const matchedKey = matched.toLocaleLowerCase(currentLang === 'fr' ? 'fr' : 'en');
-    const entry = entries.find(item => item.name.toLocaleLowerCase(currentLang === 'fr' ? 'fr' : 'en') === matchedKey);
-    html += entry ? profileNameBadge(entry.person, matched, true) : esc(matched);
-    last = index + matched.length;
+let profileNameMatcherCache={key:'',entries:[],regex:null};
+function profileNameMatcher(names=readerNames()){
+  const personA=String(names?.personA||'').trim(), personB=String(names?.personB||'').trim();
+  const key=`${currentLang}|${personA}|${personB}`;
+  if(profileNameMatcherCache.key===key) return profileNameMatcherCache;
+  const locale=currentLang==='fr'?'fr':'en';
+  const entries=[{person:'person-a',name:personA},{person:'person-b',name:personB}]
+    .filter(entry=>entry.name)
+    .sort((a,b)=>b.name.length-a.name.length)
+    .map(entry=>({...entry,key:entry.name.toLocaleLowerCase(locale)}));
+  const pattern=entries.map(entry=>escapeRegExp(entry.name)).join('|');
+  let regex=null;
+  if(pattern){try{regex=new RegExp(pattern,'giu');}catch(_){regex=null;}}
+  profileNameMatcherCache={key,entries,regex};
+  return profileNameMatcherCache;
+}
+function profileNamesInTextHtml(text,names=readerNames()){
+  const raw=String(text||''), matcher=profileNameMatcher(names);
+  if(!raw||!matcher.regex||!matcher.entries.length) return esc(raw);
+  const locale=currentLang==='fr'?'fr':'en';
+  matcher.regex.lastIndex=0;
+  let html='',last=0;
+  for(const match of raw.matchAll(matcher.regex)){
+    const index=match.index??0;
+    html+=esc(raw.slice(last,index));
+    const matched=String(match[0]||''), key=matched.toLocaleLowerCase(locale);
+    const entry=matcher.entries.find(item=>item.key===key);
+    html+=entry?profileNameBadge(entry.person,matched,true):esc(matched);
+    last=index+matched.length;
   }
-  html += esc(raw.slice(last));
+  html+=esc(raw.slice(last));
   return html;
 }
 function readerDsChipHtml(value, names = readerNames()) {
   const person = value === 'b-dominant' ? 'person-b' : 'person-a';
   const verb = currentLang === 'fr' ? 'domine' : 'dominant';
   return `${profileNameBadge(person, profilePersonName(person, names), true)} <span class="profile-inline-text">${esc(verb)}</span>`;
-}
-function readerFlowHtml(entity, variant, names = readerNames()) {
-  if (variant === INTERACTION_MODEL.VARIANT.A_TO_B || variant === INTERACTION_MODEL.VARIANT.A_DOMINANT) return `${profileNameBadge('person-a', names.personA, true)} <span class="flow-arrow">→</span> ${profileNameBadge('person-b', names.personB, true)}`;
-  if (variant === INTERACTION_MODEL.VARIANT.B_TO_A || variant === INTERACTION_MODEL.VARIANT.B_DOMINANT) return `${profileNameBadge('person-b', names.personB, true)} <span class="flow-arrow">→</span> ${profileNameBadge('person-a', names.personA, true)}`;
-  return `${profileNameBadge('person-a', names.personA, true)} <span class="flow-arrow">+</span> ${profileNameBadge('person-b', names.personB, true)}`;
 }
 function readerVariantPeople(entity, variant, names = readerNames()) {
   if (variant === INTERACTION_MODEL.VARIANT.A_TO_B || variant === INTERACTION_MODEL.VARIANT.A_DOMINANT) {
@@ -1032,48 +1039,60 @@ function looksLikeInfinitive(word) {
   const w = normalizeWord(word);
   return /(?:er|ir|re)$/.test(w) || w === 'etre' || w === 'avoir';
 }
+const FRENCH_IRREGULAR_VERBS=Object.freeze({
+  etre:'est',avoir:'a',faire:'fait',aller:'va',pouvoir:'peut',vouloir:'veut',devoir:'doit',
+  recevoir:'reçoit',envoyer:'envoie',nettoyer:'nettoie',essuyer:'essuie',appuyer:'appuie',
+  employer:'emploie',payer:'paie',essayer:'essaie',tutoyer:'tutoie',vouvoyer:'vouvoie',
+  ecrire:'écrit',decrire:'décrit',interdire:'interdit',dire:'dit',lire:'lit',suivre:'suit',
+  attendre:'attend',vendre:'vend',prendre:'prend',apprendre:'apprend',comprendre:'comprend',
+  mettre:'met',permettre:'permet',promettre:'promet',boire:'boit',conduire:'conduit',
+  masser:'masse',embrasser:'embrasse',venerer:'vénère',adorer:'adore',porter:'porte',
+  tirer:'tire',ordonner:'ordonne',controler:'contrôle',inspecter:'inspecte',obeir:'obéit',
+  servir:'sert',dormir:'dort',sortir:'sort',partir:'part',mentir:'ment',sentir:'sent',
+  ouvrir:'ouvre',offrir:'offre',souffrir:'souffre',courir:'court',rire:'rit',sourire:'sourit',
+  lecher:'lèche',caresser:'caresse',stimuler:'stimule',immobiliser:'immobilise',attacher:'attache',
+  appliquer:'applique',utiliser:'utilise',maintenir:'maintient',choisir:'choisit',punir:'punit',
+  raser:'rase',laver:'lave',fixer:'fixe',retirer:'retire',preparer:'prépare',guider:'guide',
+  respecter:'respecte',regarder:'regarde',manger:'mange',avaler:'avale',presenter:'présente',
+  sagenouiller:'s’agenouille',alterner:'alterne',chercher:'cherche',frapper:'frappe',mordre:'mord',
+  tenir:'tient',venir:'vient',devenir:'devient',obtenir:'obtient',retenir:'retient',soutenir:'soutient',
+  voir:'voit',prevoir:'prévoit',savoir:'sait',croire:'croit',vivre:'vit',mourir:'meurt',reduire:'réduit',
+  construire:'construit',detruire:'détruit',produire:'produit',traduire:'traduit',couvrir:'couvre',decouvrir:'découvre',
+  cueillir:'cueille',accueillir:'accueille',integrer:'intègre',lever:'lève',mener:'mène',acheter:'achète',peser:'pèse'
+});
+const FRENCH_RECEIVER_VERBS=new Set(['recevoir','porter','etre','rester','dormir','garder','demander','envoyer','servir','suivre','presenter','sagenouiller','attendre','avaler','obeir','respecter','regarder','manger','boire','raser','laver']);
+const FRENCH_ACTOR_VERBS=new Set(['donner','faire','stimuler','attacher','immobiliser','appliquer','masser','embrasser','venerer','lecher','controler','inspecter','interdire','ordonner','punir','fixer','mettre','mordre','tirer','frapper','preparer','nettoyer','retirer','choisir','guider','maintenir','alterner','utiliser','caresser']);
+const FRENCH_BODY_PLURAL='pieds|bottes|chaussures|jambes|bras|mains|poignets|chevilles|tétons|seins|fesses|testicules|cuisses|cheveux|oreilles|orteils|bas|collants|vêtements|accessoires';
+const FRENCH_BODY_POSSESSIVE_PLURAL_RE=new RegExp(`\\bses\\s+(${FRENCH_BODY_PLURAL})(?:\\s+et\\s+(?:ses\\s+)?(${FRENCH_BODY_PLURAL}))?\\b`,'i');
+const FRENCH_BODY_POSSESSIVE_SINGULAR_RE=/\b(?:son|sa)\s+(corps|visage|vulve|clitoris|pénis|anus|prostate|peau|bouche|gorge|cou|entrejambe|lingerie|tenue|sextoy|collier|laisse|cage)\b/i;
+const FRENCH_BODY_PATTERNS=[
+  /\b(les|des)\s+(pieds|bottes|chaussures|jambes|bras|mains|poignets|chevilles|tétons|seins|fesses|testicules|cuisses|cheveux|oreilles|orteils)\b/i,
+  /\b(le|la|l['’])\s+(corps|visage|vulve|clitoris|pénis|anus|prostate|peau|bouche|gorge|cou|entrejambe)\b/i
+];
+const FRENCH_PHRASE_SPLIT_RE=/(\s*,\s*|\s+et\s+|\s+ou\s+|\s+puis\s+)/i;
+const FRENCH_PHRASE_SEPARATOR_RE=/^(\s*,\s*|\s+et\s+|\s+ou\s+|\s+puis\s+)$/i;
+const readerExplanationHtmlCache=new Map();
+
 function conjugateFrenchInfinitive(word) {
-  const source = String(word || '').trim();
-  if (!source) return source;
-  const lower = source.toLowerCase();
-  const norm = normalizeWord(lower);
-  const irregular = {
-    'etre':'est','avoir':'a','faire':'fait','aller':'va','pouvoir':'peut','vouloir':'veut','devoir':'doit',
-    'recevoir':'reçoit','envoyer':'envoie','nettoyer':'nettoie','essuyer':'essuie','appuyer':'appuie',
-    'employer':'emploie','payer':'paie','essayer':'essaie','tutoyer':'tutoie','vouvoyer':'vouvoie',
-    'ecrire':'écrit','decrire':'décrit','interdire':'interdit','dire':'dit','lire':'lit','suivre':'suit',
-    'attendre':'attend','vendre':'vend','prendre':'prend','apprendre':'apprend','comprendre':'comprend',
-    'mettre':'met','permettre':'permet','promettre':'promet','boire':'boit','conduire':'conduit',
-    'masser':'masse','embrasser':'embrasse','venerer':'vénère','adorer':'adore','porter':'porte',
-    'tirer':'tire','ordonner':'ordonne','controler':'contrôle','inspecter':'inspecte','obeir':'obéit',
-    'servir':'sert','dormir':'dort','sortir':'sort','partir':'part','mentir':'ment','sentir':'sent',
-    'ouvrir':'ouvre','offrir':'offre','souffrir':'souffre','courir':'court','rire':'rit','sourire':'sourit',
-    'lecher':'lèche','caresser':'caresse','stimuler':'stimule','immobiliser':'immobilise','attacher':'attache',
-    'appliquer':'applique','utiliser':'utilise','maintenir':'maintient','choisir':'choisit','punir':'punit',
-    'raser':'rase','laver':'lave','fixer':'fixe','retirer':'retire','preparer':'prépare','guider':'guide',
-    'respecter':'respecte','regarder':'regarde','manger':'mange','avaler':'avale','presenter':'présente',
-    'sagenouiller':'s’agenouille','alterner':'alterne','chercher':'cherche','frapper':'frappe','mordre':'mord',
-    'tenir':'tient','venir':'vient','devenir':'devient','obtenir':'obtient','retenir':'retient','soutenir':'soutient',
-    'voir':'voit','prevoir':'prévoit','savoir':'sait','croire':'croit','vivre':'vit','mourir':'meurt','reduire':'réduit',
-    'construire':'construit','detruire':'détruit','produire':'produit','traduire':'traduit','couvrir':'couvre','decouvrir':'découvre',
-    'cueillir':'cueille','accueillir':'accueille','integrer':'intègre','lever':'lève','mener':'mène','acheter':'achète','peser':'pèse' 
-  };
-  let out = irregular[norm];
-  if (!out) {
-    if (/yer$/.test(norm)) out = lower.slice(0,-3) + 'ie';
-    else if (/er$/.test(norm)) out = lower.slice(0,-2) + 'e';
-    else if (/ir$/.test(norm)) out = lower.slice(0,-2) + 'it';
-    else if (/re$/.test(norm)) out = lower.slice(0,-2);
-    else out = lower;
+  const source=String(word||'').trim();
+  if(!source) return source;
+  const lower=source.toLowerCase(), norm=normalizeWord(lower);
+  let out=FRENCH_IRREGULAR_VERBS[norm];
+  if(!out){
+    if(/yer$/.test(norm)) out=lower.slice(0,-3)+'ie';
+    else if(/er$/.test(norm)) out=lower.slice(0,-2)+'e';
+    else if(/ir$/.test(norm)) out=lower.slice(0,-2)+'it';
+    else if(/re$/.test(norm)) out=lower.slice(0,-2);
+    else out=lower;
   }
   return out;
 }
 function conjugateFrenchPhrase(raw) {
   let text = String(raw || '').trim();
   if (!text) return '';
-  const parts = text.split(/(\s*,\s*|\s+et\s+|\s+ou\s+|\s+puis\s+)/i);
+  const parts = text.split(FRENCH_PHRASE_SPLIT_RE);
   const converted = parts.map((part,index)=>{
-    if (!part || /^(\s*,\s*|\s+et\s+|\s+ou\s+|\s+puis\s+)$/i.test(part)) return part;
+    if (!part || FRENCH_PHRASE_SEPARATOR_RE.test(part)) return part;
     const seg = part.match(/^(\s*)(s['’]\s*|se\s+)?([A-Za-zÀ-ÿ-]+)(.*)$/iu);
     if (!seg) return index===0?lowercaseSentenceStart(part):part;
     const [,lead,reflexive='',verb='',rest='']=seg;
@@ -1095,24 +1114,13 @@ function namePresence(text, people) {
   const to=String(people?.toName||'').toLocaleLowerCase(currentLang==='fr'?'fr':'en');
   return {from:!!from&&lower.includes(from),to:!!to&&lower.includes(to)};
 }
-function frenchReceiverVerb(first) {
-  return new Set(['recevoir','porter','etre','rester','dormir','garder','demander','envoyer','servir','suivre','presenter','sagenouiller','attendre','avaler','obeir','respecter','regarder','manger','boire','raser','laver']).has(first);
-}
-function frenchActorVerb(first) {
-  return new Set(['donner','faire','stimuler','attacher','immobiliser','appliquer','masser','embrasser','venerer','lecher','controler','inspecter','interdire','ordonner','punir','fixer','mettre','mordre','tirer','frapper','preparer','nettoyer','retirer','choisir','guider','maintenir','alterner','utiliser','caresser']).has(first);
-}
+function frenchReceiverVerb(first) { return FRENCH_RECEIVER_VERBS.has(first); }
+function frenchActorVerb(first) { return FRENCH_ACTOR_VERBS.has(first); }
 function frenchBodyTargetPhrase(text,toName) {
-  const pluralNoun='pieds|bottes|chaussures|jambes|bras|mains|poignets|chevilles|tétons|seins|fesses|testicules|cuisses|cheveux|oreilles|orteils|bas|collants|vêtements|accessoires';
-  const possessivePlural=new RegExp(`\\bses\\s+(${pluralNoun})(?:\\s+et\\s+(?:ses\\s+)?(${pluralNoun}))?\\b`,'i');
-  if(possessivePlural.test(text)) return {text:text.replace(possessivePlural,(m,noun1,noun2)=>`les ${noun1}${noun2?` et ${noun2}`:''} de ${toName}`),changed:true};
-  const possessiveSingular=/\b(?:son|sa)\s+(corps|visage|vulve|clitoris|pénis|anus|prostate|peau|bouche|gorge|cou|entrejambe|lingerie|tenue|sextoy|collier|laisse|cage)\b/i;
-  if(possessiveSingular.test(text)) return {text:text.replace(possessiveSingular,(m,noun)=>`${/^(vulve|prostate|peau|bouche|gorge|lingerie|tenue|laisse|cage)$/i.test(noun)?'la':'le'} ${noun} de ${toName}`),changed:true};
-  const bodyPatterns=[
-    /\b(les|des)\s+(pieds|bottes|chaussures|jambes|bras|mains|poignets|chevilles|tétons|seins|fesses|testicules|cuisses|cheveux|oreilles|orteils)\b/i,
-    /\b(le|la|l['’])\s+(corps|visage|vulve|clitoris|pénis|anus|prostate|peau|bouche|gorge|cou|entrejambe)\b/i
-  ];
-  for(const re of bodyPatterns){
-    if(re.test(text)) return {text:text.replace(re,(m,article,noun)=>`${article} ${noun} de ${toName}`.replace(/l['’]\s+/i,"l’")),changed:true};
+  if(FRENCH_BODY_POSSESSIVE_PLURAL_RE.test(text)) return {text:text.replace(FRENCH_BODY_POSSESSIVE_PLURAL_RE,(m,noun1,noun2)=>`les ${noun1}${noun2?` et ${noun2}`:''} de ${toName}`),changed:true};
+  if(FRENCH_BODY_POSSESSIVE_SINGULAR_RE.test(text)) return {text:text.replace(FRENCH_BODY_POSSESSIVE_SINGULAR_RE,(m,noun)=>`${/^(vulve|prostate|peau|bouche|gorge|lingerie|tenue|laisse|cage)$/i.test(noun)?'la':'le'} ${noun} de ${toName}`),changed:true};
+  for(const re of FRENCH_BODY_PATTERNS){
+    if(re.test(text)) return {text:text.replace(re,(m,article,noun)=>`${article} ${noun} de ${toName}`.replace(/l['’]\s+/i,'l’')),changed:true};
   }
   return {text,changed:false};
 }
@@ -1121,15 +1129,36 @@ function frenchSentenceWithMissingSubject(cleaned,people,presence) {
   const converted=conjugateFrenchPhrase(cleaned);
   return `${missing.name} ${converted}`;
 }
+function frenchCompactBetweenSentence(cleaned, people) {
+  const body=frenchBodyTargetPhrase(lowercaseSentenceStart(cleaned), people.toName);
+  return `Entre ${people.fromName} et ${people.toName} : ${body.text}`;
+}
+function frenchSpecialNoVerbSentence(cleaned, people) {
+  const text=String(cleaned||'').trim();
+  if(!text) return '';
+  if(/^Stimulation\s+anale\s+l[ée]g[èe]re/i.test(text)) {
+    return `${people.toName} reçoit une stimulation anale légère de la part de ${people.fromName}, avec un doigt ou un petit sextoy`;
+  }
+  if(/^Porter\s+un\s+plug\s+anal$/i.test(text)) {
+    return `${people.toName} porte un plug anal pour ${people.fromName}`;
+  }
+  return '';
+}
 function frenchNoNameInfinitiveSentence(entity,cleaned,people) {
   const first=frenchFirstInfinitive(cleaned);
   const axis=INTERACTION_MODEL.axisOf(entity);
   const rest=cleaned.replace(/^(?:s['’]\s*|se\s+)?[A-Za-zÀ-ÿ-]+\s*/u,'').trim();
   if(first==='recevoir'){
-    const combo=cleaned.match(/^Recevoir\s+et\s+exécuter\s+(.+)$/iu);
+    const combo=cleaned.match(/^Recevoir\s+et\s+ex[ée]cuter\s+(.+)$/iu);
     if(combo){
       const obj=combo[1].replace(/^des\s+/i,'les ');
       return `${people.toName} reçoit et exécute ${obj.replace(/\s+par\s+message$/i,` de ${people.fromName} par message`)}`;
+    }
+    if(/^Recevoir\s+une\s+t[âa]che\s+[àa]\s+faire\s+dans\s+la\s+journ[ée]e$/iu.test(cleaned)) {
+      return `${people.toName} reçoit de ${people.fromName} une tâche à faire dans la journée`;
+    }
+    if(/^Recevoir\s+des\s+ordres\s+en\s+direct\s+en\s+vid[ée]o$/iu.test(cleaned)) {
+      return `${people.toName} reçoit en direct en vidéo les ordres de ${people.fromName}`;
     }
     return `${people.toName} reçoit de ${people.fromName} ${rest}`;
   }
@@ -1139,10 +1168,13 @@ function frenchNoNameInfinitiveSentence(entity,cleaned,people) {
   if(first==='envoyer' && axis===INTERACTION_MODEL.AXIS.ROLE){
     return `${people.toName} envoie à ${people.fromName} ${rest}`;
   }
-  if(/^faire\s+une\s+inspection\s+convenue\s+en\s+vidéo$/iu.test(cleaned)){
+  if(/^Faire\s+une\s+inspection\s+convenue\s+en\s+vid[ée]o$/iu.test(cleaned)){
     return `${people.fromName} inspecte ${people.toName} en vidéo, selon ce qui est convenu`;
   }
-  if(/^faire\s+(?:les|des)\s+tâches\s+ménagères/i.test(cleaned)||/^faire\s+le\s+ménage/i.test(cleaned)){
+  if(/^Tirer\s+au\s+sort\s+une\s+t[âa]che\s+autoris[ée]e$/iu.test(cleaned)){
+    return `${people.fromName} tire au sort une tâche autorisée pour ${people.toName}`;
+  }
+  if(/^Faire\s+(?:les|des)\s+t[âa]ches\s+m[ée]nag[èe]res/i.test(cleaned)||/^Faire\s+le\s+m[ée]nage/i.test(cleaned)){
     const converted=conjugateFrenchPhrase(cleaned);
     return `${people.toName} ${converted}, selon la consigne de ${people.fromName}`;
   }
@@ -1152,6 +1184,7 @@ function frenchNoNameInfinitiveSentence(entity,cleaned,people) {
   let converted=conjugateFrenchPhrase(cleaned);
   if(subjectIsTo){
     if(first==='etre') return `${subject} ${converted} par ${other}`;
+    if(first==='porter' && /plug\s+anal/i.test(cleaned)) return `${subject} ${converted} pour ${other}`;
     if(axis===INTERACTION_MODEL.AXIS.ROLE) return `${subject} ${converted}, selon la consigne de ${other}`;
     return `${subject} ${converted}, avec ${other}`;
   }
@@ -1161,20 +1194,23 @@ function frenchNoNameInfinitiveSentence(entity,cleaned,people) {
   if(first==='ordonner') return `${subject} ordonne à ${other} ${rest}`;
   if(first==='interdire') return `${subject} ${converted} à ${other}`;
   if(first==='utiliser') return `${subject} ${converted} envers ${other}`;
-  if(['fixer','choisir','preparer'].includes(first)) return `${subject} ${converted} pour ${other}`;
+  if(['fixer','choisir','preparer','préparer'].includes(first)) return `${subject} ${converted} pour ${other}`;
+  if(first==='porter') return `${subject} ${converted}, avec ${other}`;
   return `${subject} ${converted}, avec ${other}`;
 }
 function frenchPassiveRewrite(cleaned,people,presence) {
   const from=escapeRegExp(people.fromName);
   if(presence.from&&!presence.to){
-    const sextoy=new RegExp(`^Sextoy\\s+contrôlé\\s+à\\s+distance\\s+par\\s+${from}$`,'iu');
+    const sextoy=new RegExp(`^Sextoy\s+contr[ôo]l[ée]\s+[àa]\s+distance\s+par\s+${from}$`,'iu');
     if(sextoy.test(cleaned)) return `${people.fromName} contrôle à distance le sextoy de ${people.toName}`;
-    const chastete=new RegExp(`^Chasteté\\s+gérée\\s+à\\s+distance\\s+par\\s+${from}$`,'iu');
+    const chastete=new RegExp(`^Chastet[ée]\s+g[ée]r[ée]e?\s+[àa]\s+distance\s+par\s+${from}$`,'iu');
     if(chastete.test(cleaned)) return `${people.fromName} gère à distance la chasteté de ${people.toName}`;
   }
   return '';
 }
 function ensureFrenchTwoPersonSentence(entity,cleaned,people,names) {
+  const special=frenchSpecialNoVerbSentence(cleaned,people);
+  if(special) return special;
   const presence=namePresence(cleaned,people);
   if(presence.from&&presence.to) return cleaned;
   const passive=frenchPassiveRewrite(cleaned,people,presence);
@@ -1184,38 +1220,52 @@ function ensureFrenchTwoPersonSentence(entity,cleaned,people,names) {
     if(presence.from||presence.to) return frenchSentenceWithMissingSubject(cleaned,people,presence);
     return frenchNoNameInfinitiveSentence(entity,cleaned,people);
   }
-  if(presence.from&&!presence.to) return `Pour ${people.toName}, ${startsWithPersonName(cleaned,people)?cleaned:lowercaseSentenceStart(cleaned)}`;
-  if(presence.to&&!presence.from) return `Avec ${people.fromName}, ${startsWithPersonName(cleaned,people)?cleaned:lowercaseSentenceStart(cleaned)}`;
-  return `Entre ${people.fromName} et ${people.toName}, cette pratique consiste en ${lowercaseSentenceStart(cleaned)}`;
+  if(presence.from&&!presence.to) {
+    return `${cleaned} avec ${people.toName}`;
+  }
+  if(presence.to&&!presence.from) {
+    return `${cleaned} avec ${people.fromName}`;
+  }
+  return frenchCompactBetweenSentence(cleaned,people);
 }
 function readerSharedExplanationHtml(raw,names=readerNames()) {
   const cleaned=stripEndingPunctuation(raw);
   if(!cleaned) return '';
   const pseudoPeople={fromPerson:'person-a',toPerson:'person-b',fromName:names.personA,toName:names.personB};
   const presence=namePresence(cleaned,pseudoPeople);
-  if((presence.from&&presence.to)||(!presence.from&&!presence.to)) return `${profileNamesInTextHtml(cleaned,names)}.`;
+  if((presence.from&&presence.to)||(!presence.from&&!presence.to)) return profileNamesInTextHtml(cleaned,names);
   const first=startsWithPersonName(cleaned,pseudoPeople)?'':frenchFirstInfinitive(cleaned);
   if(first&&looksLikeInfinitive(first)){
     const missing=presence.from?names.personB:names.personA;
-    return `${profileNamesInTextHtml(`${missing} ${conjugateFrenchPhrase(cleaned)}`,names)}.`;
+    return profileNamesInTextHtml(`${missing} ${conjugateFrenchPhrase(cleaned)}`,names);
   }
   const missing=presence.from?names.personB:names.personA;
-  return `${profileNamesInTextHtml(`Avec ${missing}, ${startsWithPersonName(cleaned,pseudoPeople)?cleaned:lowercaseSentenceStart(cleaned)}`,names)}.`;
+  return profileNamesInTextHtml(`Avec ${missing}, ${startsWithPersonName(cleaned,pseudoPeople)?cleaned:lowercaseSentenceStart(cleaned)}`,names);
 }
 function readerContextualExplanationHtml(entity,pair,info,names=readerNames()) {
-  const raw=String(info?.explanation||'').trim();
-  const people=readerVariantPeople(entity,pair?.variant,names);
-  if(!people) return raw?readerSharedExplanationHtml(raw,names):'';
-  const cleaned=stripEndingPunctuation(raw);
-  if(!cleaned) return `${profileNameBadge(people.fromPerson,people.fromName,true)} <span class="flow-arrow">→</span> ${profileNameBadge(people.toPerson,people.toName,true)}`;
-  if(currentLang!=='fr'){
-    const presence=namePresence(cleaned,people);
-    if(presence.from&&presence.to) return `${profileNamesInTextHtml(cleaned,names)}.`;
-    const prefix=!presence.from&&!presence.to?`${people.fromName} / ${people.toName}: `:presence.from?`For ${people.toName}, `:`With ${people.fromName}, `;
-    return `${profileNamesInTextHtml(prefix+lowercaseSentenceStart(cleaned),names)}.`;
+  const raw=String(info?.explanation||'').trim(), variant=pair?.variant||'';
+  const cacheKey=`${currentLang}|${names.personA}|${names.personB}|${entity?.id||''}|${variant}|${raw}`;
+  if(readerExplanationHtmlCache.has(cacheKey)) return readerExplanationHtmlCache.get(cacheKey);
+  const people=readerVariantPeople(entity,variant,names);
+  let html='';
+  if(!people) html=raw?readerSharedExplanationHtml(raw,names):'';
+  else {
+    const cleaned=stripEndingPunctuation(raw);
+    if(!cleaned) html=`${profileNameBadge(people.fromPerson,people.fromName,true)} <span class="flow-arrow">→</span> ${profileNameBadge(people.toPerson,people.toName,true)}`;
+    else if(currentLang!=='fr'){
+      const presence=namePresence(cleaned,people);
+      if(presence.from&&presence.to) html=profileNamesInTextHtml(cleaned,names);
+      else {
+        const prefix=!presence.from&&!presence.to?`${people.fromName} / ${people.toName}: `:presence.from?`For ${people.toName}, `:`With ${people.fromName}, `;
+        html=profileNamesInTextHtml(prefix+lowercaseSentenceStart(cleaned),names);
+      }
+    } else {
+      const sentence=ensureFrenchTwoPersonSentence(entity,cleaned,people,names);
+      html=profileNamesInTextHtml(stripEndingPunctuation(sentence),names);
+    }
   }
-  const sentence=ensureFrenchTwoPersonSentence(entity,cleaned,people,names);
-  return `${profileNamesInTextHtml(stripEndingPunctuation(sentence),names)}.`;
+  readerExplanationHtmlCache.set(cacheKey,html);
+  return html;
 }
 function variantEntryKey(entryOrPracticeId, variant=null) {
   if (typeof entryOrPracticeId === "object" && entryOrPracticeId) return `${entryOrPracticeId.practiceId}|${entryOrPracticeId.variant}`;
@@ -1234,7 +1284,7 @@ function isVariantInSession(practiceId, variant) {
 // Compatibility adapter retained for legacy migrations only.
 function sessionEntryData(entry) {
   const entity=UNIFIED_ENTITY_BY_ID.get(entry?.practiceId); if(!entity) return null;
-  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+  const profile=runtimeProfile();
   const practiceResponse=V2_STORAGE.getReaderPractice(entity.id);
   const pair=INTERACTION_MODEL.readingPair(entity,entry.variant,practiceResponse,profile);
   if(!pair) return null;
@@ -1346,7 +1396,7 @@ if (individualEditorExpandAll) individualEditorExpandAll.addEventListener("click
 
 function modelPersonKey() { return activeEditPerson === "person-b" ? "personB" : "personA"; }
 function editorProfileName(person=modelPersonKey()) {
-  const p=window.CHECKLIST_PROFILE_API?.get?.();
+  const p=runtimeProfile();
   return person === "personA" ? (p?.personA?.name || (currentLang==="fr"?"Personne A":"Person A")) : (p?.personB?.name || (currentLang==="fr"?"Personne B":"Person B"));
 }
 function legacyBlockForEditorSlot(entity, person, slot) {
@@ -1357,7 +1407,7 @@ function legacyBlockForEditorSlot(entity, person, slot) {
   return firstKey ? {block:entity.scenarios[firstKey],legacySourceKey:firstKey} : {block:null,legacySourceKey:null};
 }
 function personalizeLegacyText(text, legacySourceKey) {
-  let out=String(text||''); const p=window.CHECKLIST_PROFILE_API?.get?.(); if(!p) return out;
+  let out=String(text||''); const p=runtimeProfile(); if(!p) return out;
   const a=p.personA?.name||"A", b=p.personB?.name||"B";
   const dom=legacySourceKey==="bDom"?b:a, sub=legacySourceKey==="bDom"?a:b;
   const replacements=[
@@ -1378,7 +1428,7 @@ const localizedLegacyInfoCache = new Map();
 function localizedLegacyInfo(entity, legacySourceKey) {
   const block=legacySourceKey ? entity?.scenarios?.[legacySourceKey] : null;
   if(!block) return {title:"",explanation:"",category:"Autres",level:3,risk:"normal"};
-  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+  const profile=runtimeProfile();
   const cacheKey=[currentLang,profile.personA?.name||"",profile.personB?.name||"",entity.id,legacySourceKey].join("|");
   const cached=localizedLegacyInfoCache.get(cacheKey);
   if(cached) return cached;
@@ -1454,7 +1504,7 @@ function renderIndividualEditor() {
   individualEditor.hidden=false;
   configureEditorStatusOptions();
   configureEditorMinimumOptions();
-  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{}; const person=modelPersonKey(),name=editorProfileName(person);
+  const profile=runtimeProfile(); const person=modelPersonKey(),name=editorProfileName(person);
   if (individualEditor) individualEditor.dataset.person = person === 'personB' ? 'person-b' : 'person-a';
   individualEditorTitle.innerHTML=currentLang==="fr"?`Réponses de ${profileNameBadge(person === 'personB' ? 'person-b' : 'person-a', name)}`:`${profileNameBadge(person === 'personB' ? 'person-b' : 'person-a', name)}'s answers`;
   individualEditorIntro.innerHTML=currentLang==="fr"?`Vous modifiez uniquement les choix de ${profileNameBadge(person === 'personB' ? 'person-b' : 'person-a', name, true)}. Les réponses de l’autre personne ne sont jamais affichées ici.`:`You are editing only ${profileNameBadge(person === 'personB' ? 'person-b' : 'person-a', name, true)}. The other person's answers are never shown here.`;
@@ -1463,8 +1513,9 @@ function renderIndividualEditor() {
   const minRaw=minFilterScore.value, minScore=minRaw===""?null:Number(minRaw), statusValue=status.value;
   const grouped=new Map(); let visible=0;
   for(const entity of CATALOG_ENTITIES) {
+    const personalPractice=V2_STORAGE.getPersonalPractice(entity.id);
     const slotStates=editorSlotsForEntity(entity,person,profile)
-      .map(slot=>({slot,state:V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{}}))
+      .map(slot=>({slot,state:personalPractice?.persons?.[person]?.[slot]||{}}))
       .filter(({state})=>editorSlotMatches(state,statusValue,minScore));
     if(!slotStates.length) continue;
     const slots=slotStates.map(({slot})=>slot), info=editorEntityInfo(entity,person,slots);
@@ -1496,6 +1547,7 @@ function flushPersonalNoteSaves() {
     V2_STORAGE.setPersonalSlotState(id,person,slot,state);
   }
   pendingPersonalNotes.clear();
+  invalidateDerivedData();
 }
 function queuePersonalNoteSave(id,person,slot,value) {
   const key=`${id}|${person}|${slot}`;
@@ -1523,28 +1575,35 @@ if(individualEditorList) {
   individualEditorList.addEventListener("change",e=>{if(e.target.closest("textarea[data-personal-note]"))flushPersonalNoteSaves();});
 }
 
+const READER_SLOT_LABELS=Object.freeze({
+  fr:Object.freeze({interest:"Intérêt",give:"Donner",receive:"Recevoir",dominant:"Position dominante",submissive:"Position soumise"}),
+  en:Object.freeze({interest:"Interest",give:"Give",receive:"Receive",dominant:"Dominant",submissive:"Submissive"})
+});
+const READER_COMPATIBILITY_LABELS=Object.freeze({
+  fr:Object.freeze({excellent:"👑 Excellent match",strong:"🔥 Très compatible",compatible:"✓ Compatible",later:"⏳ Pas maintenant",fantasy:"💭 Fantasme à discuter",limit:"🚫 Limite",incomplete:"? Incomplet"}),
+  en:Object.freeze({excellent:"👑 Excellent match",strong:"🔥 Strong match",compatible:"✓ Compatible",later:"⏳ Not now",fantasy:"💭 Fantasy to discuss",limit:"🚫 Limit",incomplete:"? Incomplete"})
+});
+const READER_MINIMUM_ICONS=Object.freeze({"1":"⏳","2":"🙂","3":"🔥","4":"👑"});
+const COMPATIBLE_STATUSES=new Set(["compatible","strong","excellent"]);
+const STRONG_STATUSES=new Set(["strong","excellent"]);
+let readerNamesCache={lang:'',value:null};
 function readerNames() {
-  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
-  return {
+  if(readerNamesCache.lang===currentLang&&readerNamesCache.value) return readerNamesCache.value;
+  const profile=runtimeProfile();
+  const value=Object.freeze({
     personA:profile.personA?.name||(currentLang==="fr"?"Personne A":"Person A"),
     personB:profile.personB?.name||(currentLang==="fr"?"Personne B":"Person B")
-  };
+  });
+  readerNamesCache={lang:currentLang,value};
+  return value;
 }
-function readerSlotLabel(slot) {
-  if(currentLang==="fr") return ({interest:"Intérêt",give:"Donner",receive:"Recevoir",dominant:"Position dominante",submissive:"Position soumise"})[slot]||slot;
-  return ({interest:"Interest",give:"Give",receive:"Receive",dominant:"Dominant",submissive:"Submissive"})[slot]||slot;
-}
+function readerSlotLabel(slot) { return READER_SLOT_LABELS[currentLang]?.[slot]||slot; }
 function readerVariantLabel(entity,variant,names=readerNames()) {
   if(variant===INTERACTION_MODEL.VARIANT.A_TO_B) return currentLang==="fr"?`${names.personA} donne → ${names.personB} reçoit`:`${names.personA} gives → ${names.personB} receives`;
   if(variant===INTERACTION_MODEL.VARIANT.B_TO_A) return currentLang==="fr"?`${names.personB} donne → ${names.personA} reçoit`:`${names.personB} gives → ${names.personA} receives`;
   if(variant===INTERACTION_MODEL.VARIANT.A_DOMINANT) return currentLang==="fr"?`${names.personA} en position dominante ↔ ${names.personB} en position soumise`:`${names.personA} dominant → ${names.personB} submissive`;
   if(variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return currentLang==="fr"?`${names.personB} en position dominante ↔ ${names.personA} en position soumise`:`${names.personB} dominant → ${names.personA} submissive`;
   return currentLang==="fr"?"Intérêt partagé":"Shared interest";
-}
-function readerCompactFlowLabel(entity,variant,names=readerNames()) {
-  if(variant===INTERACTION_MODEL.VARIANT.A_TO_B || variant===INTERACTION_MODEL.VARIANT.A_DOMINANT) return `${names.personA} → ${names.personB}`;
-  if(variant===INTERACTION_MODEL.VARIANT.B_TO_A || variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return `${names.personB} → ${names.personA}`;
-  return `${names.personA} + ${names.personB}`;
 }
 function legacyBlockForVariant(entity,variant) {
   for(const [scenarioName,key] of [["a-dom","aDom"],["b-dom","bDom"]]) {
@@ -1557,10 +1616,7 @@ function readerVariantInfo(entity,variant) {
   const source=legacyBlockForVariant(entity,variant);
   return localizedLegacyInfo(entity,source.legacySourceKey);
 }
-function readerCompatibilityLabel(status) {
-  if(currentLang==="fr") return ({excellent:"👑 Excellent match",strong:"🔥 Très compatible",compatible:"✓ Compatible",later:"⏳ Pas maintenant",fantasy:"💭 Fantasme à discuter",limit:"🚫 Limite",incomplete:"? Incomplet"})[status]||"? Incomplet";
-  return ({excellent:"👑 Excellent match",strong:"🔥 Strong match",compatible:"✓ Compatible",later:"⏳ Not now",fantasy:"💭 Fantasy to discuss",limit:"🚫 Limit",incomplete:"? Incomplete"})[status]||"? Incomplete";
-}
+function readerCompatibilityLabel(status) { return READER_COMPATIBILITY_LABELS[currentLang]?.[status]||READER_COMPATIBILITY_LABELS[currentLang]?.incomplete||"?"; }
 function readerScoreRole(slot) {
   return slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
 }
@@ -1579,13 +1635,13 @@ function readerCommonScoreEmoji(compatibility) {
 function readerTriedMark(state) {
   return state?.prior===true ? "✓" : "—";
 }
-function readerNotesHtml(pair,names=readerNames(),flowLabel="") {
+function readerNotesHtml(pair,names=readerNames()) {
   const notes=[
-    [names.personA,String(pair?.personA?.state?.note||"").trim()],
-    [names.personB,String(pair?.personB?.state?.note||"").trim()]
-  ].filter(([,note])=>note);
+    ['person-a',names.personA,String(pair?.personA?.state?.note||"").trim()],
+    ['person-b',names.personB,String(pair?.personB?.state?.note||"").trim()]
+  ].filter(([, ,note])=>note);
   if(!notes.length) return "";
-  return `<div class="couple-reader-notes">${flowLabel?`<div class="couple-reader-note-flow">${flowLabel}</div>`:""}${notes.map(([name,note],index)=>`<div class="couple-reader-note"><strong>${profileNameBadge(index===0?'person-a':'person-b', name, true)}</strong><span>${profileNamesInTextHtml(note,names)}</span></div>`).join("")}</div>`;
+  return `<div class="couple-reader-notes">${notes.map(([person,name,note])=>`<div class="couple-reader-note"><strong>${profileNameBadge(person,name,true)}</strong><span>${profileNamesInTextHtml(note,names)}</span></div>`).join("")}</div>`;
 }
 function readerResultPanel(entity,pair,names=readerNames()) {
   const c=pair.compatibility||{status:"incomplete",scoreA:null,scoreB:null};
@@ -1624,15 +1680,11 @@ function readerCanGroupDirectionVariants(entity,variants) {
   const first=normalized[0];
   return normalized.every(item=>item.title===first.title && item.category===first.category && item.level===first.level && item.risk===first.risk);
 }
-function readerGroupedDescription(variants) {
-  const descriptions=[...new Set(variants.map(({info})=>String(info?.explanation||"").trim()).filter(Boolean))];
-  return descriptions[0]||"";
-}
 
 function readerStatusMatches(pair,statusValue) {
   const c=pair.compatibility||{};
-  if(statusValue==="coupleCompatible" && !["compatible","strong","excellent"].includes(c.status)) return false;
-  if(statusValue==="coupleStrong" && !["strong","excellent"].includes(c.status)) return false;
+  if(statusValue==="coupleCompatible" && !COMPATIBLE_STATUSES.has(c.status)) return false;
+  if(statusValue==="coupleStrong" && !STRONG_STATUSES.has(c.status)) return false;
   if(statusValue==="coupleLimit" && c.status!=="limit") return false;
   if(statusValue==="coupleFantasy" && c.status!=="fantasy") return false;
   if(statusValue==="coupleIncomplete" && c.status!=="incomplete") return false;
@@ -1650,22 +1702,11 @@ function readerMinimumLabels(counts={}) {
     ["4",fr?"👑 Favori":"👑 Favorite",counts[4]]
   ];
 }
-function readerDsChipLabel(value,names) {
-  if (value === "b-dominant") return currentLang === "fr" ? `${names.personB} domine` : `${names.personB} dominant`;
-  return currentLang === "fr" ? `${names.personA} domine` : `${names.personA} dominant`;
-}
 function readerSelectedDsFilter(value) {
   return value === "b-dominant" ? "b-dominant" : "a-dominant";
 }
 function readerMinimumChipLabel(value) {
-  const fr=currentLang === "fr";
-  return ({
-    "": fr ? "Tous" : "All",
-    "1": "⏳",
-    "2": "🙂",
-    "3": "🔥",
-    "4": "👑"
-  })[String(value)] || (fr ? "Tous" : "All");
+  return READER_MINIMUM_ICONS[String(value)] || (currentLang === "fr" ? "Tous" : "All");
 }
 function readerMinimumChipTitle(value) {
   const item=readerMinimumLabels({}).find(([v])=>String(v)===String(value));
@@ -1761,6 +1802,17 @@ function configureReaderStatusOptions() {
   if(options.some(([value])=>value===previous)) status.value=previous;
   status.dataset.readerLang=langKey;
 }
+function getReaderModelSnapshot(profile=runtimeProfile()) {
+  if(readerModelCache.revision===derivedDataRevision&&readerModelCache.lang===currentLang&&readerModelCache.value) return readerModelCache.value;
+  const rows=[];
+  for(const entity of CATALOG_ENTITIES){
+    const response=V2_STORAGE.getReaderPractice(entity.id);if(!response)continue;
+    const variants=(INTERACTION_MODEL.readingView(entity,response,profile)||[]).map(pair=>({pair,info:readerVariantInfo(entity,pair.variant)}));
+    if(variants.length) rows.push({entity,variants});
+  }
+  readerModelCache={revision:derivedDataRevision,lang:currentLang,value:rows};
+  return rows;
+}
 function hideCoupleReader() {
   if(coupleReader) coupleReader.hidden=true;
 }
@@ -1769,7 +1821,7 @@ function renderCoupleReader() {
   configureReaderStatusOptions();
   coupleReader.hidden=false;
   hideIndividualEditor();
-  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{}, names=readerNames();
+  const profile=runtimeProfile(), names=readerNames();
   coupleReaderTitle.innerHTML=currentLang==="fr"?`Résultats de ${profileNameBadge('person-a', names.personA)} & ${profileNameBadge('person-b', names.personB)}`:`${profileNameBadge('person-a', names.personA)} & ${profileNameBadge('person-b', names.personB)} results`;
   coupleReaderIntro.textContent=currentLang==="fr"?"Chaque résultat croise uniquement les réponses complémentaires : donner avec recevoir, dominant avec soumis, ou intérêt partagé.":"Each result matches only complementary answers: give with receive, dominant with submissive, or shared interest.";
   coupleReaderLegend.innerHTML=currentLang==="fr"?`<strong>Lecture :</strong> les réponses restent personnelles. Le résultat au centre est calculé pour chaque configuration réellement possible. 🚫 reste une limite prioritaire ; 💭 reste un fantasme et n’est jamais transformé en consentement réel.`:`<strong>Reading:</strong> answers remain personal. The center result is calculated for each actually possible configuration. 🚫 remains a priority limit; 💭 remains a fantasy and is never converted into real-world consent.`;
@@ -1777,12 +1829,9 @@ function renderCoupleReader() {
   const { minOne, minTwo, includeFantasy } = readerFilterState;
   const dsFilter=readerSelectedDsFilter(readerFilterState.ds);
   const prepared=[];
-  for(const entity of CATALOG_ENTITIES) {
-    const practiceResponse=V2_STORAGE.getReaderPractice(entity.id); if(!practiceResponse) continue;
-    const allPairs=INTERACTION_MODEL.readingView(entity,practiceResponse,profile)||[];
+  for(const {entity,variants:allVariants} of getReaderModelSnapshot(profile)) {
     const base=[];
-    for(const pair of allPairs) {
-      const info=readerVariantInfo(entity,pair.variant);
+    for(const {pair,info} of allVariants) {
       if(info.level>maxLevel) continue;
       if(selectedCategory&&info.category!==selectedCategory) continue;
       if(selectedRisk&&info.risk!==selectedRisk) continue;
@@ -1816,8 +1865,8 @@ function renderCoupleReader() {
     for(const {pair} of candidates) {
       const st=pair.compatibility?.status;
       if(st!=="incomplete") completeVariants++;
-      if(["compatible","strong","excellent"].includes(st)) compatible++;
-      if(["strong","excellent"].includes(st)) strong++;
+      if(COMPATIBLE_STATUSES.has(st)) compatible++;
+      if(STRONG_STATUSES.has(st)) strong++;
       if(st==="fantasy") fantasies++;
       if(st==="limit") limits++;
       if(pair.common?.doneTogether===true) done++;
@@ -1884,10 +1933,10 @@ if(coupleReaderList) coupleReaderList.addEventListener("click",e=>{
     const id=action.dataset.v2Id,variant=action.dataset.variant;
     if(action.dataset.coupleAction==="session") toggleSessionVariant(id,variant);
     if(action.dataset.coupleAction==="together"){
-      const entity=UNIFIED_ENTITY_BY_ID.get(id),pair=entity?INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(id),window.CHECKLIST_PROFILE_API?.get?.()||{}):null;
+      const entity=UNIFIED_ENTITY_BY_ID.get(id),pair=entity?INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(id),runtimeProfile()):null;
       if(!pair||["limit","fantasy"].includes(pair.compatibility?.status)) return;
       V2_STORAGE.setVariantCommonState(id,variant,{doneTogether:pair.common?.doneTogether!==true});
-      invalidateRandomSnapshot();
+      invalidateDerivedData();
     }
     renderSessionPanel(true); renderCoupleReader(); return;
   }
@@ -1907,7 +1956,7 @@ function render() {
 
 
 function randomThresholdRank(value) {
-  return ({ fantasy:1, neutral:2, want:3, favorite:4 })[value] || 0;
+  return RANDOM_THRESHOLD_RANK[value] || 0;
 }
 
 function randomPreferenceRank(score) {
@@ -1945,13 +1994,11 @@ function matchesRandomVariantCriterion(pair) {
 
 function getRandomEligibilitySnapshot() {
   if (randomSnapshotCache.revision === randomStateRevision && randomSnapshotCache.value) return randomSnapshotCache.value;
-  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+  const profile=runtimeProfile();
   const pairEligible=[], baseEligible=[], eligible=[];
   let bothFavorite=0,newTogether=0,fantasyCount=0;
-  for(const entity of CATALOG_ENTITIES) {
-    const response=V2_STORAGE.getReaderPractice(entity.id); if(!response) continue;
-    for(const pair of INTERACTION_MODEL.readingView(entity,response,profile)||[]) {
-      const info=readerVariantInfo(entity,pair.variant);
+  for(const {entity,variants} of getReaderModelSnapshot(profile)) {
+    for(const {pair,info} of variants) {
       if(info.level>experienceMaxLevel()) continue;
       if(!matchesRandomVariantCriterion(pair)) continue;
       const candidate={entity,pair,info,key:`${entity.id}|${pair.variant}`};
@@ -1996,21 +2043,22 @@ function updateCompatibilityIndicator() {
 }
 
 function getStatsSnapshot() {
-  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+  if(statsSnapshotCache.revision===derivedDataRevision&&statsSnapshotCache.value) return statsSnapshotCache.value;
   let variants=0,complete=0,compatible=0,strong=0,done=0,favorites=0;
-  for(const entity of CATALOG_ENTITIES) {
-    const response=V2_STORAGE.getReaderPractice(entity.id); if(!response)continue;
-    for(const pair of INTERACTION_MODEL.readingView(entity,response,profile)||[]) {
+  for(const {variants:pairs} of getReaderModelSnapshot(runtimeProfile())) {
+    for(const {pair} of pairs) {
       variants++;
       const st=pair.compatibility?.status;
       if(st!=='incomplete') complete++;
-      if(['compatible','strong','excellent'].includes(st)) compatible++;
-      if(['strong','excellent'].includes(st)) strong++;
+      if(COMPATIBLE_STATUSES.has(st)) compatible++;
+      if(STRONG_STATUSES.has(st)) strong++;
       if(pair.common?.doneTogether===true) done++;
       if(pair.compatibility?.scoreA===4&&pair.compatibility?.scoreB===4) favorites++;
     }
   }
-  return {variants,complete,compatible,strong,done,favorites};
+  const value=Object.freeze({variants,complete,compatible,strong,done,favorites});
+  statsSnapshotCache={revision:derivedDataRevision,value};
+  return value;
 }
 
 let lastStatsSignature = "";
@@ -2125,7 +2173,7 @@ if(readerIncludeFantasy) readerIncludeFantasy.addEventListener("input",()=>{
 });
 for(const btn of readerHeaderDsButtons){
   btn.addEventListener("click",()=>{
-    const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+    const profile=runtimeProfile();
     if(profile?.dynamic?.mode && profile.dynamic.mode!=="switch") return;
     setReaderFilterState("ds", readerSelectedDsFilter(btn.dataset.readerHeaderDs));
     render();
@@ -2176,8 +2224,8 @@ document.addEventListener("keydown", (e) => {
 sessionModeList.addEventListener("change", (e) => {
   const checkbox=e.target.closest("input[data-session-mode-together]"); if(!checkbox)return;
   const id=checkbox.dataset.practiceId,variant=checkbox.dataset.variant,entity=UNIFIED_ENTITY_BY_ID.get(id); if(!entity)return;
-  const pair=INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(id),window.CHECKLIST_PROFILE_API?.get?.()||{}); if(!pair||["limit","fantasy"].includes(pair.compatibility?.status))return;
-  V2_STORAGE.setVariantCommonState(id,variant,{doneTogether:!!checkbox.checked}); renderSessionPanel(true); render();
+  const pair=INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(id),runtimeProfile()); if(!pair||["limit","fantasy"].includes(pair.compatibility?.status))return;
+  V2_STORAGE.setVariantCommonState(id,variant,{doneTogether:!!checkbox.checked}); invalidateDerivedData(); renderSessionPanel(true); render();
 });
 
 resetSessionBtn.addEventListener("click", () => {
@@ -2211,7 +2259,7 @@ randomResult.addEventListener("click", (e) => {
   const practiceId=btn.dataset.randomPracticeId, variant=btn.dataset.randomVariant;
   if(isVariantInSession(practiceId,variant))return;
   const entity=UNIFIED_ENTITY_BY_ID.get(practiceId); if(!entity)return;
-  const pair=INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(practiceId),window.CHECKLIST_PROFILE_API?.get?.()||{});
+  const pair=INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(practiceId),runtimeProfile());
   if(!pair||pair.compatibility?.status==='limit'){window.alert(t("sessionLimitWarning"));btn.disabled=true;return;}
   toggleSessionVariant(practiceId,variant);
   btn.disabled=true; btn.textContent=t("alreadyInSession");

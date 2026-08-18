@@ -45,6 +45,28 @@
   const v2ByScenarioLegacy = new Map();
   let personalResponsesCache = null;
   let coupleStateCache = null;
+  let sessionsCache = null;
+  let randomCache = null;
+  let displayCache = null;
+  let metaCache = null;
+  let safetyCache = null;
+  const readerPracticeCache = new Map();
+  const personalPracticeCache = new Map();
+  const personalSummaryCache = new Map();
+
+  function invalidateReaderPractice(v2Id=null){
+    if(v2Id) readerPracticeCache.delete(v2Id);
+    else readerPracticeCache.clear();
+  }
+  function invalidatePersonalDerived(v2Id=null){
+    invalidateReaderPractice(v2Id);
+    if(v2Id) personalPracticeCache.delete(v2Id); else personalPracticeCache.clear();
+    personalSummaryCache.clear();
+  }
+  function resetRuntimeCaches(){
+    personalResponsesCache=null; coupleStateCache=null; sessionsCache=null; randomCache=null; displayCache=null; metaCache=null; safetyCache=null;
+    readerPracticeCache.clear(); personalPracticeCache.clear(); personalSummaryCache.clear();
+  }
   for (const entity of CATALOG.entities || []) {
     for (const [scenarioKey, block] of Object.entries(entity.scenarios || {})) {
       const scenario = scenarioKey === 'aDom' ? 'a-dom' : scenarioKey === 'bDom' ? 'b-dom' : null;
@@ -112,7 +134,7 @@
     return personalResponsesCache;
   }
   function loadPersonalResponses(){ return clone(personalResponsesStore()); }
-  function savePersonalResponses(v){ personalResponsesCache = normalizePersonalResponses(v); writeJson(KEYS.personalResponses, personalResponsesCache); }
+  function savePersonalResponses(v){ personalResponsesCache = normalizePersonalResponses(v); invalidatePersonalDerived(); writeJson(KEYS.personalResponses, personalResponsesCache); }
   function persistPersonalResponses(){ writeJson(KEYS.personalResponses, personalResponsesStore()); }
 
   function emptyCoupleState(){ return {schemaVersion:1,practices:{}}; }
@@ -132,7 +154,7 @@
     return coupleStateCache;
   }
   function loadCoupleState(){ return clone(coupleStateStore()); }
-  function saveCoupleState(v){ coupleStateCache = normalizeCoupleState(v); writeJson(KEYS.coupleState, coupleStateCache); }
+  function saveCoupleState(v){ coupleStateCache = normalizeCoupleState(v); invalidateReaderPractice(); writeJson(KEYS.coupleState, coupleStateCache); }
   function persistCoupleState(){ writeJson(KEYS.coupleState, coupleStateStore()); }
   function projectLegacyResponsesToCouple(source){
     const src=normalizeLegacyResponses(source), out=emptyCoupleState();
@@ -144,7 +166,7 @@
   }
   function mergeCoupleAdditive(base,incoming){ const out=normalizeCoupleState(base); for(const [id,p] of Object.entries(incoming?.practices||{}))for(const [variant,state] of Object.entries(p?.variants||{}))if(state?.doneTogether===true){out.practices[id]=out.practices[id]||{variants:{}};out.practices[id].variants[variant]={doneTogether:true};}return out; }
   function getVariantCommonState(v2Id,variant){ return normalizeVariantCommon(coupleStateStore()?.practices?.[v2Id]?.variants?.[variant]); }
-  function setVariantCommonState(v2Id,variant,state){ const entity=entityByV2.get(v2Id); if(!entity||!INTERACTION.variantsForEntity(entity).includes(variant))return false;const store=coupleStateStore();const normalized=normalizeVariantCommon(state);const p=store.practices[v2Id]||{variants:{}};if(commonHasData(normalized))p.variants[variant]=normalized;else delete p.variants[variant];if(Object.keys(p.variants).length)store.practices[v2Id]=p;else delete store.practices[v2Id];persistCoupleState();touchCommon();return true; }
+  function setVariantCommonState(v2Id,variant,state){ const entity=entityByV2.get(v2Id); if(!entity||!INTERACTION.variantsForEntity(entity).includes(variant))return false;const store=coupleStateStore();const normalized=normalizeVariantCommon(state);const p=store.practices[v2Id]||{variants:{}};if(commonHasData(normalized))p.variants[variant]=normalized;else delete p.variants[variant];if(Object.keys(p.variants).length)store.practices[v2Id]=p;else delete store.practices[v2Id];invalidateReaderPractice(v2Id);persistCoupleState();touchCommon();return true; }
 
   function emptySafety(){ return {schemaVersion:1,values:{},legacySources:{},conflicts:[]}; }
   function emptySessions(){ return {schemaVersion:2,entries:[]}; }
@@ -158,23 +180,52 @@
 
   function sessionKey(entry){ return `${entry?.practiceId||''}|${entry?.variant||''}`; }
   function normalizeVariantEntries(rawEntries){ const seen=new Set(), out=[]; for(const e of Array.isArray(rawEntries)?rawEntries:[]){const entity=entityByV2.get(e?.practiceId);if(!entity||!INTERACTION.variantsForEntity(entity).includes(e?.variant))continue;const k=sessionKey(e);if(seen.has(k))continue;seen.add(k);out.push({practiceId:e.practiceId,variant:e.variant});}return out; }
-  function loadSessions(){ const r=readJson(KEYS.sessions,emptySessions());return {schemaVersion:2,entries:normalizeVariantEntries(r?.entries)}; }
-  function saveSessions(v){ writeJson(KEYS.sessions,{schemaVersion:2,entries:normalizeVariantEntries(v?.entries)}); }
-  function loadRandom(){ const r=readJson(KEYS.random,emptyRandom());return {schemaVersion:2,preferences:r?.preferences&&typeof r.preferences==='object'?clone(r.preferences):null,history:normalizeVariantEntries(r?.history)}; }
-  function saveRandom(v){ writeJson(KEYS.random,{schemaVersion:2,preferences:v?.preferences&&typeof v.preferences==='object'?clone(v.preferences):null,history:normalizeVariantEntries(v?.history)}); }
-  function loadDisplay(){ const r=readJson(KEYS.display,emptyDisplay());return {schemaVersion:2,common:r?.common&&typeof r.common==='object'?clone(r.common):{}}; }
-  function saveDisplay(v){ writeJson(KEYS.display,{schemaVersion:2,common:v?.common&&typeof v.common==='object'?clone(v.common):{}}); }
-  function getMeta(){ const m=readJson(KEYS.meta,emptyMeta());m.modifiedAt=m.modifiedAt||{personA:'',personB:'',common:''};return m; }
-  function setMeta(m){ writeJson(KEYS.meta,m); }
+  function sessionsStore(){
+    if(!sessionsCache){const r=readJson(KEYS.sessions,emptySessions());sessionsCache={schemaVersion:2,entries:normalizeVariantEntries(r?.entries)};}
+    return sessionsCache;
+  }
+  function loadSessions(){ return clone(sessionsStore()); }
+  function saveSessions(v){ sessionsCache={schemaVersion:2,entries:normalizeVariantEntries(v?.entries)};writeJson(KEYS.sessions,sessionsCache); }
+  function randomStore(){
+    if(!randomCache){const r=readJson(KEYS.random,emptyRandom());randomCache={schemaVersion:2,preferences:r?.preferences&&typeof r.preferences==='object'?clone(r.preferences):null,history:normalizeVariantEntries(r?.history)};}
+    return randomCache;
+  }
+  function loadRandom(){ return clone(randomStore()); }
+  function saveRandom(v){ randomCache={schemaVersion:2,preferences:v?.preferences&&typeof v.preferences==='object'?clone(v.preferences):null,history:normalizeVariantEntries(v?.history)};writeJson(KEYS.random,randomCache); }
+  function displayStore(){
+    if(!displayCache){const r=readJson(KEYS.display,emptyDisplay());displayCache={schemaVersion:2,common:r?.common&&typeof r.common==='object'?clone(r.common):{}};}
+    return displayCache;
+  }
+  function loadDisplay(){ return clone(displayStore()); }
+  function saveDisplay(v){ displayCache={schemaVersion:2,common:v?.common&&typeof v.common==='object'?clone(v.common):{}};writeJson(KEYS.display,displayCache); }
+  function metaStore(){
+    if(!metaCache){metaCache=readJson(KEYS.meta,emptyMeta());metaCache.modifiedAt=metaCache.modifiedAt||{personA:'',personB:'',common:''};}
+    return metaCache;
+  }
+  function getMeta(){ return clone(metaStore()); }
+  function setMeta(m){ metaCache=clone(m);writeJson(KEYS.meta,metaCache); }
   function touchPerson(person){const m=getMeta(),now=nowIso();m.modifiedAt[person]=now;m.lastModifiedAt=now;m.initialized=true;setMeta(m);}
   function touchCommon(){const m=getMeta(),now=nowIso();m.modifiedAt.common=now;m.lastModifiedAt=now;m.initialized=true;setMeta(m);}
 
   function getPersonalSlotState(v2Id,person,slot){if(!isPerson(person))return{};const entity=entityByV2.get(v2Id);if(!entity||!INTERACTION.slotsForEntity(entity).includes(slot))return{};return normalizeParticipant(personalResponsesStore()?.practices?.[v2Id]?.persons?.[person]?.[slot]);}
-  function setPersonalSlotState(v2Id,person,slot,state){if(!isPerson(person))return false;const entity=entityByV2.get(v2Id);if(!entity||!INTERACTION.slotsForEntity(entity).includes(slot))return false;const store=personalResponsesStore(),p=store.practices[v2Id]||{persons:{personA:{},personB:{}}},normalized=normalizeParticipant(state);if(participantHasData(normalized))p.persons[person][slot]=normalized;else delete p.persons[person][slot];if(Object.keys(p.persons.personA).length||Object.keys(p.persons.personB).length)store.practices[v2Id]=p;else delete store.practices[v2Id];persistPersonalResponses();touchPerson(person);return true;}
+  function setPersonalSlotState(v2Id,person,slot,state){if(!isPerson(person))return false;const entity=entityByV2.get(v2Id);if(!entity||!INTERACTION.slotsForEntity(entity).includes(slot))return false;const store=personalResponsesStore(),p=store.practices[v2Id]||{persons:{personA:{},personB:{}}},normalized=normalizeParticipant(state);if(participantHasData(normalized))p.persons[person][slot]=normalized;else delete p.persons[person][slot];if(Object.keys(p.persons.personA).length||Object.keys(p.persons.personB).length)store.practices[v2Id]=p;else delete store.practices[v2Id];invalidatePersonalDerived(v2Id);persistPersonalResponses();touchPerson(person);return true;}
   function copyPersonalSlots(entity, raw){const out={};for(const slot of INTERACTION.slotsForEntity(entity)){const state=normalizeParticipant(raw?.[slot]);if(participantHasData(state))out[slot]=state;}return out;}
-  function getPersonalPractice(v2Id){const entity=entityByV2.get(v2Id);if(!entity)return null;const p=personalResponsesStore().practices?.[v2Id];return {persons:{personA:copyPersonalSlots(entity,p?.persons?.personA),personB:copyPersonalSlots(entity,p?.persons?.personB)}};}
-  function getReaderPractice(v2Id){const entity=entityByV2.get(v2Id);if(!entity)return null;const p=personalResponsesStore().practices?.[v2Id],couple=coupleStateStore(),variants={};for(const v of INTERACTION.variantsForEntity(entity))variants[v]=normalizeVariantCommon(couple.practices?.[v2Id]?.variants?.[v]);return {persons:{personA:copyPersonalSlots(entity,p?.persons?.personA),personB:copyPersonalSlots(entity,p?.persons?.personB)},common:{variants}};}
-  function getPersonalSummary(person){if(!isPerson(person))return{person,totalSlots:0,touchedSlots:0,ratedSlots:0,practicesTouched:0};const store=personalResponsesStore();let totalSlots=0,touchedSlots=0,ratedSlots=0,practicesTouched=0;for(const entity of CATALOG.entities||[]){let touched=false;for(const slot of INTERACTION.slotsForEntity(entity)){totalSlots++;const s=normalizeParticipant(store.practices?.[entity.id]?.persons?.[person]?.[slot]);if(participantHasData(s)){touchedSlots++;touched=true;}if(Number.isInteger(s.after)||Number.isInteger(s.preference))ratedSlots++;}if(touched)practicesTouched++;}return{person,totalSlots,touchedSlots,ratedSlots,practicesTouched};}
+  function getPersonalPractice(v2Id){if(personalPracticeCache.has(v2Id))return personalPracticeCache.get(v2Id);const entity=entityByV2.get(v2Id);if(!entity)return null;const p=personalResponsesStore().practices?.[v2Id],result={persons:{personA:Object.freeze(copyPersonalSlots(entity,p?.persons?.personA)),personB:Object.freeze(copyPersonalSlots(entity,p?.persons?.personB))}};Object.freeze(result.persons);Object.freeze(result);personalPracticeCache.set(v2Id,result);return result;}
+  function getReaderPractice(v2Id){
+    if(readerPracticeCache.has(v2Id)) return readerPracticeCache.get(v2Id);
+    const entity=entityByV2.get(v2Id);if(!entity)return null;
+    const p=personalResponsesStore().practices?.[v2Id],couple=coupleStateStore(),variants={};
+    for(const v of INTERACTION.variantsForEntity(entity))variants[v]=Object.freeze(normalizeVariantCommon(couple.practices?.[v2Id]?.variants?.[v]));
+    const result={persons:{personA:Object.freeze(copyPersonalSlots(entity,p?.persons?.personA)),personB:Object.freeze(copyPersonalSlots(entity,p?.persons?.personB))},common:{variants:Object.freeze(variants)}};
+    Object.freeze(result.persons);Object.freeze(result.common);Object.freeze(result);readerPracticeCache.set(v2Id,result);return result;
+  }
+  function getPersonalSummary(person){
+    if(!isPerson(person))return{person,totalSlots:0,touchedSlots:0,ratedSlots:0,practicesTouched:0};
+    if(personalSummaryCache.has(person)) return personalSummaryCache.get(person);
+    const store=personalResponsesStore();let totalSlots=0,touchedSlots=0,ratedSlots=0,practicesTouched=0;
+    for(const entity of CATALOG.entities||[]){let touched=false;for(const slot of INTERACTION.slotsForEntity(entity)){totalSlots++;const s=normalizeParticipant(store.practices?.[entity.id]?.persons?.[person]?.[slot]);if(participantHasData(s)){touchedSlots++;touched=true;}if(Number.isInteger(s.after)||Number.isInteger(s.preference))ratedSlots++;}if(touched)practicesTouched++;}
+    const result=Object.freeze({person,totalSlots,touchedSlots,ratedSlots,practicesTouched});personalSummaryCache.set(person,result);return result;
+  }
 
   // Compatibility adapter for the pre-1.1.62 runtime. It synthesizes the former scenario rows from personal slots + couple variants.
   function getScenarioItems(scenario){const personal=loadPersonalResponses(),couple=loadCoupleState(),out=[];for(const entity of CATALOG.entities||[]){const key=scenario==='b-dom'?'bDom':'aDom',block=entity?.scenarios?.[key];if(!block)continue;const row={id:Number(block.legacyId)};for(const person of ['personA','personB']){const slot=INTERACTION.slotForLegacyPerson(entity,scenario,person);if(!slot)continue;const src=normalizeParticipant(personal.practices?.[entity.id]?.persons?.[person]?.[slot]);const fields=legacyFieldsForRole(roleForPerson(scenario,person));const pref=validScore(src.preference);if(pref!==null)row[fields.want]=pref;if(src.prior===true)row[fields.prior]=true;const after=validScore(src.after);if(after!==null)row[fields.after]=after;if(src.note)row[runtimeNoteFieldForPerson(person)]=src.note;}const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant&&couple.practices?.[entity.id]?.variants?.[variant]?.doneTogether===true)row.doneTogether=true;if(Object.keys(row).length>1)out.push(row);}return out;}
@@ -183,18 +234,18 @@
   function scenarioVariantKeySet(scenario){const out=new Set();for(const entity of CATALOG.entities||[]){const key=scenario==='b-dom'?'bDom':'aDom';if(!entity?.scenarios?.[key])continue;const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant)out.add(`${entity.id}|${variant}`);}return out;}
   function getScenarioSessionLegacyIds(scenario){const sessions=loadSessions(),ids=[];for(const entity of CATALOG.entities||[]){const key=scenario==='b-dom'?'bDom':'aDom',block=entity?.scenarios?.[key];if(!block)continue;const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant&&sessions.entries.some(e=>e.practiceId===entity.id&&e.variant===variant))ids.push(Number(block.legacyId));}return[...new Set(ids)];}
   function setScenarioSessionLegacyIds(scenario,ids){const s=loadSessions(),scope=scenarioVariantKeySet(scenario),keep=s.entries.filter(e=>!scope.has(sessionKey(e))),add=[];for(const id of [...new Set((Array.isArray(ids)?ids:[]).map(Number))]){const v2Id=v2ByScenarioLegacy.get(`${scenario}:${id}`),entity=entityByV2.get(v2Id);if(!entity)continue;const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant)add.push({practiceId:v2Id,variant});}s.entries=[...keep,...add];saveSessions(s);touchCommon();}
-  function getAllSessionEntries(){return loadSessions().entries;}
-  function setSessionEntries(entries){const next={schemaVersion:2,entries:normalizeVariantEntries(entries)};saveSessions(next);touchCommon();return loadSessions().entries;}
+  function getAllSessionEntries(){return clone(sessionsStore().entries);}
+  function setSessionEntries(entries){const next={schemaVersion:2,entries:normalizeVariantEntries(entries)};saveSessions(next);touchCommon();return clone(sessionsStore().entries);}
 
   function getRandomHistoryLegacyIds(scenario){const random=loadRandom(),ids=[];for(const entity of CATALOG.entities||[]){const key=scenario==='b-dom'?'bDom':'aDom',block=entity?.scenarios?.[key];if(!block)continue;const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant&&random.history.some(e=>e.practiceId===entity.id&&e.variant===variant))ids.push(Number(block.legacyId));}return[...new Set(ids)];}
   function setRandomHistoryLegacyIds(scenario,ids){const r=loadRandom(),scope=scenarioVariantKeySet(scenario),keep=r.history.filter(e=>!scope.has(sessionKey(e))),add=[];for(const id of [...new Set((Array.isArray(ids)?ids:[]).map(Number))]){const v2Id=v2ByScenarioLegacy.get(`${scenario}:${id}`),entity=entityByV2.get(v2Id);if(!entity)continue;const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant)add.push({practiceId:v2Id,variant});}r.history=[...keep,...add];saveRandom(r);}
-  function getRandomHistoryEntries(){return loadRandom().history;}
-  function setRandomHistoryEntries(entries){const r=loadRandom();r.history=normalizeVariantEntries(entries);saveRandom(r);return loadRandom().history;}
-  function getRandomPreferences(){return clone(loadRandom().preferences);}
+  function getRandomHistoryEntries(){return clone(randomStore().history);}
+  function setRandomHistoryEntries(entries){const r=loadRandom();r.history=normalizeVariantEntries(entries);saveRandom(r);return clone(randomStore().history);}
+  function getRandomPreferences(){return clone(randomStore().preferences);}
   function setRandomPreferences(value){const r=loadRandom();r.preferences=value&&typeof value==='object'?clone(value):null;saveRandom(r);}
 
-  function getDisplay(name,fallback){const d=loadDisplay();return Object.prototype.hasOwnProperty.call(d.common,name)?clone(d.common[name]):clone(fallback);}
-  function setDisplay(name,value){const d=loadDisplay();if(value===undefined)delete d.common[name];else d.common[name]=clone(value);saveDisplay(d);}
+  function getDisplay(name,fallback){const d=displayStore();return Object.prototype.hasOwnProperty.call(d.common,name)?clone(d.common[name]):clone(fallback);}
+  function setDisplay(name,value){const d=displayStore();if(value===undefined)delete d.common[name];else d.common[name]=clone(value);saveDisplay(d);}
 
   function getLastModified(){return getMeta().lastModifiedAt||'';}
   function getLastExchange(){return getMeta().lastExchange||null;}
@@ -203,8 +254,9 @@
   function mergeSafetyText(a,b){a=nonEmptyString(a).trim();b=nonEmptyString(b).trim();if(!b)return a;if(!a||a===b)return b;const parts=a.split(/\n+/).map(x=>x.trim()).filter(Boolean),seen=new Set(parts.map(x=>x.toLocaleLowerCase()));for(const p of b.split(/\n+/).map(x=>x.trim()).filter(Boolean)){const k=p.toLocaleLowerCase();if(!seen.has(k)){seen.add(k);parts.push(p);}}return parts.join('\n');}
   function restrictiveChoice(a,b,ranking){a=nonEmptyString(a).trim();b=nonEmptyString(b).trim();if(!b)return a;if(!a||a===b)return b;const ra=ranking[a]||0,rb=ranking[b]||0;if(!ra&&!rb)return a;if(!ra)return b;if(!rb)return a;return rb>ra?b:a;}
   function mergeSafetyPrudent(local,incoming){local=local&&typeof local==='object'?local:{};incoming=incoming&&typeof incoming==='object'?incoming:{};const merged={...local},conflicts=[];for(const key of ['slowWord','safeWord','slowSignal','stopSignal']){const a=nonEmptyString(local[key]).trim(),b=nonEmptyString(incoming[key]).trim();if(!b)merged[key]=a;else if(!a||a===b)merged[key]=b;else{merged[key]=a;conflicts.push({key,local:a,incoming:b});}}merged.hardLimits=mergeSafetyText(local.hardLimits,incoming.hardLimits);merged.aftercare=mergeSafetyText(local.aftercare,incoming.aftercare);merged.marks=restrictiveChoice(local.marks,incoming.marks,{'Oui':1,'Oui, légères':2,'Non':3,'Yes':1,'Yes, light':2,'No':3});merged.media=restrictiveChoice(local.media,incoming.media,{'Selon accord explicite au cas par cas':1,'Privées uniquement':2,'Aucune':3,'Only with explicit case-by-case agreement':1,'Private only':2,'None':3});for(const key of ['noIntoxication','nextDayDebrief','stopImmediate'])merged[key]=local[key]===true||incoming[key]===true;return{merged,conflicts};}
-  function getSafety(){return readJson(KEYS.safety,emptySafety()).values||{};}
-  function setSafety(values){const s=readJson(KEYS.safety,emptySafety());s.values=values&&typeof values==='object'?clone(values):{};writeJson(KEYS.safety,s);touchCommon();}
+  function safetyStore(){if(!safetyCache)safetyCache=readJson(KEYS.safety,emptySafety());return safetyCache;}
+  function getSafety(){return clone(safetyStore().values||{});}
+  function setSafety(values){const s=safetyStore();s.values=values&&typeof values==='object'?clone(values):{};writeJson(KEYS.safety,s);touchCommon();}
 
   function legacyKeys(def){return{items:`${def.namespace}_v1`,safety:`${def.namespace}_safety_v1`,columns:`${def.namespace}_columns_v5`,role:`${def.namespace}_role_v1`,otherRoleColumns:`${def.namespace}_otherRoleColumns_v1`,readOnly:`${def.namespace}_readOnly_v1`,lastModified:`${def.namespace}_lastModified_v1`,lastExchange:`${def.namespace}_lastExchange_v1`,session:`${def.namespace}_session_v1`,modifiedScopes:`${def.namespace}_modifiedScopes_v1`,experienceMode:`${def.prefix}Checklist_experienceMode_v1`,collapsedCategories:`${def.prefix}Checklist_collapsedCategories_v1`,randomPrefs:`${def.prefix}Checklist_randomPrefs_v1`,randomHistory:`${def.prefix}Checklist_randomHistory_v1`};}
   function snapshotLegacyLocalVariant(def){const k=legacyKeys(def);return{items:readJson(k.items,[]),safety:readJson(k.safety,{}),sessionOrder:readJson(k.session,[]),columnPreferences:readJson(k.columns,null),experienceMode:localStorage.getItem(k.experienceMode)||null,collapsedCategories:readJson(k.collapsedCategories,[]),randomPreferences:readJson(k.randomPrefs,null),randomDrawHistory:readJson(k.randomHistory,[]),modifiedAtByScope:readJson(k.modifiedScopes,{}),lastModifiedAt:localStorage.getItem(k.lastModified)||'',activeRole:localStorage.getItem(k.role)||null,showOtherRoleColumns:localStorage.getItem(k.otherRoleColumns),readOnly:localStorage.getItem(k.readOnly),lastExchange:readJson(k.lastExchange,null)};}
@@ -221,7 +273,7 @@
 
   function currentProfile(){return window.CHECKLIST_PROFILE_API?.get?.()||null;}
   function installActiveData(data,source){
-    personalResponsesCache = null; coupleStateCache = null;
+    resetRuntimeCaches();
     savePersonalResponses(data.personalResponses||emptyPersonalResponses());saveCoupleState(data.coupleState||emptyCoupleState());writeJson(KEYS.safety,data.safety||emptySafety());saveSessions(data.sessions||emptySessions());saveDisplay(data.display||emptyDisplay());saveRandom(data.random||emptyRandom());writeJson(KEYS.legacyArchive,normalizeLegacyArchive(data.legacyArchive||emptyLegacyArchive()));
     const meta=data.meta&&typeof data.meta==='object'?clone(data.meta):emptyMeta();meta.schemaVersion=2;meta.initialized=true;meta.migration={...(meta.migration||{}),source:source||meta.migration?.source||'unknown',at:nowIso(),storageModel:'personal-slots+couple-variants'};writeJson(KEYS.meta,meta);
   }
@@ -266,7 +318,7 @@
   function buildLegacyArchiveForPerson(person){const src=normalizeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive())),out=emptyLegacyArchive();for(const entry of src.entries){const next={source:entry.source,at:entry.at,personOnly:person,responses:normalizeLegacyResponses(entry.responses||emptyLegacyResponses())};for(const p of Object.values(next.responses.practices||{}))for(const state of Object.values(p.scenarios||{}))for(const other of ['personA','personB'])if(other!==person)state.participants[other]={};out.entries.push(next);}return out;}
   function buildBackup(type,appVersion){const backupType=type==='full'?'full':type==='male'||type==='person-a'?'person-a':'person-b',exportedAt=nowIso(),meta=getMeta();if(backupType==='full')return{schemaVersion:4,siteBackupId:SITE_BACKUP_ID,appVersion,catalogVersion:CATALOG.schemaVersion||1,backupType,exportedAt,profile:clone(currentProfile()),data:{personalResponses:loadPersonalResponses(),coupleState:loadCoupleState(),safety:readJson(KEYS.safety,emptySafety()),sessions:loadSessions(),display:loadDisplay(),random:loadRandom(),meta:clone(meta),legacyArchive:readJson(KEYS.legacyArchive,emptyLegacyArchive())}};const person=backupType==='person-a'?'personA':'personB',profile=currentProfile(),identity=profile?.[person]||{};return{schemaVersion:4,siteBackupId:SITE_BACKUP_ID,appVersion,catalogVersion:CATALOG.schemaVersion||1,backupType,exportedAt,participant:{slot:backupType,identityId:identity.identityId||null,name:identity.name||null},data:{personalResponses:buildPersonalModelForPerson(person),coupleState:loadCoupleState(),safety:readJson(KEYS.safety,emptySafety()),modifiedAt:{person:meta.modifiedAt?.[person]||'',common:meta.modifiedAt?.common||''},legacyArchive:buildLegacyArchiveForPerson(person)}};}
 
-  function mergePersonalActive(data,person,exportedAt){const local=loadPersonalResponses(),incoming=normalizePersonalResponses(data?.personalResponses);for(const p of Object.values(local.practices||{}))if(p?.persons)p.persons[person]={};for(const [id,p] of Object.entries(incoming.practices||{})){const slots=p?.persons?.[person]||{};if(!Object.keys(slots).length)continue;const dst=local.practices[id]||{persons:{personA:{},personB:{}}};dst.persons[person]=clone(slots);local.practices[id]=dst;}for(const [id,p] of Object.entries(local.practices||{}))if(!Object.keys(p.persons?.personA||{}).length&&!Object.keys(p.persons?.personB||{}).length)delete local.practices[id];savePersonalResponses(local);saveCoupleState(mergeCoupleAdditive(loadCoupleState(),data?.coupleState));if(data?.legacyArchive)writeJson(KEYS.legacyArchive,mergeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive()),data.legacyArchive));const localSafety=readJson(KEYS.safety,emptySafety()),incomingSafety=data?.safety||emptySafety(),merged=mergeSafetyPrudent(localSafety.values||{},incomingSafety.values||{});localSafety.values=merged.merged;localSafety.conflicts=[...(localSafety.conflicts||[]),...merged.conflicts];writeJson(KEYS.safety,localSafety);const meta=getMeta();meta.modifiedAt[person]=data?.modifiedAt?.person||exportedAt||nowIso();meta.modifiedAt.common=data?.modifiedAt?.common||meta.modifiedAt.common||nowIso();meta.lastModifiedAt=nowIso();meta.initialized=true;setMeta(meta);return{conflicts:merged.conflicts};}
+  function mergePersonalActive(data,person,exportedAt){const local=loadPersonalResponses(),incoming=normalizePersonalResponses(data?.personalResponses);for(const p of Object.values(local.practices||{}))if(p?.persons)p.persons[person]={};for(const [id,p] of Object.entries(incoming.practices||{})){const slots=p?.persons?.[person]||{};if(!Object.keys(slots).length)continue;const dst=local.practices[id]||{persons:{personA:{},personB:{}}};dst.persons[person]=clone(slots);local.practices[id]=dst;}for(const [id,p] of Object.entries(local.practices||{}))if(!Object.keys(p.persons?.personA||{}).length&&!Object.keys(p.persons?.personB||{}).length)delete local.practices[id];savePersonalResponses(local);saveCoupleState(mergeCoupleAdditive(loadCoupleState(),data?.coupleState));if(data?.legacyArchive)writeJson(KEYS.legacyArchive,mergeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive()),data.legacyArchive));const localSafety=clone(safetyStore()),incomingSafety=data?.safety||emptySafety(),merged=mergeSafetyPrudent(localSafety.values||{},incomingSafety.values||{});localSafety.values=merged.merged;localSafety.conflicts=[...(localSafety.conflicts||[]),...merged.conflicts];safetyCache=localSafety;writeJson(KEYS.safety,localSafety);const meta=getMeta();meta.modifiedAt[person]=data?.modifiedAt?.person||exportedAt||nowIso();meta.modifiedAt.common=data?.modifiedAt?.common||meta.modifiedAt.common||nowIso();meta.lastModifiedAt=nowIso();meta.initialized=true;setMeta(meta);return{conflicts:merged.conflicts};}
 
   function convertV3Payload(payload){if(payload.backupType==='full')return convertScenarioDataToActive(payload.data||{},`V1.1.58–V1.1.61 backup (${payload.appVersion||'schema3'})`);const person=payload.backupType==='person-a'?'personA':'personB',legacyResponses=normalizeLegacyResponses(payload.data?.responses||emptyLegacyResponses()),personal=payload.data?.personalResponses?normalizePersonalResponses(payload.data.personalResponses):projectLegacyResponsesToPersonal(legacyResponses);return{personalResponses:personal,coupleState:projectLegacyResponsesToCouple(legacyResponses),safety:payload.data?.safety||emptySafety(),modifiedAt:payload.data?.modifiedAt||{},legacyArchive:archiveScenarioData(payload.data||{},`V1.1.58–V1.1.61 personal backup (${payload.appVersion||'schema3'})`,person),person};}
   function convertLegacyPersonal(payload,legacyType){const person=legacyTypeToPerson(legacyType),responses=emptyLegacyResponses();let mergedSafety={},conflicts=[];for(const [variantId,def] of Object.entries(LEGACY_VARIANT_FORMATS)){const block=payload.variants?.[variantId]||{};addLegacyVariantToResponses(responses,def.scenario,block.items,person);const m=mergeSafetyPrudent(mergedSafety,block.safety||{});mergedSafety=m.merged;conflicts.push(...m.conflicts.map(x=>({...x,scenario:def.scenario})));}return{person,personalResponses:projectLegacyResponsesToPersonal(responses),coupleState:projectLegacyResponsesToCouple(responses),safety:{schemaVersion:1,values:mergedSafety,legacySources:{},conflicts},modifiedAt:{person:payload.exportedAt||'',common:payload.exportedAt||''},legacyArchive:archiveScenarioData({responses},`V1.1.55 personal backup (${legacyType})`,person)};}
@@ -280,7 +332,7 @@
   function getScenarioSummary(scenario){const personal=loadPersonalResponses(),couple=loadCoupleState(),sessions=loadSessions(),random=loadRandom();let total=0,touched=0,ratedByBoth=0,doneTogether=0,experienced=0,sessionCount=0,randomCount=0;const seenSession=new Set(),seenRandom=new Set();for(const entity of CATALOG.entities||[]){const key=scenario==='b-dom'?'bDom':'aDom';if(!entity?.scenarios?.[key])continue;total++;const variant=INTERACTION.variantForLegacyScenario(entity,scenario),slots=variant?INTERACTION.participantSlotsForVariant(entity,variant):null;if(!variant||!slots)continue;const a=normalizeParticipant(personal.practices?.[entity.id]?.persons?.personA?.[slots.personA]),b=normalizeParticipant(personal.practices?.[entity.id]?.persons?.personB?.[slots.personB]),done=couple.practices?.[entity.id]?.variants?.[variant]?.doneTogether===true;const pt=p=>participantHasData(p),rated=p=>Number.isInteger(p.after)||Number.isInteger(p.preference);if(pt(a)||pt(b)||done)touched++;if(rated(a)&&rated(b))ratedByBoth++;if(done)doneTogether++;if(a.prior===true||b.prior===true||Number.isInteger(a.after)||Number.isInteger(b.after)||done)experienced++;const k=`${entity.id}|${variant}`;if(sessions.entries.some(e=>sessionKey(e)===k)&&!seenSession.has(k)){seenSession.add(k);sessionCount++;}if(random.history.some(e=>sessionKey(e)===k)&&!seenRandom.has(k)){seenRandom.add(k);randomCount++;}}
     return{scenario,total,touched,ratedByBoth,doneTogether,experienced,sessionCount,randomCount};}
 
-  function resetAllUserData(){for(const key of Object.values(KEYS))localStorage.removeItem(key);for(const key of Object.values(LEGACY_ACTIVE_KEYS))localStorage.removeItem(key);for(const def of Object.values(LEGACY_VARIANT_FORMATS))for(const key of Object.values(legacyKeys(def)))localStorage.removeItem(key);const meta=emptyMeta();meta.initialized=true;meta.lastModifiedAt=nowIso();meta.modifiedAt={personA:meta.lastModifiedAt,personB:meta.lastModifiedAt,common:meta.lastModifiedAt};installActiveData({meta},'reset');}
+  function resetAllUserData(){resetRuntimeCaches();for(const key of Object.values(KEYS))localStorage.removeItem(key);for(const key of Object.values(LEGACY_ACTIVE_KEYS))localStorage.removeItem(key);for(const def of Object.values(LEGACY_VARIANT_FORMATS))for(const key of Object.values(legacyKeys(def)))localStorage.removeItem(key);const meta=emptyMeta();meta.initialized=true;meta.lastModifiedAt=nowIso();meta.modifiedAt={personA:meta.lastModifiedAt,personB:meta.lastModifiedAt,common:meta.lastModifiedAt};installActiveData({meta},'reset');}
 
   const migration=autoMigrate();
 
