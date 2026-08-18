@@ -4934,3 +4934,25 @@ body[data-view-mode="edit"] .individual-after[data-result-key] .unknown-score{
   background:rgba(255,251,247,.84);
   border-color:rgba(70,53,59,.16);
 }
+
+
+/* V1.1.122 — Editor-colored response outlines */
+body[data-view-mode="edit"] .individual-slot[data-result-key],
+body[data-view-mode="edit"] .individual-after[data-result-key]{
+  --edit-outline:var(--dominant-color);
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main,
+body[data-view-mode="edit"] .individual-after[data-result-key] .individual-score-row{
+  border:2px solid var(--edit-outline);
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .score-btn,
+body[data-view-mode="edit"] .individual-after[data-result-key] .score-btn,
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-prior,
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-note-toggle,
+body[data-view-mode="edit"] .individual-after[data-result-key] .unknown-score{
+  border-color:color-mix(in srgb,var(--dominant-color) 52%,#fff 48%);
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .score-btn.selected,
+body[data-view-mode="edit"] .individual-after[data-result-key] .score-btn.selected{
+  outline-color:color-mix(in srgb,var(--dominant-dark) 76%,#fff 24%);
+}
