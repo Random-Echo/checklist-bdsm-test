@@ -4326,3 +4326,113 @@ body[data-view-mode="read"] .reader-filter-dock::after,
 body[data-view-mode="read"] .reader-current-category-dock::before{
   background:var(--variant-bg);
 }
+
+
+/* V1.1.113 — Reading categories follow the current dominant instead of using
+   unrelated catalogue colors. This keeps the visual language cohesive while
+   result colors remain semantic. */
+body[data-view-mode="read"] .couple-reader-category{
+  border-color:var(--read-dominant-line);
+  border-left-color:var(--dominant-dark) !important;
+  background:var(--read-dominant-panel);
+  box-shadow:0 2px 8px color-mix(in srgb,var(--dominant-dark) 12%,transparent);
+}
+body[data-view-mode="read"] .couple-reader-category-head,
+body[data-view-mode="read"] .reader-current-category-head{
+  border-left-color:var(--dominant-dark) !important;
+  background:linear-gradient(90deg,
+    color-mix(in srgb,var(--dominant-soft) 90%,#fff 10%) 0%,
+    color-mix(in srgb,var(--dominant-soft) 72%,#f6eee8 28%) 100%);
+  color:var(--read-dominant-ink);
+}
+body[data-view-mode="read"] .couple-reader-category-head > strong,
+body[data-view-mode="read"] .reader-current-category-head > strong{
+  color:var(--dominant-dark);
+}
+body[data-view-mode="read"] .couple-reader-category-chevron,
+body[data-view-mode="read"] .couple-reader-category-count,
+body[data-view-mode="read"] .couple-result-head small{
+  color:color-mix(in srgb,var(--dominant-dark) 74%,#5f565b 26%);
+}
+
+
+/* V1.1.114 — Edit mode follows the colour of the person currently answering,
+   using the same global-theme system as Reading mode. */
+body[data-view-mode="edit"]{
+  --variant-bg:color-mix(in srgb,var(--dominant-color) 88%,var(--luxe-black,#120d11) 12%);
+  --variant-header:var(--variant-bg);
+  --edit-theme-panel:color-mix(in srgb,var(--dominant-soft) 92%,#fff 8%);
+  --edit-theme-panel-2:color-mix(in srgb,var(--dominant-soft) 84%,#fff 16%);
+  --edit-theme-panel-3:color-mix(in srgb,var(--dominant-soft) 74%,#fff 26%);
+  --edit-theme-line:color-mix(in srgb,var(--dominant-color) 40%,#d7cbc3 60%);
+  --edit-theme-ink:color-mix(in srgb,var(--dominant-dark) 78%,#20181d 22%);
+}
+body[data-view-mode="edit"],
+body[data-view-mode="edit"] header,
+body[data-view-mode="edit"] main,
+body[data-view-mode="edit"] .site-footer,
+body[data-view-mode="edit"] .top{
+  background:var(--variant-bg);
+}
+body[data-view-mode="edit"] header h1{
+  color:#fff8f2;
+  text-shadow:0 1px 2px rgba(18,13,17,.32);
+}
+body[data-view-mode="edit"] :is(.home-button,.language-switch,.help-button,.mode-switch,.all-tools,.individual-editor,.individual-editor-head,.site-footer){
+  border-color:var(--edit-theme-line);
+}
+body[data-view-mode="edit"] .home-button,
+body[data-view-mode="edit"] .language-switch,
+body[data-view-mode="edit"] .help-button,
+body[data-view-mode="edit"] .all-tools,
+body[data-view-mode="edit"] .individual-editor,
+body[data-view-mode="edit"] .site-footer{
+  background:var(--edit-theme-panel);
+  color:var(--edit-theme-ink);
+}
+body[data-view-mode="edit"] .mode-switch{
+  background:var(--edit-theme-panel-3);
+}
+body[data-view-mode="edit"] .mode-switch button.active,
+body[data-view-mode="edit"] .mode-switch button[aria-pressed="true"]{
+  background:var(--edit-theme-panel);
+  color:var(--edit-theme-ink);
+}
+body[data-view-mode="edit"] .all-tools > summary,
+body[data-view-mode="edit"] .individual-editor-head,
+body[data-view-mode="edit"] .individual-editor-legend,
+body[data-view-mode="edit"] .individual-editor-bulk-btn{
+  background:var(--edit-theme-panel-2);
+  color:var(--edit-theme-ink);
+  border-color:var(--edit-theme-line);
+}
+body[data-view-mode="edit"] .all-tools-content{
+  background:var(--edit-theme-panel);
+}
+body[data-view-mode="edit"] .individual-category{
+  border-color:var(--edit-theme-line);
+  border-left:4px solid var(--dominant-dark);
+  border-radius:9px;
+  background:var(--edit-theme-panel);
+  box-shadow:0 2px 8px color-mix(in srgb,var(--dominant-dark) 10%,transparent);
+}
+body[data-view-mode="edit"] .individual-category-head{
+  border-color:var(--edit-theme-line);
+  background:linear-gradient(90deg,
+    color-mix(in srgb,var(--dominant-soft) 90%,#fff 10%) 0%,
+    color-mix(in srgb,var(--dominant-soft) 72%,#f6eee8 28%) 100%);
+  color:var(--edit-theme-ink);
+}
+body[data-view-mode="edit"] .individual-category-head strong{
+  color:var(--dominant-dark);
+}
+body[data-view-mode="edit"] .individual-category-head .section-dot{
+  background:var(--dominant-dark)!important;
+}
+body[data-view-mode="edit"] .individual-editor-progress,
+body[data-view-mode="edit"] .compat-summary,
+body[data-view-mode="edit"] .stat{
+  background:rgba(255,252,248,.68);
+  color:var(--edit-theme-ink);
+  border-color:var(--edit-theme-line);
+}

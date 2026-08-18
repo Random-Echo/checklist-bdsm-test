@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.112";
+const APP_VERSION = "V1.1.114";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -810,14 +810,18 @@ function renderRoleChoiceLabel(btn) {
 function applyDominantViewTheme() {
   const root=document.documentElement, body=document.body;
   if(!root || !body) return;
-  let side="";
+  let side="person-a";
   const profile=runtimeProfile();
   if(body.dataset.viewMode==="read"){
     if(profile?.dynamic?.mode === "b-dom") side = "person-b";
     else if(profile?.dynamic?.mode === "a-dom") side = "person-a";
     else side = readerSelectedDsFilter(readerFilterState.ds) === "b-dominant" ? "person-b" : "person-a";
+    body.dataset.dominantSide = side;
+  } else {
+    side = activeEditPerson === "person-b" ? "person-b" : "person-a";
+    body.dataset.dominantSide = "";
   }
-  body.dataset.dominantSide = side;
+  body.dataset.themeSide = side;
   const styles = getComputedStyle(root);
   const prefix = side === "person-b" ? "--person-b-role" : "--person-a-role";
   root.style.setProperty("--dominant-color", (styles.getPropertyValue(`${prefix}-color`) || "").trim() || "#9B782A");
@@ -1913,6 +1917,10 @@ function hideCoupleReader() {
 }
 function renderCoupleReader() {
   if(!coupleReader||!coupleReaderList) return;
+  /* The dominant can change from the Reading header without changing view mode.
+     Recompute the theme before rebuilding the reader so the global background
+     follows Dunk/Ferre immediately, without requiring a page refresh. */
+  applyDominantViewTheme();
   configureReaderStatusOptions();
   coupleReader.hidden=false;
   hideIndividualEditor();
