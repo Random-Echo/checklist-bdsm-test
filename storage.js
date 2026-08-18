@@ -311,11 +311,11 @@
 
   function validateV5Backup(payload){
     if(!payload||typeof payload!=='object'||Array.isArray(payload)||payload.schemaVersion!==5||payload.siteBackupId!==SITE_BACKUP_ID)return null;
-    if(!['full','person-a','person-b'].includes(payload.backupType)||!payload.data||typeof payload.data!=='object')throw new Error('Invalid V1.1.141 backup.');
-    if(['person-a','person-b'].includes(payload.backupType)&&(!payload.coupleConfiguration||typeof payload.coupleConfiguration!=='object'))throw new Error('Invalid V1.1.141 personal backup: couple configuration missing.');
+    if(!['full','person-a','person-b'].includes(payload.backupType)||!payload.data||typeof payload.data!=='object')throw new Error('Invalid V1.1.143 backup.');
+    if(['person-a','person-b'].includes(payload.backupType)&&(!payload.coupleConfiguration||typeof payload.coupleConfiguration!=='object'))throw new Error('Invalid V1.1.143 personal backup: couple configuration missing.');
     if(payload.coupleConfiguration&&window.CHECKLIST_PROFILE_API?.configurationFingerprint){
       const actual=window.CHECKLIST_PROFILE_API.configurationFingerprint(payload.coupleConfiguration);
-      if(payload.coupleConfigFingerprint&&payload.coupleConfigFingerprint!==actual)throw new Error('Invalid V1.1.141 backup: couple configuration fingerprint mismatch.');
+      if(payload.coupleConfigFingerprint&&payload.coupleConfigFingerprint!==actual)throw new Error('Invalid V1.1.143 backup: couple configuration fingerprint mismatch.');
     }
     return{format:'v5',type:payload.backupType,hasCoupleConfiguration:!!payload.coupleConfiguration};
   }
@@ -352,7 +352,7 @@
     if(info.format==='v5'){
       if(info.type==='full'){
         const data=normalizeCurrentFullData(payload.data);
-        installActiveData(data,`V1.1.141 backup (${payload.appVersion||'schema5'})`);
+        installActiveData(data,`V1.1.143 backup (${payload.appVersion||'schema5'})`);
         if(payload.profile&&window.CHECKLIST_PROFILE_API?.save)window.CHECKLIST_PROFILE_API.save(payload.profile);
         result={type:'full',format:'v5',conflicts:[],configComparison:null};
       }else{

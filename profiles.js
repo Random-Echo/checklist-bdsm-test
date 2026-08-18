@@ -2,8 +2,9 @@
   'use strict';
 
   const KEY = 'bdsmChecklistV2_profile_v1';
-  const CONFIG_BACKUP_ID = 'bdsm-checklists-couple-config-v1';
   const CONFIG_SCHEMA_VERSION = 1;
+  const SHARE_SCHEMA_VERSION = 1;
+  const SHARE_HASH_KEY = 'couple';
   const PROFILE_COLORS = [
     {id:'blue',main:'#2F6F8F',dark:'#1E536C',soft:'#E8F2F7'},
     {id:'plum',main:'#8B3F6F',dark:'#67294D',soft:'#F7EAF2'},
@@ -27,6 +28,7 @@
   const clone = value => JSON.parse(JSON.stringify(value));
   const colorById = id => PROFILE_COLORS.find(color => color.id === id) || null;
   const safeName = (value, fallback) => String(value || '').trim().slice(0, 40) || fallback;
+  const safeIdentityId = value => String(value || '').trim().slice(0, 120);
   const makeIdentityId = () => {
     try { if (crypto?.randomUUID) return crypto.randomUUID(); } catch (_) {}
     return `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,12)}`;
@@ -43,7 +45,7 @@
     for (const side of ['personA','personB']) {
       const source = raw[side] || {};
       profile[side].name = safeName(source.name, side === 'personA' ? 'Personne A' : 'Personne B');
-      profile[side].identityId = typeof source.identityId === 'string' && source.identityId ? source.identityId : makeIdentityId();
+      profile[side].identityId = safeIdentityId(source.identityId) || makeIdentityId();
       profile[side].color = colorById(source.color)?.id || (side === 'personA' ? 'blue' : 'plum');
       for (const key of ANATOMY_KEYS) profile[side].anatomy[key] = source.anatomy?.[key] === true;
     }
@@ -130,7 +132,8 @@
       const incoming = source[side] || {};
       next[side].name = safeName(incoming.name, side === 'personA' ? 'Personne A' : 'Personne B');
       next[side].color = colorById(incoming.color)?.id || next[side].color;
-      if (typeof incoming.identityId === 'string' && incoming.identityId) next[side].identityId = incoming.identityId;
+      const incomingIdentity = safeIdentityId(incoming.identityId);
+      if (incomingIdentity) next[side].identityId = incomingIdentity;
       for (const key of ANATOMY_KEYS) next[side].anatomy[key] = incoming.anatomy?.[key] === true;
     }
     next.dynamic.mode = ['a-dom','b-dom','switch'].includes(source.dynamic?.mode) ? source.dynamic.mode : 'switch';
@@ -161,34 +164,87 @@
     };
   }
 
-  function buildCoupleConfigBackup(appVersion = '') {
-    const config = coupleConfiguration(profile);
-    return {
-      schemaVersion: CONFIG_SCHEMA_VERSION,
-      siteBackupId: CONFIG_BACKUP_ID,
-      backupType:'couple-config',
-      appVersion:String(appVersion || ''),
-      exportedAt:new Date().toISOString(),
-      configFingerprint:configurationFingerprint(config),
-      profile:config
-    };
+  function anatomyMask(anatomy) {
+    return ANATOMY_KEYS.reduce((mask, key, index) => mask | (anatomy?.[key] === true ? (1 << index) : 0), 0);
   }
 
-  function inspectCoupleConfigBackup(payload) {
-    if (!payload || typeof payload !== 'object' || Array.isArray(payload) || payload.siteBackupId !== CONFIG_BACKUP_ID || payload.schemaVersion !== CONFIG_SCHEMA_VERSION || payload.backupType !== 'couple-config') {
-      throw new Error('Ce fichier n’est pas une configuration de couple compatible.');
-    }
-    const incomingProfile = normalizeCoupleConfiguration(payload.profile, profile);
-    const fingerprint = configurationFingerprint(incomingProfile);
-    if (payload.configFingerprint && payload.configFingerprint !== fingerprint) throw new Error('Configuration du couple corrompue / corrupted couple configuration.');
-    return {
-      type:'couple-config',
-      format:'couple-config-v1',
-      appVersion:payload.appVersion || '',
-      exportedAt:payload.exportedAt || null,
-      fingerprint,
-      incomingProfile
+  function anatomyFromMask(value) {
+    const mask = Number.isInteger(value) && value >= 0 && value < (1 << ANATOMY_KEYS.length) ? value : NaN;
+    if (!Number.isInteger(mask)) throw new Error('Invalid anatomy mask.');
+    return Object.fromEntries(ANATOMY_KEYS.map((key, index) => [key, (mask & (1 << index)) !== 0]));
+  }
+
+  function encodeBase64Url(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = '';
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+
+  function decodeBase64Url(token) {
+    const compact = String(token || '').trim();
+    if (!compact || compact.length > 6000 || !/^[A-Za-z0-9_-]+$/.test(compact)) throw new Error('Invalid share token.');
+    const padded = compact.replace(/-/g,'+').replace(/_/g,'/') + '='.repeat((4 - compact.length % 4) % 4);
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+
+  function buildCoupleShareToken(value = profile) {
+    const config = coupleConfiguration(value);
+    const person = side => [
+      safeIdentityId(config[side].identityId),
+      safeName(config[side].name, side === 'personA' ? 'Personne A' : 'Personne B'),
+      colorById(config[side].color)?.id || (side === 'personA' ? 'blue' : 'plum'),
+      anatomyMask(config[side].anatomy)
+    ];
+    const payload = {
+      v:SHARE_SCHEMA_VERSION,
+      a:person('personA'),
+      b:person('personB'),
+      d:config.dynamic.mode,
+      f:configurationFingerprint(config)
     };
+    return encodeBase64Url(JSON.stringify(payload));
+  }
+
+  function parseCoupleShareToken(token, base = profile) {
+    let payload;
+    try { payload = JSON.parse(decodeBase64Url(token)); }
+    catch (_) { throw new Error('Lien de configuration invalide / invalid configuration link.'); }
+    if (!payload || payload.v !== SHARE_SCHEMA_VERSION || !Array.isArray(payload.a) || !Array.isArray(payload.b) || payload.a.length < 4 || payload.b.length < 4) {
+      throw new Error('Lien de configuration incompatible / incompatible configuration link.');
+    }
+    const makePerson = (packed, side) => ({
+      identityId:safeIdentityId(packed[0]) || makeIdentityId(),
+      name:safeName(packed[1], side === 'personA' ? 'Personne A' : 'Personne B'),
+      color:colorById(packed[2])?.id || (side === 'personA' ? 'blue' : 'plum'),
+      anatomy:anatomyFromMask(packed[3])
+    });
+    const source = {
+      personA:makePerson(payload.a,'personA'),
+      personB:makePerson(payload.b,'personB'),
+      dynamic:{mode:['a-dom','b-dom','switch'].includes(payload.d) ? payload.d : 'switch'},
+      anatomyConfigured:true
+    };
+    const incomingProfile = normalizeCoupleConfiguration(source, base);
+    const fingerprint = configurationFingerprint(incomingProfile);
+    if (typeof payload.f === 'string' && payload.f && payload.f !== fingerprint) throw new Error('Lien de configuration corrompu / corrupted configuration link.');
+    return {version:payload.v,fingerprint,incomingProfile};
+  }
+
+  function buildCoupleShareUrl(value = profile, baseUrl = location.href) {
+    const url = new URL('index.html', baseUrl);
+    url.search = '';
+    url.hash = `${SHARE_HASH_KEY}=${buildCoupleShareToken(value)}`;
+    return url.toString();
+  }
+
+  function coupleShareTokenFromHash(hash = location.hash) {
+    const raw = String(hash || '').replace(/^#/,'');
+    if (!raw) return '';
+    try { return new URLSearchParams(raw).get(SHARE_HASH_KEY) || ''; }
+    catch (_) { return ''; }
   }
 
   function openProfilePage() {
@@ -198,8 +254,9 @@
   applyProfileColors(profile);
   window.CHECKLIST_PROFILE_API = {
     key:KEY,
-    configBackupId:CONFIG_BACKUP_ID,
     configSchemaVersion:CONFIG_SCHEMA_VERSION,
+    shareSchemaVersion:SHARE_SCHEMA_VERSION,
+    shareHashKey:SHARE_HASH_KEY,
     get:() => profile,
     save,
     normalize,
@@ -210,8 +267,10 @@
     normalizeCoupleConfiguration,
     configurationFingerprint,
     compareCoupleConfiguration,
-    buildCoupleConfigBackup,
-    inspectCoupleConfigBackup,
+    buildCoupleShareToken,
+    parseCoupleShareToken,
+    buildCoupleShareUrl,
+    coupleShareTokenFromHash,
     open:openProfilePage
   };
 

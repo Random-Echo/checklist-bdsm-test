@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.141";
+const APP_VERSION = "V1.1.143";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -443,7 +443,7 @@ const randomBtn = document.getElementById("randomBtn");
 const randomResult = document.getElementById("randomResult");
 const importJsonBtn = document.getElementById("importJson");
 const importJsonFile = document.getElementById("importJsonFile");
-const exportCoupleConfigBtn = document.getElementById("exportCoupleConfig");
+const shareCoupleConfigBtn = document.getElementById("shareCoupleConfig");
 const exportFullBtn = document.getElementById("exportFull");
 const exportPersonABtn = document.getElementById("exportPersonA");
 const exportPersonBBtn = document.getElementById("exportPersonB");
@@ -548,7 +548,6 @@ let lastExchange = V2_STORAGE.getLastExchange() || null;
 function backupTypeLabel(type) {
   if (type === "male" || type === "person-a") return currentLang === "fr" ? "Personne A" : "Person A";
   if (type === "female" || type === "person-b") return currentLang === "fr" ? "Personne B" : "Person B";
-  if (type === "couple-config") return currentLang === "fr" ? "Configuration du couple" : "Couple configuration";
   return currentLang === "fr" ? "Complète" : "Full";
 }
 
@@ -628,7 +627,7 @@ function firstUseGuideCopy() {
       title:"Un appareil ou deux : même configuration, réponses séparées",
       intro:"Vous pouvez remplir la checklist sur un seul appareil ou chacun de votre côté. Sur deux appareils, commencez avec la même configuration du couple pour afficher exactement les mêmes pratiques.",
       cards:[
-        ["1 · Deux appareils ? Partagez la configuration","Configurez les deux profils sur un appareil puis utilisez 🔗 Partager la configuration. Importez ce fichier depuis l’accueil du second appareil avant de répondre."],
+        ["1 · Deux appareils ? Partagez le lien","Configurez les deux profils sur un appareil puis utilisez 🔗 Partager la configuration. Votre partenaire ouvre simplement le lien reçu avant de répondre."],
         ["2 · Chacun répond séparément","En Édition, choisissez la personne qui répond. Seules ses réponses et notes sont visibles ; celles du partenaire restent masquées."],
         ["3 · Échangez les sauvegardes personnelles","Exportez Personne A ou Personne B puis restaurez le fichier sur l’autre appareil. Chaque sauvegarde contient aussi une copie de la configuration utilisée pour détecter une différence avant fusion."],
         ["4 · Vérifiez ensemble avant une séance","En Lecture, relisez les résultats, marquez ce qui a été fait ensemble, préparez la séance et vérifiez surtout Sécurité / limites / aftercare."]
@@ -644,7 +643,7 @@ function firstUseGuideCopy() {
     title:"One or two devices: same configuration, separate answers",
     intro:"You can use the checklist on one device or separately. With two devices, start from the same couple configuration so both people see exactly the same applicable practices.",
     cards:[
-      ["1 · Two devices? Share configuration","Configure both profiles on one device, then use 🔗 Share configuration. Import that file from the home page on the second device before answering."],
+      ["1 · Two devices? Share the link","Configure both profiles on one device, then use 🔗 Share configuration. Your partner simply opens the received link before answering."],
       ["2 · Answer separately","In Edit mode, choose who is answering. Only that person's answers and notes are visible; the partner's remain hidden."],
       ["3 · Exchange personal backups","Export Person A or Person B and restore it on the other device. Each personal backup also contains a copy of the configuration used, so differences can be detected before merging."],
       ["4 · Review together before a session","In Reading mode, review the results, mark what you have done together, prepare the session and especially check Safety / limits / aftercare."]
@@ -2439,7 +2438,11 @@ function configurationDifferenceLabel(diff, comparison) {
     ? {penis:"Pénis",testicles:"Testicules",prostate:"Prostate",breasts:"Poitrine / seins",vulva:"Vulve",vagina:"Vagin"}
     : {penis:"Penis",testicles:"Testicles",prostate:"Prostate",breasts:"Chest / breasts",vulva:"Vulva",vagina:"Vagina"};
   const yesNo = value => value ? (fr ? "Oui" : "Yes") : (fr ? "Non" : "No");
-  const dynamic = value => value === "a-dom" ? (fr ? "A domine B" : "A dominates B") : value === "b-dom" ? (fr ? "B domine A" : "B dominates A") : "Switch";
+  const dynamic = value => {
+    const a = local?.personA?.name || incoming?.personA?.name || (fr ? "Personne A" : "Person A");
+    const b = local?.personB?.name || incoming?.personB?.name || (fr ? "Personne B" : "Person B");
+    return value === "a-dom" ? (fr ? `${a} domine ${b}` : `${a} dominates ${b}`) : value === "b-dom" ? (fr ? `${b} domine ${a}` : `${b} dominates ${a}`) : "Switch";
+  };
   if (diff.kind === "name") return `${sideName(diff.side)} · ${fr ? "pseudo" : "name"}: “${diff.local}” → “${diff.incoming}”`;
   if (diff.kind === "color") return `${sideName(diff.side)} · ${fr ? "couleur" : "color"}: ${diff.local} → ${diff.incoming}`;
   if (diff.kind === "anatomy") return `${sideName(diff.side)} · ${anatomy[diff.key] || diff.key}: ${yesNo(diff.local)} → ${yesNo(diff.incoming)}`;
@@ -2634,17 +2637,61 @@ function buildGlobalBackupPayload(type) {
   return V2_STORAGE.buildBackup(type, APP_VERSION);
 }
 
-function exportCoupleConfiguration() {
-  if (!PROFILE_API?.buildCoupleConfigBackup) return;
-  const payload = PROFILE_API.buildCoupleConfigBackup(APP_VERSION);
-  const d = new Date();
-  const dateStamp = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"), String(d.getDate()).padStart(2, "0")].join("-");
-  const timeStamp = [String(d.getHours()).padStart(2, "0"), String(d.getMinutes()).padStart(2, "0")].join("-");
-  download(`Checklist_BDSM_CONFIGURATION_${dateStamp}_${timeStamp}.json`, JSON.stringify(payload,null,2), "application/json");
-  setGlobalLastExchange({type:"export",backupType:"couple-config",exportedAt:payload.exportedAt,lastModifiedAt:payload.exportedAt,appVersion:APP_VERSION,schemaVersion:payload.schemaVersion});
+function copyShareText(text) {
+  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text).then(() => true).catch(() => false);
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.appendChild(area);
+  area.select();
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (_) {}
+  area.remove();
+  return Promise.resolve(ok);
+}
+
+async function shareCoupleConfiguration() {
+  if (!PROFILE_API?.buildCoupleShareUrl) return;
+  flushPersonalNoteSaves();
+  flushSafetySave();
+  const profile = runtimeProfile();
+  const url = PROFILE_API.buildCoupleShareUrl(profile);
+  const fingerprint = PROFILE_API.configurationFingerprint?.(profile) || "";
+  const a = profile?.personA?.name || (currentLang === "fr" ? "Personne A" : "Person A");
+  const b = profile?.personB?.name || (currentLang === "fr" ? "Personne B" : "Person B");
+  const shareData = {
+    title:"Checklist BDSM",
+    text:currentLang === "fr"
+      ? `Configuration Checklist BDSM de ${a} et ${b}. Ouvre ce lien pour utiliser exactement la même configuration.`
+      : `BDSM Checklist configuration for ${a} and ${b}. Open this link to use the exact same configuration.`,
+    url
+  };
+  let shared = false;
+  let copied = false;
+  if (navigator.share) {
+    try { await navigator.share(shareData); shared = true; }
+    catch (err) { if (err?.name === "AbortError") return; }
+  }
+  if (!shared) copied = await copyShareText(url);
+  if (!shared && !copied) {
+    randomResult.innerHTML = currentLang === "fr"
+      ? `<strong>Partage impossible.</strong> Le navigateur n’a pas pu ouvrir le partage ni copier le lien.`
+      : `<strong>Sharing failed.</strong> The browser could not open sharing or copy the link.`;
+    return;
+  }
+  try {
+    localStorage.setItem("bdsmChecklistSite_deviceMode_v1", "dual");
+    if (fingerprint) localStorage.setItem("bdsmChecklistSite_coupleSyncFingerprint_v1", fingerprint);
+  } catch (_) {}
   randomResult.innerHTML = currentLang === "fr"
-    ? `<strong>Configuration du couple exportée.</strong> Ce fichier ne contient aucune réponse. Importez-le depuis la page d’accueil du second appareil avant de commencer.`
-    : `<strong>Couple configuration exported.</strong> This file contains no answers. Import it from the home page on the second device before starting.`;
+    ? copied
+      ? `<strong>Lien de configuration copié.</strong> Envoyez-le à votre partenaire avant qu’il commence. Il ne contient aucune réponse.`
+      : `<strong>Configuration partagée.</strong> Le lien contient les profils, attributs, couleurs et la dynamique D/s, mais aucune réponse. Votre partenaire doit l’ouvrir avant de commencer.`
+    : copied
+      ? `<strong>Configuration link copied.</strong> Send it to your partner before they start. It contains no answers.`
+      : `<strong>Configuration shared.</strong> The link contains profiles, anatomy, colors and the D/s dynamic, but no answers. Your partner should open it before starting.`;
 }
 
 function exportBackup(type) {
@@ -2688,7 +2735,7 @@ function exportBackup(type) {
   }
 }
 
-exportCoupleConfigBtn?.addEventListener("click", exportCoupleConfiguration);
+shareCoupleConfigBtn?.addEventListener("click", shareCoupleConfiguration);
 exportFullBtn.addEventListener("click", () => exportBackup("full"));
 exportPersonABtn.addEventListener("click", () => exportBackup("person-a"));
 exportPersonBBtn.addEventListener("click", () => exportBackup("person-b"));
