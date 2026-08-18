@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.136";
+const APP_VERSION = "V1.1.138";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1401,10 +1401,6 @@ const individualEditorExpandAll = document.getElementById("individualEditorExpan
 const coupleReader = document.getElementById("coupleReader");
 const coupleReaderList = document.getElementById("coupleReaderList");
 const coupleReaderEmpty = document.getElementById("coupleReaderEmpty");
-const coupleReaderTitle = document.getElementById("coupleReaderTitle");
-const coupleReaderIntro = document.getElementById("coupleReaderIntro");
-const coupleReaderSummary = document.getElementById("coupleReaderSummary");
-const coupleReaderLegend = document.getElementById("coupleReaderLegend");
 const readerCurrentCategoryDock = document.getElementById("readerCurrentCategoryDock");
 const readerCurrentCategoryHead = document.getElementById("readerCurrentCategoryHead");
 let readerStickyRaf = 0;
@@ -1480,7 +1476,7 @@ if(readerFilterDock) {
   readerFilterDock.addEventListener("toggle", ()=>window.requestAnimationFrame(updateStickyCategoryOffsets));
   if("ResizeObserver" in window) new ResizeObserver(()=>updateStickyCategoryOffsets()).observe(readerFilterDock);
 }
-if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => window.CHECKLIST_PROFILE_API?.open?.());
+if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => PROFILE_API?.open?.());
 if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => {
   const cats=[...new Set(CATALOG_ENTITIES.map(entity=>entity.category).filter(Boolean))];
   collapsedCategories=new Set(cats);
@@ -1942,9 +1938,6 @@ function renderCoupleReader() {
   coupleReader.hidden=false;
   hideIndividualEditor();
   const profile=runtimeProfile(), names=readerNames();
-  coupleReaderTitle.innerHTML=currentLang==="fr"?`Résultats de ${profileNameBadge('person-a', names.personA)} & ${profileNameBadge('person-b', names.personB)}`:`${profileNameBadge('person-a', names.personA)} & ${profileNameBadge('person-b', names.personB)} results`;
-  coupleReaderIntro.textContent=currentLang==="fr"?"Chaque résultat croise uniquement les réponses complémentaires : donner avec recevoir, dominant avec soumis, ou intérêt partagé.":"Each result matches only complementary answers: give with receive, dominant with submissive, or shared interest.";
-  coupleReaderLegend.innerHTML=currentLang==="fr"?`<strong>Lecture :</strong> les réponses restent personnelles. Le résultat au centre est calculé pour chaque configuration réellement possible. 🚫 reste une limite prioritaire ; 💭 reste un fantasme et n’est jamais transformé en consentement réel.`:`<strong>Reading:</strong> answers remain personal. The center result is calculated for each actually possible configuration. 🚫 remains a priority limit; 💭 remains a fantasy and is never converted into real-world consent.`;
   const q=search.value.trim().toLowerCase(), maxLevel=experienceMaxLevel(), selectedCategory=category.value, selectedRisk=riskFilter.value;
   const { minOne, minTwo, includeFantasy } = readerFilterState;
   const dsFilter=readerSelectedDsFilter(readerFilterState.ds);
@@ -2037,7 +2030,6 @@ function renderCoupleReader() {
   queueReaderCurrentCategoryUpdate();
   coupleReaderEmpty.hidden=visiblePractices!==0;
   const summary=currentLang==="fr"?`${visiblePractices} pratiques · ${visibleVariants} configurations · ${completeVariants} résultats complets`:`${visiblePractices} practices · ${visibleVariants} configurations · ${completeVariants} complete results`;
-  coupleReaderSummary.textContent=summary;
   statVisibleEl.textContent=summary;
   statDoneEl.textContent=currentLang==="fr"?`${done} configurations déjà faites ensemble`:`${done} configurations already done together`;
   statTogetherEl.textContent=currentLang==="fr"?`${compatible} compatibles · ${strong} fortes`:`${compatible} compatible · ${strong} strong`;
