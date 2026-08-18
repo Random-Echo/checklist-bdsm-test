@@ -9,7 +9,8 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.144";
+const APP_VERSION = "V1.1.145";
+const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -2739,6 +2740,15 @@ shareCoupleConfigBtn?.addEventListener("click", shareCoupleConfiguration);
 exportFullBtn.addEventListener("click", () => exportBackup("full"));
 exportPersonABtn.addEventListener("click", () => exportBackup("person-a"));
 exportPersonBBtn.addEventListener("click", () => exportBackup("person-b"));
+
+if (showIncompatiblePractices) {
+  showIncompatiblePractices.checked = runtimeProfile()?.showIncompatible === true;
+  showIncompatiblePractices.addEventListener("change", () => {
+    const current = runtimeProfile();
+    runtimeProfileCache = PROFILE_API?.save?.({...current, showIncompatible: !!showIncompatiblePractices.checked}) || {...current, showIncompatible: !!showIncompatiblePractices.checked};
+    render();
+  });
+}
 
 loadSafety();
 applyStaticLanguage();
