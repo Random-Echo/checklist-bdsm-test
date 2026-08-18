@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.96";
+const APP_VERSION = "V1.1.98";
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
@@ -1381,6 +1381,23 @@ const coupleReaderTitle = document.getElementById("coupleReaderTitle");
 const coupleReaderIntro = document.getElementById("coupleReaderIntro");
 const coupleReaderSummary = document.getElementById("coupleReaderSummary");
 const coupleReaderLegend = document.getElementById("coupleReaderLegend");
+function updateStickyCategoryOffsets(){
+  const root=document.documentElement;
+  if(!root) return;
+  root.style.setProperty("--edit-category-sticky-top","0px");
+  let readTop=0;
+  if(coupleReader && !coupleReader.hidden && readerFilterDock){
+    const styles=window.getComputedStyle(readerFilterDock);
+    if(styles.display!=="none" && styles.visibility!=="hidden"){
+      readTop=readerFilterDock.offsetHeight || 0;
+      if(readTop>0) readTop+=6;
+    }
+  }
+  root.style.setProperty("--read-category-sticky-top", `${Math.max(0,Math.round(readTop))}px`);
+}
+window.addEventListener("resize", updateStickyCategoryOffsets, {passive:true});
+window.addEventListener("orientationchange", updateStickyCategoryOffsets, {passive:true});
+if(readerFilterDock) readerFilterDock.addEventListener("toggle", ()=>window.requestAnimationFrame(updateStickyCategoryOffsets));
 if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => window.CHECKLIST_PROFILE_API?.open?.());
 if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => {
   const cats=[...new Set(CATALOG_ENTITIES.map(entity=>entity.category).filter(Boolean))];
@@ -1532,6 +1549,7 @@ function renderIndividualEditor() {
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
   const summary=V2_STORAGE.getPersonalSummary(person); individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
   updateStats(visible);
+  window.requestAnimationFrame(updateStickyCategoryOffsets);
 }
 function hideIndividualEditor() {
   if(individualEditor) individualEditor.hidden=true;
@@ -1925,6 +1943,7 @@ function renderCoupleReader() {
   if(statModeEl) statModeEl.textContent=currentLang==="fr"?"Mode : Lecture du couple":"Mode: Couple reading";
   compatIndicator.textContent=currentLang==="fr"?`${compatible} compatibilités · ${completeVariants} résultats complets`:`${compatible} matches · ${completeVariants} complete results`;
   compatIndicator.removeAttribute("role"); compatIndicator.removeAttribute("tabindex"); compatIndicator.title="";
+  window.requestAnimationFrame(updateStickyCategoryOffsets);
   return {visiblePractices,visibleVariants,completeVariants,compatible,strong,fantasies,limits,done,filterCounters:{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo}};
 }
 if(coupleReaderList) coupleReaderList.addEventListener("click",e=>{
