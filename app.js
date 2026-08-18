@@ -6,8 +6,8 @@ const UNIFIED_CATALOG = window.CHECKLIST_CATALOG;
 if (!CHECKLIST_DATA || !V2_STORAGE || !INTERACTION_MODEL || !UNIFIED_CATALOG) throw new Error("Checklist configuration missing.");
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.81";
-const UNIFIED_ENTITY_BY_ID = new Map((UNIFIED_CATALOG.entities || []).map(entity => [entity.id, entity]));
+const APP_VERSION = "V1.1.84";
+const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
 const LANG_KEY = window.CHECKLIST_SITE.languageKey;
 const CATEGORY_EN = CHECKLIST_DATA.categoryEn;
@@ -272,9 +272,44 @@ function riskLabel(risk) {
 }
 
 function riskBadge(item) {
-  if (item?.risk === "high") return `<span class="risk-badge risk-high" title="${esc(t("riskHighTitle"))}" aria-label="${esc(t("riskHighTitle"))}">⚠</span>`;
-  if (item?.risk === "caution") return `<span class="risk-badge risk-caution" title="${esc(t("riskCautionTitle"))}" aria-label="${esc(t("riskCautionTitle"))}">!</span>`;
+  if (item?.risk === "high") return `<button class="risk-badge risk-high" data-risk-info="high" type="button" title="${esc(t("riskHighTitle"))}" aria-label="${esc(t("riskHighTitle"))}">⚠</button>`;
+  if (item?.risk === "caution") return `<button class="risk-badge risk-caution" data-risk-info="caution" type="button" title="${esc(t("riskCautionTitle"))}" aria-label="${esc(t("riskCautionTitle"))}">!</button>`;
   return "";
+}
+
+let riskInfoOverlay = null;
+let lastRiskInfoOpener = null;
+function ensureRiskInfoOverlay() {
+  if (riskInfoOverlay) return riskInfoOverlay;
+  const overlay=document.createElement("div");
+  overlay.className="risk-info-overlay";
+  overlay.hidden=true;
+  overlay.setAttribute("aria-hidden","true");
+  overlay.innerHTML=`<div class="risk-info-backdrop" data-risk-close="true"></div><section class="risk-info-dialog" role="dialog" aria-modal="true" aria-labelledby="riskInfoTitle"><div class="risk-info-head"><h2 id="riskInfoTitle"></h2><button class="risk-info-close" data-risk-close="true" type="button" aria-label="Fermer">✕</button></div><div class="risk-info-body" id="riskInfoBody"></div></section>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click",e=>{ if(e.target.closest("[data-risk-close='true']")) closeRiskInfo(); });
+  riskInfoOverlay=overlay;
+  return overlay;
+}
+function openRiskInfo(risk,opener=null) {
+  const overlay=ensureRiskInfoOverlay();
+  const high=risk==="high";
+  const title=currentLang==="fr"?(high?"⚠ Risque élevé":"! Vigilance"):(high?"⚠ High risk":"! Caution");
+  const description=high?t("riskHighTitle"):t("riskCautionTitle");
+  lastRiskInfoOpener=opener||document.activeElement;
+  overlay.querySelector("#riskInfoTitle").textContent=title;
+  overlay.querySelector("#riskInfoBody").innerHTML=`<p>${esc(description)}</p>`;
+  overlay.hidden=false;
+  overlay.setAttribute("aria-hidden","false");
+  setAppBackgroundInert(true);
+  requestAnimationFrame(()=>overlay.querySelector(".risk-info-close")?.focus());
+}
+function closeRiskInfo() {
+  if(!riskInfoOverlay||riskInfoOverlay.hidden) return;
+  riskInfoOverlay.hidden=true;
+  riskInfoOverlay.setAttribute("aria-hidden","true");
+  setAppBackgroundInert(false);
+  if(lastRiskInfoOpener&&typeof lastRiskInfoOpener.focus==="function") lastRiskInfoOpener.focus();
 }
 
 // Caches de données dérivées : un changement de réponse les invalide une seule fois.
@@ -311,7 +346,7 @@ let experienceMode = (() => {
   return ["beginner","confirmed","advanced"].includes(saved) ? saved : "beginner";
 })();
 
-const allCatalogCategories = [...new Set((UNIFIED_CATALOG.entities || []).flatMap(entity => Object.values(entity.scenarios || {}).map(block => block?.category).filter(Boolean)))];
+const allCatalogCategories = [...new Set(CATALOG_ENTITIES.flatMap(entity => Object.values(entity.scenarios || {}).map(block => block?.category).filter(Boolean)))];
 let collapsedCategories = (() => {
   const raw = V2_STORAGE.getDisplay("collapsedCategories", null, true);
   if (raw === null) return new Set(allCatalogCategories);
@@ -335,10 +370,6 @@ function experienceLabel(mode = experienceMode) {
   return t("advanced");
 }
 
-function levelShortLabel(level) {
-  if (currentLang === "fr") return level === 1 ? "Déb." : level === 2 ? "Conf." : "Av.";
-  return level === 1 ? "Beg." : level === 2 ? "Exp." : "Adv.";
-}
 
 function catalogEntityLevel(entity) {
   const levels = Object.values(entity?.scenarios || {}).map(block => Number(block?.level || 3)).filter(level => level >= 1 && level <= 3);
@@ -377,14 +408,11 @@ const search = document.getElementById("search");
 const category = document.getElementById("category");
 const status = document.getElementById("status");
 const minFilterScore = document.getElementById("minFilterScore");
-const readerDsFilter = document.getElementById("readerDsFilter");
-const readerMinOne = document.getElementById("readerMinOne");
-const readerMinTwo = document.getElementById("readerMinTwo");
 const readerIncludeFantasy = document.getElementById("readerIncludeFantasy");
 const readerFilterDock = document.getElementById("readerFilterDock");
 const readerFilterSummary = document.getElementById("readerFilterSummary");
-const readerDsFilterGroup = document.getElementById("readerDsFilterGroup");
-const readerDsChips = document.getElementById("readerDsChips");
+const readerHeaderDs = document.getElementById("readerHeaderDs");
+const readerHeaderDsButtons = [...document.querySelectorAll("[data-reader-header-ds]")];
 const readerMinimumOneChips = document.getElementById("readerMinimumOneChips");
 const readerMinimumTwoChips = document.getElementById("readerMinimumTwoChips");
 const readerAdvancedFilters = document.getElementById("readerAdvancedFilters");
@@ -434,10 +462,13 @@ let randomDrawHistory = (() => {
   } catch (_) { return new Set(); }
 })();
 
-if (readerDsFilter) readerDsFilter.value = V2_STORAGE.getDisplay("readerDsFilter", "a-dominant") === "b-dominant" ? "b-dominant" : "a-dominant";
-if (readerMinOne) readerMinOne.value = String(V2_STORAGE.getDisplay("readerMinOne", "") ?? "");
-if (readerMinTwo) readerMinTwo.value = String(V2_STORAGE.getDisplay("readerMinTwo", "") ?? "");
-if (readerIncludeFantasy) readerIncludeFantasy.checked = V2_STORAGE.getDisplay("readerIncludeFantasy", false) === true;
+const readerFilterState = {
+  ds: V2_STORAGE.getDisplay("readerDsFilter", "a-dominant") === "b-dominant" ? "b-dominant" : "a-dominant",
+  minOne: String(V2_STORAGE.getDisplay("readerMinOne", "") ?? ""),
+  minTwo: String(V2_STORAGE.getDisplay("readerMinTwo", "") ?? ""),
+  includeFantasy: V2_STORAGE.getDisplay("readerIncludeFantasy", false) === true,
+};
+if (readerIncludeFantasy) readerIncludeFantasy.checked = readerFilterState.includeFantasy;
 
 function getRandomPreferences() {
   return {
@@ -786,6 +817,7 @@ function renderRoleUI() {
 
 
   document.body.dataset.viewMode = isReadingMode ? "read" : "edit";
+  if (!isReadingMode && readerHeaderDs) readerHeaderDs.hidden=true;
   if (modeEditBtn) {
     modeEditBtn.textContent = currentLang === "fr" ? "✏️ Édition" : "✏️ Edit";
     modeEditBtn.classList.toggle("active", !isReadingMode);
@@ -808,6 +840,7 @@ function renderRoleUI() {
 }
 
 function setActivePerson(person) {
+  flushPersonalNoteSaves();
   const normalized = person === "person-b" ? "person-b" : "person-a";
   if (normalized === activeEditPerson) return;
   activeEditPerson = normalized;
@@ -850,7 +883,16 @@ if (infoModal) {
   });
 }
 
+document.addEventListener("click",e=>{
+  const risk=e.target.closest?.("[data-risk-info]");
+  if(risk){ e.preventDefault(); e.stopPropagation(); openRiskInfo(risk.dataset.riskInfo,risk); }
+});
+
 document.addEventListener("keydown", e => {
+  if (riskInfoOverlay && !riskInfoOverlay.hidden) {
+    if(e.key==="Escape"){ e.preventDefault(); closeRiskInfo(); return; }
+    focusTrapIn(riskInfoOverlay.querySelector(".risk-info-dialog"),e); return;
+  }
   if (onboardingModal && !onboardingModal.hidden) {
     if (e.key === "Escape") { e.preventDefault(); closeFirstUseGuide(true); return; }
     focusTrapIn(onboardingDialog, e);
@@ -892,6 +934,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 function setViewMode(mode) {
+  flushPersonalNoteSaves();
   const next = mode === "read";
   if (next === isReadingMode) return;
   isReadingMode = next;
@@ -1045,6 +1088,24 @@ function personalizeLegacyText(text, legacySourceKey) {
   for(const [re,value] of replacements) out=out.replace(re,value);
   return out;
 }
+const localizedLegacyInfoCache = new Map();
+function localizedLegacyInfo(entity, legacySourceKey) {
+  const block=legacySourceKey ? entity?.scenarios?.[legacySourceKey] : null;
+  if(!block) return {title:"",explanation:"",category:"Autres",level:3,risk:"normal"};
+  const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+  const cacheKey=[currentLang,profile.personA?.name||"",profile.personB?.name||"",entity.id,legacySourceKey].join("|");
+  const cached=localizedLegacyInfoCache.get(cacheKey);
+  if(cached) return cached;
+  const info=Object.freeze({
+    title:personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),legacySourceKey),
+    explanation:personalizeLegacyText(currentLang==="en"?(block.explanationEn||block.explanation):(block.explanation||block.explanationEn),legacySourceKey),
+    category:block.category||"Autres",
+    level:Number.isInteger(block.level)?block.level:3,
+    risk:["normal","caution","high"].includes(block.risk)?block.risk:"normal"
+  });
+  localizedLegacyInfoCache.set(cacheKey,info);
+  return info;
+}
 function editorSlotLabel(slot) {
   if(currentLang==="fr") return ({interest:"INTÉRÊT",give:"DONNER",receive:"RECEVOIR",dominant:"DOM",submissive:"SUB"})[slot]||slot;
   return ({interest:"INTEREST",give:"GIVE",receive:"RECEIVE",dominant:"DOM",submissive:"SUB"})[slot]||slot;
@@ -1059,8 +1120,7 @@ function editorSlotsForEntity(entity, person, profile) {
 }
 function editorEntityInfo(entity, person, slots) {
   const preferred=legacyBlockForEditorSlot(entity,person,slots[0]||INTERACTION_MODEL.slotsForEntity(entity)[0]);
-  const block=preferred.block||{};
-  return {title:personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),preferred.legacySourceKey), explanation:personalizeLegacyText(currentLang==="en"?(block.explanationEn||block.explanation):(block.explanation||block.explanationEn),preferred.legacySourceKey), category:block.category||"Autres", level:Number.isInteger(block.level)?block.level:3, risk:["normal","caution","high"].includes(block.risk)?block.risk:"normal"};
+  return localizedLegacyInfo(entity,preferred.legacySourceKey);
 }
 function editorScoreButtons(v2Id,slot,state) {
   const role = slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
@@ -1072,8 +1132,7 @@ function editorAfterButtons(v2Id,slot,state) {
   const unknown=`<button class="score-btn unknown-score${Number.isInteger(state.after)?"":" selected"}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="unknown" type="button">?</button>`;
   return unknown+SCORE_BUTTON_ORDER.map(n=>{const ui=cachedScoreUi(n,role),sel=state.after===n;return `<button class="score-btn semantic-score-btn${n===0?' limit-score':''}${sel?' selected':''}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="${n}" type="button" title="${ui.title}" aria-pressed="${sel?'true':'false'}">${ui.label}</button>`}).join("");
 }
-function renderEditorSlot(entity,person,slot,profile) {
-  const state=V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{};
+function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{}) {
   const applicability=INTERACTION_MODEL.evaluateSlot(entity,person,slot,profile);
   const incompatible=applicability.status==="notApplicable";
   const incompatTitle=currentLang==="fr"?"Anatomie non compatible":"Anatomy not compatible";
@@ -1116,17 +1175,21 @@ function renderIndividualEditor() {
   const q=search.value.trim().toLowerCase(), cat=category.value, risk=riskFilter.value; const maxLevel=experienceMaxLevel();
   const minRaw=minFilterScore.value, minScore=minRaw===""?null:Number(minRaw), statusValue=status.value;
   const grouped=new Map(); let visible=0;
-  for(const entity of UNIFIED_CATALOG.entities||[]) {
-    const slots=editorSlotsForEntity(entity,person,profile).filter(slot=>editorSlotMatches(V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{},statusValue,minScore)); if(!slots.length) continue;
-    const info=editorEntityInfo(entity,person,slots); if(info.level>maxLevel) continue; if(risk&&info.risk!==risk) continue; if(cat&&info.category!==cat) continue;
-    const ownText=slots.map(slot=>{const st=V2_STORAGE.getPersonalSlotState(entity.id,person,slot);return st?.note||""}).join(" ");
+  for(const entity of CATALOG_ENTITIES) {
+    const slotStates=editorSlotsForEntity(entity,person,profile)
+      .map(slot=>({slot,state:V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{}}))
+      .filter(({state})=>editorSlotMatches(state,statusValue,minScore));
+    if(!slotStates.length) continue;
+    const slots=slotStates.map(({slot})=>slot), info=editorEntityInfo(entity,person,slots);
+    if(info.level>maxLevel || (risk&&info.risk!==risk) || (cat&&info.category!==cat)) continue;
+    const ownText=slotStates.map(({state})=>state.note||"").join(" ");
     const hay=`${info.title} ${info.explanation} ${info.category} ${ownText}`.toLowerCase(); if(q&&!hay.includes(q)) continue;
-    if(!grouped.has(info.category)) grouped.set(info.category,[]); grouped.get(info.category).push({entity,slots,info}); visible++;
+    if(!grouped.has(info.category)) grouped.set(info.category,[]); grouped.get(info.category).push({entity,slotStates,info}); visible++;
   }
   const categories=[...grouped.keys()].sort((a,b)=>a.localeCompare(b,currentLang)); let html="";
   for(const catName of categories) {
     const rows=grouped.get(catName); const collapsed=collapsedCategories.has(catName) && !q && !cat && !risk;
-    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slots,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.risk==='normal'?'':`<span class="risk-badge risk-${info.risk}">${info.risk==='high'?'⚠':'!'}</span>`}</header><div class="individual-slots${slots.length>1?' has-multiple':''}">${slots.map(slot=>renderEditorSlot(entity,person,slot,profile)).join('')}</div></article>`).join('')}</div>`}</section>`;
+    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slotStates,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.risk==='normal'?'':riskBadge({risk:info.risk})}</header><div class="individual-slots${slotStates.length>1?' has-multiple':''}">${slotStates.map(({slot,state})=>renderEditorSlot(entity,person,slot,profile,state)).join('')}</div></article>`).join('')}</div>`}</section>`;
   }
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
   const summary=V2_STORAGE.getPersonalSummary(person); individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
@@ -1135,6 +1198,25 @@ function renderIndividualEditor() {
 function hideIndividualEditor() {
   if(individualEditor) individualEditor.hidden=true;
 }
+const pendingPersonalNotes = new Map();
+let personalNoteSaveTimer = null;
+function flushPersonalNoteSaves() {
+  if (personalNoteSaveTimer) { clearTimeout(personalNoteSaveTimer); personalNoteSaveTimer = null; }
+  if (!pendingPersonalNotes.size) return;
+  for (const {id,person,slot,value} of pendingPersonalNotes.values()) {
+    const state=V2_STORAGE.getPersonalSlotState(id,person,slot)||{};
+    if (value) state.note=value; else delete state.note;
+    V2_STORAGE.setPersonalSlotState(id,person,slot,state);
+  }
+  pendingPersonalNotes.clear();
+}
+function queuePersonalNoteSave(id,person,slot,value) {
+  const key=`${id}|${person}|${slot}`;
+  pendingPersonalNotes.set(key,{id,person,slot,value});
+  if (personalNoteSaveTimer) clearTimeout(personalNoteSaveTimer);
+  personalNoteSaveTimer=setTimeout(flushPersonalNoteSaves,180);
+}
+
 if(individualEditorList) {
   individualEditorList.addEventListener("click",e=>{
     const catBtn=e.target.closest("[data-editor-category-toggle]"); if(catBtn){const c=catBtn.dataset.editorCategoryToggle;if(collapsedCategories.has(c))collapsedCategories.delete(c);else collapsedCategories.add(c);saveCollapsedCategories();render();return;}
@@ -1150,7 +1232,8 @@ if(individualEditorList) {
     else {const value=btn.dataset.score==="unknown"?null:Number(btn.dataset.score);if(value===null)delete state[action];else state[action]=state[action]===value?undefined:value;if(state[action]===undefined)delete state[action];}
     V2_STORAGE.setPersonalSlotState(id,person,slot,state); invalidateDerivedData(); render();
   });
-  individualEditorList.addEventListener("input",e=>{const note=e.target.closest("textarea[data-personal-note]");if(!note)return;const person=modelPersonKey(),state=V2_STORAGE.getPersonalSlotState(note.dataset.v2Id,person,note.dataset.slot)||{};state.note=note.value;V2_STORAGE.setPersonalSlotState(note.dataset.v2Id,person,note.dataset.slot,state);const toggle=note.closest(".individual-slot")?.querySelector("[data-personal-note-toggle]");if(toggle){const hasNote=note.value.trim().length>0;toggle.classList.toggle("has-note",hasNote);let dot=toggle.querySelector("i");if(hasNote&&!dot){dot=document.createElement("i");dot.setAttribute("aria-hidden","true");toggle.appendChild(dot);}else if(!hasNote&&dot)dot.remove();}const summary=V2_STORAGE.getPersonalSummary(person);individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;});
+  individualEditorList.addEventListener("input",e=>{const note=e.target.closest("textarea[data-personal-note]");if(!note)return;const person=modelPersonKey();queuePersonalNoteSave(note.dataset.v2Id,person,note.dataset.slot,note.value);const toggle=note.closest(".individual-slot")?.querySelector("[data-personal-note-toggle]");if(toggle){const hasNote=note.value.trim().length>0;toggle.classList.toggle("has-note",hasNote);let dot=toggle.querySelector("i");if(hasNote&&!dot){dot=document.createElement("i");dot.setAttribute("aria-hidden","true");toggle.appendChild(dot);}else if(!hasNote&&dot)dot.remove();}});
+  individualEditorList.addEventListener("change",e=>{if(e.target.closest("textarea[data-personal-note]"))flushPersonalNoteSaves();});
 }
 
 function readerNames() {
@@ -1164,11 +1247,6 @@ function readerSlotLabel(slot) {
   if(currentLang==="fr") return ({interest:"Intérêt",give:"Donner",receive:"Recevoir",dominant:"Position dominante",submissive:"Position soumise"})[slot]||slot;
   return ({interest:"Interest",give:"Give",receive:"Receive",dominant:"Dominant",submissive:"Submissive"})[slot]||slot;
 }
-function readerAxisLabel(entity) {
-  const axis=INTERACTION_MODEL.axisOf(entity);
-  if(currentLang==="fr") return axis===INTERACTION_MODEL.AXIS.DIRECTION?"Donner / Recevoir":axis===INTERACTION_MODEL.AXIS.ROLE?"Dynamique D/s":"Intérêt commun";
-  return axis===INTERACTION_MODEL.AXIS.DIRECTION?"Give / Receive":axis===INTERACTION_MODEL.AXIS.ROLE?"D/s roles":"Shared interest";
-}
 function readerVariantLabel(entity,variant,names=readerNames()) {
   if(variant===INTERACTION_MODEL.VARIANT.A_TO_B) return currentLang==="fr"?`${names.personA} donne → ${names.personB} reçoit`:`${names.personA} gives → ${names.personB} receives`;
   if(variant===INTERACTION_MODEL.VARIANT.B_TO_A) return currentLang==="fr"?`${names.personB} donne → ${names.personA} reçoit`:`${names.personB} gives → ${names.personA} receives`;
@@ -1181,18 +1259,6 @@ function readerCompactFlowLabel(entity,variant,names=readerNames()) {
   if(variant===INTERACTION_MODEL.VARIANT.B_TO_A || variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return `${names.personB} → ${names.personA}`;
   return `${names.personA} + ${names.personB}`;
 }
-function readerDisplayParticipants(pair,names=readerNames()) {
-  const a={key:"personA",name:names.personA,personClass:"person-a",slot:pair.personA.slot,state:pair.personA.state};
-  const b={key:"personB",name:names.personB,personClass:"person-b",slot:pair.personB.slot,state:pair.personB.state};
-  if(pair.variant===INTERACTION_MODEL.VARIANT.B_TO_A || pair.variant===INTERACTION_MODEL.VARIANT.B_DOMINANT) return [b,a];
-  return [a,b];
-}
-function readerAxisShortLabel(entity) {
-  const axis=INTERACTION_MODEL.axisOf(entity);
-  if(axis===INTERACTION_MODEL.AXIS.DIRECTION) return "D/R";
-  if(axis===INTERACTION_MODEL.AXIS.ROLE) return "D/s";
-  return currentLang==="fr"?"Commun":"Shared";
-}
 function legacyBlockForVariant(entity,variant) {
   for(const [scenarioName,key] of [["a-dom","aDom"],["b-dom","bDom"]]) {
     if(INTERACTION_MODEL.variantForLegacyScenario(entity,scenarioName)===variant && entity?.scenarios?.[key]) return {block:entity.scenarios[key],legacySourceKey:key};
@@ -1201,14 +1267,8 @@ function legacyBlockForVariant(entity,variant) {
   return key?{block:entity.scenarios[key],legacySourceKey:key}:{block:{},legacySourceKey:null};
 }
 function readerVariantInfo(entity,variant) {
-  const source=legacyBlockForVariant(entity,variant), block=source.block||{};
-  return {
-    title:personalizeLegacyText(currentLang==="en"?(block.practiceEn||block.practice):(block.practice||block.practiceEn),source.legacySourceKey),
-    explanation:personalizeLegacyText(currentLang==="en"?(block.explanationEn||block.explanation):(block.explanation||block.explanationEn),source.legacySourceKey),
-    category:block.category||"Autres",
-    level:Number.isInteger(block.level)?block.level:3,
-    risk:["normal","caution","high"].includes(block.risk)?block.risk:"normal"
-  };
+  const source=legacyBlockForVariant(entity,variant);
+  return localizedLegacyInfo(entity,source.legacySourceKey);
 }
 function readerCompatibilityLabel(status) {
   if(currentLang==="fr") return ({excellent:"★ Excellent match",strong:"🔥 Très compatible",compatible:"✓ Compatible",later:"⏳ Pas maintenant",fantasy:"💭 Fantasme à discuter",limit:"🚫 Limite",incomplete:"? Incomplet"})[status]||"? Incomplet";
@@ -1222,24 +1282,6 @@ function readerEffectiveState(state) {
   const preference=Number.isInteger(state?.preference)?state.preference:null;
   return {score:after!==null?after:preference,source:after!==null?"after":preference!==null?"preference":"unknown"};
 }
-function readerPersonPanel(personName,personClass,slot,state) {
-  const effective=readerEffectiveState(state), role=readerScoreRole(slot);
-  const emoji=scoreButtonLabel(effective.score,role);
-  const sourceLabel=currentLang==="fr"?(effective.source==="after"?"Après essai":effective.source==="preference"?"Choix initial":"Non renseigné"):(effective.source==="after"?"After trying":effective.source==="preference"?"Initial choice":"Not filled in");
-  const preference=Number.isInteger(state?.preference)?scoreButtonLabel(state.preference,role):"—";
-  const after=Number.isInteger(state?.after)?scoreButtonLabel(state.after,role):"—";
-  const prior=state?.prior===true;
-  return `<div class="couple-person-result ${personClass}">
-    <div class="couple-person-head"><strong>${esc(personName)}</strong><span class="couple-person-slot">${esc(readerSlotLabel(slot))}</span></div>
-    <div class="couple-person-effective"><span class="couple-score">${emoji}</span><span class="couple-effective-label">${esc(sourceLabel)}</span></div>
-    <div class="couple-person-details"><span>${currentLang==="fr"?"Choix":"Choice"} : ${preference}</span><span>${currentLang==="fr"?"Déjà essayé":"Tried before"} : ${prior?"✓":"—"}</span><span>${currentLang==="fr"?"Après":"After"} : ${after}</span></div>
-    ${state?.note?`<div class="couple-person-note">💬 ${esc(state.note)}</div>`:""}
-  </div>`;
-}
-function readerCompatibilityCompact(status) {
-  if(currentLang==="fr") return ({excellent:["★","Excellent"],strong:["🔥","Très bon"],compatible:["✓","Compatible"],later:["⏳","Plus tard"],fantasy:["💭","Fantasme"],limit:["🚫","Limite"],incomplete:["?","Incomplet"]})[status]||["?","Incomplet"];
-  return ({excellent:["★","Excellent"],strong:["🔥","Strong"],compatible:["✓","Compatible"],later:["⏳","Later"],fantasy:["💭","Fantasy"],limit:["🚫","Limit"],incomplete:["?","Incomplete"]})[status]||["?","Incomplete"];
-}
 function readerCommonScoreEmoji(compatibility) {
   const c=compatibility||{};
   if(c.status==="limit") return "🚫";
@@ -1250,13 +1292,13 @@ function readerCommonScoreEmoji(compatibility) {
 function readerTriedMark(state) {
   return state?.prior===true ? "✓" : "—";
 }
-function readerNotesHtml(pair,names=readerNames()) {
+function readerNotesHtml(pair,names=readerNames(),flowLabel="") {
   const notes=[
     [names.personA,String(pair?.personA?.state?.note||"").trim()],
     [names.personB,String(pair?.personB?.state?.note||"").trim()]
   ].filter(([,note])=>note);
   if(!notes.length) return "";
-  return `<div class="couple-reader-notes">${notes.map(([name,note])=>`<div class="couple-reader-note"><strong>${esc(name)}</strong><span>${esc(note)}</span></div>`).join("")}</div>`;
+  return `<div class="couple-reader-notes">${flowLabel?`<div class="couple-reader-note-flow">${esc(flowLabel)}</div>`:""}${notes.map(([name,note])=>`<div class="couple-reader-note"><strong>${esc(name)}</strong><span>${esc(note)}</span></div>`).join("")}</div>`;
 }
 function readerResultPanel(entity,pair,names=readerNames()) {
   const c=pair.compatibility||{status:"incomplete",scoreA:null,scoreB:null};
@@ -1273,10 +1315,31 @@ function readerResultPanel(entity,pair,names=readerNames()) {
     <span class="couple-result-cell couple-result-common-cell" title="${esc(readerCompatibilityLabel(c.status))}"><span class="couple-result-emoji">${commonScore}</span><button class="couple-result-tick couple-together-tick${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} aria-label="${esc(togetherLabel)}" title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):togetherLabel)}">${done?'✓':'—'}</button></span>
   </div>`;
 }
-function readerPinRail(entity,pair,info) {
+function readerPinButton(entity,pair) {
   const inSession=isVariantInSession(entity.id,pair.variant), blocked=pair.compatibility?.status==="limit";
   const sessionLabel=blocked?t('sessionLimitWarning'):(inSession?t('removeSession'):t('addSession'));
-  return `<div class="couple-practice-rail"><button class="couple-reader-pin${inSession?' is-selected':''}" data-couple-action="session" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked?'disabled':''} aria-label="${esc(sessionLabel)}" title="${esc(sessionLabel)}">📌</button>${info.risk!=="normal"?`<div class="couple-reader-risk">${riskBadge({risk:info.risk})}</div>`:""}</div>`;
+  return `<button class="couple-reader-pin${inSession?' is-selected':''}" data-couple-action="session" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked?'disabled':''} aria-label="${esc(sessionLabel)}" title="${esc(sessionLabel)}">📌</button>`;
+}
+function readerRiskHtml(info) {
+  return info?.risk!=="normal"?`<div class="couple-reader-risk">${riskBadge({risk:info.risk})}</div>`:"";
+}
+function readerPinRail(entity,pair,info) {
+  return `<div class="couple-practice-rail">${readerPinButton(entity,pair)}${readerRiskHtml(info)}</div>`;
+}
+function readerCanGroupDirectionVariants(entity,variants) {
+  if(INTERACTION_MODEL.axisOf(entity)!==INTERACTION_MODEL.AXIS.DIRECTION || variants.length<2) return false;
+  const normalized=variants.map(({info})=>({
+    title:String(info?.title||"").trim().toLocaleLowerCase(currentLang),
+    category:String(info?.category||""),
+    level:Number(info?.level||0),
+    risk:String(info?.risk||"normal")
+  }));
+  const first=normalized[0];
+  return normalized.every(item=>item.title===first.title && item.category===first.category && item.level===first.level && item.risk===first.risk);
+}
+function readerGroupedDescription(variants) {
+  const descriptions=[...new Set(variants.map(({info})=>String(info?.explanation||"").trim()).filter(Boolean))];
+  return descriptions[0]||"";
 }
 
 function readerStatusMatches(pair,statusValue) {
@@ -1324,42 +1387,52 @@ function readerMinimumChipTitle(value) {
 function readerMinimumSummary(value) {
   return value ? readerMinimumChipLabel(value) : (currentLang==='fr'?'Tous':'All');
 }
-function renderReaderMinimumChips(container,source,counters,side) {
-  if (!container || !source) return;
-  const current=String(source.value||"");
+function setReaderFilterState(key, value, persist = true) {
+  readerFilterState[key] = value;
+  if (!persist) return;
+  const storageKey = ({ ds:"readerDsFilter", minOne:"readerMinOne", minTwo:"readerMinTwo", includeFantasy:"readerIncludeFantasy" })[key];
+  if (storageKey) V2_STORAGE.setDisplay(storageKey, value);
+}
+function renderReaderMinimumChips(container,current,counters,side) {
+  if (!container) return;
+  const selected=String(current||"");
   const minimum=counters||{};
   const values=["","1","2","3","4"];
   container.innerHTML=values.map(value=>{
-    const active=value===current;
+    const active=value===selected;
     const count=value===""?minimum.all:minimum[value];
-    const title=`${currentLang==='fr'?'Minimum':'Minimum'} ${side} · ${readerMinimumChipTitle(value)}`;
+    const title=`Minimum ${side} · ${readerMinimumChipTitle(value)}`;
     return `<button class="reader-filter-chip reader-min-chip${active?' is-active':''}" type="button" data-reader-min-side="${side}" data-reader-min="${value}" aria-pressed="${active?'true':'false'}" title="${esc(title)}"><span class="reader-filter-chip-text">${esc(readerMinimumChipLabel(value))}</span>${Number.isInteger(count)?`<span class="reader-filter-chip-count">${count}</span>`:""}</button>`;
   }).join("");
+}
+function renderReaderHeaderDs(profile,names,dsValue,counters={}) {
+  if(!readerHeaderDs) return;
+  const fixed=profile?.dynamic?.mode && profile.dynamic.mode!=="switch";
+  readerHeaderDs.hidden=!isReadingMode||!!fixed;
+  readerHeaderDs.setAttribute("aria-label",currentLang==="fr"?"Choisir la personne dominante":"Choose the dominant person");
+  const labels={
+    "a-dominant": currentLang==="fr"?`${names.personA} domine`:`${names.personA} dominant`,
+    "b-dominant": currentLang==="fr"?`${names.personB} domine`:`${names.personB} dominant`
+  };
+  for(const btn of readerHeaderDsButtons){
+    const value=readerSelectedDsFilter(btn.dataset.readerHeaderDs), active=value===dsValue;
+    const count=counters?.[value];
+    btn.classList.toggle("active",active);
+    btn.setAttribute("aria-pressed",active?"true":"false");
+    btn.textContent=`${labels[value]}${Number.isInteger(count)?` · ${count}`:""}`;
+  }
 }
 function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},minimumTwo:{}}) {
   if (!readerFilterDock) return;
   const fixed=profile?.dynamic?.mode && profile.dynamic.mode !== "switch";
-  const dsValue=readerSelectedDsFilter(readerDsFilter?.value);
-  const minOne=readerMinOne?.value||"";
-  const minTwo=readerMinTwo?.value||"";
-  const includeFantasy=readerIncludeFantasy?.checked===true;
-  if (readerDsFilterGroup) readerDsFilterGroup.hidden=!!fixed;
-  if (readerDsChips) {
-    const ds=counters.ds||{};
-    const values=["a-dominant","b-dominant"];
-    readerDsChips.innerHTML=values.map(value=>{
-      const active=value===dsValue;
-      const count=ds[value];
-      return `<button class="reader-filter-chip${active?' is-active':''}" type="button" data-reader-ds="${value}" aria-pressed="${active?'true':'false'}"><span class="reader-filter-chip-text">${esc(readerDsChipLabel(value,names))}</span>${Number.isInteger(count)?`<span class="reader-filter-chip-count">${count}</span>`:""}</button>`;
-    }).join("");
-  }
-  renderReaderMinimumChips(readerMinimumOneChips,readerMinOne,counters.minimumOne||{},1);
-  renderReaderMinimumChips(readerMinimumTwoChips,readerMinTwo,counters.minimumTwo||{},2);
+  const { ds:dsValue, minOne, minTwo, includeFantasy } = readerFilterState;
+  renderReaderHeaderDs(profile,names,dsValue,counters.ds||{});
+  renderReaderMinimumChips(readerMinimumOneChips,minOne,counters.minimumOne||{},1);
+  renderReaderMinimumChips(readerMinimumTwoChips,minTwo,counters.minimumTwo||{},2);
   if (readerFilterSummary) {
     const parts=[];
     if (!fixed) parts.push(readerDsChipLabel(dsValue,names));
-    if (minOne || minTwo) parts.push(`${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}`);
-    else parts.push(currentLang==='fr'?'Tous':'All');
+    parts.push(minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All'));
     if (includeFantasy) parts.push('💭');
     readerFilterSummary.textContent=parts.join(' · ');
   }
@@ -1369,33 +1442,11 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
   }
 }
 function configureReaderLogicControls(profile,names,counters={ds:{},minimumOne:{},minimumTwo:{}}) {
-  if(readerDsFilter){
-    const previous=readerSelectedDsFilter(readerDsFilter.value);
-    const fixed=profile?.dynamic?.mode&&profile.dynamic.mode!=="switch";
-    const ds=counters.ds||{};
-    const opts=[
-      ["a-dominant",currentLang==="fr"?`${names.personA} domine`:`${names.personA} dominant`,ds["a-dominant"]],
-      ["b-dominant",currentLang==="fr"?`${names.personB} domine`:`${names.personB} dominant`,ds["b-dominant"]]
-    ];
-    readerDsFilter.innerHTML=opts.map(([value,label,count])=>`<option value="${value}">${esc(label)}${Number.isInteger(count)?` · ${count}`:""}</option>`).join("");
-    readerDsFilter.value=previous;
-    readerDsFilter.disabled=!!fixed;
-    readerDsFilter.title=fixed?(currentLang==="fr"?"La dynamique D/s est fixe dans les profils.":"The D/s dynamic is fixed in profiles."):"";
-  }
   if(readerIncludeFantasy){
+    readerIncludeFantasy.checked=readerFilterState.includeFantasy;
     const span=readerIncludeFantasy.closest("label")?.querySelector("span");
     if(span) span.textContent=currentLang==="fr"?"💭 Inclure les fantasmes avec les minima":"💭 Include fantasies with the minimums";
   }
-  const configureMinSource=(source,counts,label)=>{
-    if(!source) return;
-    const previous=String(source.value||"");
-    const opts=readerMinimumLabels(counts||{});
-    source.innerHTML=opts.map(([value,text,count])=>`<option value="${value}">${esc(text)}${Number.isInteger(count)?` · ${count}`:""}</option>`).join("");
-    source.value=opts.some(([value])=>String(value)===previous)?previous:"";
-    source.setAttribute("aria-label",label);
-  };
-  configureMinSource(readerMinOne,counters.minimumOne,currentLang==="fr"?"Premier minimum de préférence, ordre indifférent":"First preference minimum, order independent");
-  configureMinSource(readerMinTwo,counters.minimumTwo,currentLang==="fr"?"Second minimum de préférence, ordre indifférent":"Second preference minimum, order independent");
   renderReaderFilterDock(profile,names,counters);
 }
 function configureEditorMinimumOptions(){
@@ -1435,11 +1486,10 @@ function renderCoupleReader() {
   coupleReaderIntro.textContent=currentLang==="fr"?"Chaque résultat croise uniquement les réponses complémentaires : donner avec recevoir, dominant avec soumis, ou intérêt partagé.":"Each result matches only complementary answers: give with receive, dominant with submissive, or shared interest.";
   coupleReaderLegend.innerHTML=currentLang==="fr"?`<strong>Lecture :</strong> les réponses restent personnelles. Le résultat au centre est calculé pour chaque configuration réellement possible. 🚫 reste une limite prioritaire ; 💭 reste un fantasme et n’est jamais transformé en consentement réel.`:`<strong>Reading:</strong> answers remain personal. The center result is calculated for each actually possible configuration. 🚫 remains a priority limit; 💭 remains a fantasy and is never converted into real-world consent.`;
   const q=search.value.trim().toLowerCase(), maxLevel=experienceMaxLevel(), selectedCategory=category.value, selectedRisk=riskFilter.value;
-  const minOne=readerMinOne?.value||"", minTwo=readerMinTwo?.value||"";
-  const dsFilter=readerSelectedDsFilter(readerDsFilter?.value);
-  const includeFantasy=readerIncludeFantasy?.checked===true;
+  const { minOne, minTwo, includeFantasy } = readerFilterState;
+  const dsFilter=readerSelectedDsFilter(readerFilterState.ds);
   const prepared=[];
-  for(const entity of UNIFIED_CATALOG.entities||[]) {
+  for(const entity of CATALOG_ENTITIES) {
     const practiceResponse=V2_STORAGE.getReaderPractice(entity.id); if(!practiceResponse) continue;
     const allPairs=INTERACTION_MODEL.readingView(entity,practiceResponse,profile)||[];
     const base=[];
@@ -1490,22 +1540,43 @@ function renderCoupleReader() {
   const togetherShort=currentLang==="fr"?"Ens.":"Together";
   coupleReaderList.innerHTML=categories.map(categoryName=>{
     const entries=grouped.get(categoryName), collapsed=collapsedCategories.has(categoryName), color=categoryColors[categoryName]||"#aaa";
-    const practiceHtml=entries.map(({entity,variants})=>variants.map(({pair,info})=>{
-      const flow=readerCompactFlowLabel(entity,pair.variant,names);
-      const explanation=String(info.explanation||"").trim();
-      const notes=readerNotesHtml(pair,names);
-      return `<article class="couple-practice" data-v2-id="${esc(entity.id)}" data-reader-variant="${esc(pair.variant)}" data-result="${esc(pair.compatibility?.status||'incomplete')}">
-        <div class="couple-practice-row">
-          ${readerPinRail(entity,pair,info)}
-          <div class="couple-practice-copy" title="${esc(explanation||info.title||entity.id)}">
-            <div class="couple-practice-title-line"><strong>${esc(info.title||entity.id)}</strong><span class="couple-practice-flow">${esc(flow)}</span></div>
-            ${explanation?`<div class="couple-practice-description">${esc(explanation)}</div>`:""}
+    const practiceHtml=entries.map(({entity,variants})=>{
+      if(readerCanGroupDirectionVariants(entity,variants)) {
+        const base=variants[0].info, explanation=readerGroupedDescription(variants);
+        const rows=variants.map(({pair,info},index)=>{
+          const flow=readerCompactFlowLabel(entity,pair.variant,names);
+          const notes=readerNotesHtml(pair,names,flow);
+          const copy=index===0
+            ? `<div class="couple-practice-copy" title="${esc(explanation||base.title||entity.id)}"><div class="couple-practice-title-line"><strong>${esc(base.title||entity.id)}</strong><span class="couple-practice-flow">${esc(flow)}</span></div>${explanation?`<div class="couple-practice-description">${esc(explanation)}</div>`:""}</div>`
+            : `<div class="couple-group-flow" title="${esc(readerVariantLabel(entity,pair.variant,names))}"><span>${esc(flow)}</span></div>`;
+          return `<div class="couple-group-variant-block" data-reader-variant="${esc(pair.variant)}" data-result="${esc(pair.compatibility?.status||'incomplete')}">
+            <div class="couple-group-variant-row">
+              <div class="couple-practice-rail">${readerPinButton(entity,pair)}${index===0?readerRiskHtml(base):""}</div>
+              ${copy}
+              ${readerResultPanel(entity,pair,names)}
+            </div>
+            ${notes}
+          </div>`;
+        }).join("");
+        return `<article class="couple-practice couple-practice-grouped" data-v2-id="${esc(entity.id)}" data-reader-grouped="true"><div class="couple-group-variants">${rows}</div></article>`;
+      }
+      return variants.map(({pair,info})=>{
+        const flow=readerCompactFlowLabel(entity,pair.variant,names);
+        const explanation=String(info.explanation||"").trim();
+        const notes=readerNotesHtml(pair,names);
+        return `<article class="couple-practice" data-v2-id="${esc(entity.id)}" data-reader-variant="${esc(pair.variant)}" data-result="${esc(pair.compatibility?.status||'incomplete')}">
+          <div class="couple-practice-row">
+            ${readerPinRail(entity,pair,info)}
+            <div class="couple-practice-copy" title="${esc(explanation||info.title||entity.id)}">
+              <div class="couple-practice-title-line"><strong>${esc(info.title||entity.id)}</strong><span class="couple-practice-flow">${esc(flow)}</span></div>
+              ${explanation?`<div class="couple-practice-description">${esc(explanation)}</div>`:""}
+            </div>
+            ${readerResultPanel(entity,pair,names)}
           </div>
-          ${readerResultPanel(entity,pair,names)}
-        </div>
-        ${notes}
-      </article>`;
-    }).join("")).join("");
+          ${notes}
+        </article>`;
+      }).join("");
+    }).join("");
     const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${esc(names.personA)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>${esc(names.personB)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>🔗</b><small>✓ ${esc(togetherShort)}</small></span></span>`;
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span>${resultHead}</button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
@@ -1592,7 +1663,7 @@ function getRandomEligibilitySnapshot() {
   const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
   const pairEligible=[], baseEligible=[], eligible=[];
   let bothFavorite=0,newTogether=0,fantasyCount=0;
-  for(const entity of UNIFIED_CATALOG.entities||[]) {
+  for(const entity of CATALOG_ENTITIES) {
     const response=V2_STORAGE.getReaderPractice(entity.id); if(!response) continue;
     for(const pair of INTERACTION_MODEL.readingView(entity,response,profile)||[]) {
       const info=readerVariantInfo(entity,pair.variant);
@@ -1642,7 +1713,7 @@ function updateCompatibilityIndicator() {
 function getStatsSnapshot() {
   const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
   let variants=0,complete=0,compatible=0,strong=0,done=0,favorites=0;
-  for(const entity of UNIFIED_CATALOG.entities||[]) {
+  for(const entity of CATALOG_ENTITIES) {
     const response=V2_STORAGE.getReaderPractice(entity.id); if(!response)continue;
     for(const pair of INTERACTION_MODEL.readingView(entity,response,profile)||[]) {
       variants++;
@@ -1696,7 +1767,7 @@ function pickRandomPractice() {
   const picked=eligible[Math.floor(Math.random()*eligible.length)];
   randomPickedId=picked.key;
   if(randomNoRepeat.checked){randomDrawHistory.add(picked.key);saveRandomHistory();invalidateRandomSnapshot();}
-  search.value='';category.value='';status.value='';minFilterScore.value='';riskFilter.value='';if(readerMinOne)readerMinOne.value='';if(readerMinTwo)readerMinTwo.value='';if(readerDsFilter)readerDsFilter.value='a-dominant';if(readerIncludeFantasy)readerIncludeFantasy.checked=false;sessionOnlyFilter=false;render();
+  search.value='';category.value='';status.value='';minFilterScore.value='';riskFilter.value='';setReaderFilterState('minOne','');setReaderFilterState('minTwo','');setReaderFilterState('ds','a-dominant');setReaderFilterState('includeFantasy',false);if(readerIncludeFantasy)readerIncludeFantasy.checked=false;sessionOnlyFilter=false;render();
   const card=coupleReaderList?.querySelector(`[data-v2-id="${CSS.escape(picked.entity.id)}"]`); if(card)card.scrollIntoView({behavior:'smooth',block:'center'});
   const already=isVariantInSession(picked.entity.id,picked.pair.variant), blocked=picked.pair.compatibility?.status==='limit';
   const fantasy=picked.pair.compatibility?.status==='fantasy';
@@ -1752,8 +1823,9 @@ function scheduleSafetySave() {
 safetyFields.forEach(el => el.addEventListener("input", scheduleSafetySave));
 window.addEventListener("pagehide", flushSafetySave);
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "hidden") flushSafetySave();
+  if (document.visibilityState === "hidden") { flushPersonalNoteSaves(); flushSafetySave(); }
 });
+window.addEventListener("pagehide", () => { flushPersonalNoteSaves(); flushSafetySave(); });
 
 
 let searchRenderTimer = null;
@@ -1762,22 +1834,22 @@ search.addEventListener("input", () => {
   searchRenderTimer = setTimeout(render, 100);
 });
 [category, status, minFilterScore, riskFilter].forEach(el => el.addEventListener("input", render));
-[readerMinOne,readerMinTwo].filter(Boolean).forEach(el=>el.addEventListener("input",()=>{
-  V2_STORAGE.setDisplay(el===readerMinOne?"readerMinOne":"readerMinTwo",el.value||"");
+if(readerIncludeFantasy) readerIncludeFantasy.addEventListener("input",()=>{
+  setReaderFilterState("includeFantasy", readerIncludeFantasy.checked===true);
   render();
-}));
-if(readerDsFilter) readerDsFilter.addEventListener("input",()=>{V2_STORAGE.setDisplay("readerDsFilter",readerSelectedDsFilter(readerDsFilter.value));render();});
-if(readerIncludeFantasy) readerIncludeFantasy.addEventListener("input",()=>{V2_STORAGE.setDisplay("readerIncludeFantasy",readerIncludeFantasy.checked===true);render();});
-if(readerDsChips) readerDsChips.addEventListener("click",e=>{
-  const btn=e.target.closest?.("[data-reader-ds]"); if(!btn||!readerDsFilter||readerDsFilter.disabled) return;
-  readerDsFilter.value=readerSelectedDsFilter(btn.dataset.readerDs);
-  V2_STORAGE.setDisplay("readerDsFilter",readerDsFilter.value); render();
 });
+for(const btn of readerHeaderDsButtons){
+  btn.addEventListener("click",()=>{
+    const profile=window.CHECKLIST_PROFILE_API?.get?.()||{};
+    if(profile?.dynamic?.mode && profile.dynamic.mode!=="switch") return;
+    setReaderFilterState("ds", readerSelectedDsFilter(btn.dataset.readerHeaderDs));
+    render();
+  });
+}
 [readerMinimumOneChips,readerMinimumTwoChips].filter(Boolean).forEach(container=>container.addEventListener("click",e=>{
   const btn=e.target.closest?.("[data-reader-min]"); if(!btn) return;
-  const source=btn.dataset.readerMinSide==="2"?readerMinTwo:readerMinOne; if(!source) return;
-  source.value=btn.dataset.readerMin||"";
-  V2_STORAGE.setDisplay(source===readerMinOne?"readerMinOne":"readerMinTwo",source.value);
+  const key=btn.dataset.readerMinSide==="2"?"minTwo":"minOne";
+  setReaderFilterState(key, btn.dataset.readerMin||"");
   render();
 }));
 if(readerAdvancedFilters) readerAdvancedFilters.addEventListener("click",()=>{
@@ -1790,8 +1862,11 @@ showSessionBtn.addEventListener("click", () => {
   if (!isReadingMode) setViewMode("read");
   sessionOnlyFilter = !sessionOnlyFilter;
   search.value = ""; category.value = ""; status.value = ""; minFilterScore.value = "";
-  if(readerMinOne) readerMinOne.value=""; if(readerMinTwo) readerMinTwo.value="";
-  if(readerDsFilter) readerDsFilter.value="a-dominant"; if(readerIncludeFantasy) readerIncludeFantasy.checked=false;
+  setReaderFilterState("minOne", "", false);
+  setReaderFilterState("minTwo", "", false);
+  setReaderFilterState("ds", "a-dominant", false);
+  setReaderFilterState("includeFantasy", false, false);
+  if(readerIncludeFantasy) readerIncludeFantasy.checked=false;
   showSessionBtn.classList.toggle("active", sessionOnlyFilter);
   showSessionBtn.textContent = sessionOnlyFilter ? (currentLang==="fr"?"📌 Afficher tout":"📌 Show all") : t("showSession");
   render();
@@ -1997,8 +2072,8 @@ resetChecklistBtn.addEventListener("click", () => {
   category.value = "";
   status.value = "";
   minFilterScore.value = "";
-  if(readerMinOne) readerMinOne.value = "";
-  if(readerMinTwo) readerMinTwo.value = "";
+  setReaderFilterState("minOne", "");
+  setReaderFilterState("minTwo", "");
   riskFilter.value = "";
   
   randomResult.innerHTML = currentLang === "fr"
@@ -2020,6 +2095,7 @@ function buildGlobalBackupPayload(type) {
 }
 
 function exportBackup(type) {
+  flushPersonalNoteSaves();
   flushSafetySave();
 
   const payload = buildGlobalBackupPayload(type);

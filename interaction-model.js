@@ -27,6 +27,18 @@
     A_DOMINANT: 'a-dominant',
     B_DOMINANT: 'b-dominant'
   });
+  const AXIS_VALUES = new Set(Object.values(AXIS));
+  const READER_DS_FILTER_VALUES = new Set(Object.values(READER_DS_FILTER));
+  const SLOTS_BY_AXIS = Object.freeze({
+    [AXIS.SINGLE]: Object.freeze([SLOT.INTEREST]),
+    [AXIS.DIRECTION]: Object.freeze([SLOT.GIVE, SLOT.RECEIVE]),
+    [AXIS.ROLE]: Object.freeze([SLOT.DOMINANT, SLOT.SUBMISSIVE])
+  });
+  const VARIANTS_BY_AXIS = Object.freeze({
+    [AXIS.SINGLE]: Object.freeze([VARIANT.SHARED]),
+    [AXIS.DIRECTION]: Object.freeze([VARIANT.A_TO_B, VARIANT.B_TO_A]),
+    [AXIS.ROLE]: Object.freeze([VARIANT.A_DOMINANT, VARIANT.B_DOMINANT])
+  });
 
   const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
   const isPerson = value => value === 'personA' || value === 'personB';
@@ -35,23 +47,15 @@
 
   function axisOf(entity) {
     const axis = entity?.interaction?.axis;
-    return Object.values(AXIS).includes(axis) ? axis : AXIS.SINGLE;
+    return AXIS_VALUES.has(axis) ? axis : AXIS.SINGLE;
   }
 
   function slotsForEntity(entity) {
-    switch (axisOf(entity)) {
-      case AXIS.DIRECTION: return [SLOT.GIVE, SLOT.RECEIVE];
-      case AXIS.ROLE: return [SLOT.DOMINANT, SLOT.SUBMISSIVE];
-      default: return [SLOT.INTEREST];
-    }
+    return SLOTS_BY_AXIS[axisOf(entity)];
   }
 
   function variantsForEntity(entity) {
-    switch (axisOf(entity)) {
-      case AXIS.DIRECTION: return [VARIANT.A_TO_B, VARIANT.B_TO_A];
-      case AXIS.ROLE: return [VARIANT.A_DOMINANT, VARIANT.B_DOMINANT];
-      default: return [VARIANT.SHARED];
-    }
+    return VARIANTS_BY_AXIS[axisOf(entity)];
   }
 
   function participantSlotsForVariant(entity, variant) {
@@ -220,7 +224,7 @@
   }
 
   function normalizeReaderDsFilter(value) {
-    return Object.values(READER_DS_FILTER).includes(value) ? value : READER_DS_FILTER.BOTH;
+    return READER_DS_FILTER_VALUES.has(value) ? value : READER_DS_FILTER.BOTH;
   }
 
   function readerDsFilterMatches(entity, pair, profile, rawFilter) {
