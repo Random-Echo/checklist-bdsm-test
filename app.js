@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.147";
+const APP_VERSION = "V1.1.149";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -317,7 +317,6 @@ function closeRiskInfo() {
 // Caches de données dérivées : un changement de réponse les invalide une seule fois.
 // Les statistiques et le tirage ne reparcourent ainsi pas les 600 pratiques plusieurs fois par cycle UI.
 let derivedDataRevision = 0;
-let statsSnapshotCache = { revision:-1, value:null };
 let randomSnapshotCache = { revision:-1, value:null };
 let readerModelCache = { revision:-1, lang:'', value:null };
 let randomStateRevision = 0;
@@ -327,7 +326,6 @@ function invalidateRandomSnapshot() {
 }
 function invalidateDerivedData() {
   derivedDataRevision++;
-  statsSnapshotCache.revision = -1;
   readerModelCache.revision = -1;
   invalidateRandomSnapshot();
 }
@@ -449,12 +447,6 @@ const exportFullBtn = document.getElementById("exportFull");
 const exportPersonABtn = document.getElementById("exportPersonA");
 const exportPersonBBtn = document.getElementById("exportPersonB");
 const resetChecklistBtn = document.getElementById("resetChecklist");
-const statVisibleEl = document.getElementById("statVisible");
-const statDoneEl = document.getElementById("statDone");
-const statTogetherEl = document.getElementById("statTogether");
-const statRatedEl = document.getElementById("statRated");
-const statStarredEl = document.getElementById("statStarred");
-const statModeEl = document.getElementById("statMode");
 const safetyFields = [...document.querySelectorAll(".safety input,.safety select,.safety textarea")];
 // une seule colonne fixe (Pratique), sans colonne Catégorie.
 const roleButtons = [...document.querySelectorAll("[data-person-choice]")];
@@ -859,11 +851,6 @@ function renderRoleUI() {
     modeReadBtn.setAttribute("aria-pressed", isReadingMode ? "true" : "false");
   }
 
-  if (statModeEl) {
-    const profile = runtimeProfile();
-    const name = activeEditPerson === "person-a" ? profile?.personA?.name : profile?.personB?.name;
-    statModeEl.textContent = isReadingMode ? `${t("mode")} : ${t("readOnlySuffix")}` : `${t("mode")} : ${name || (activeEditPerson === "person-a" ? "A" : "B")}`;
-  }
 
   applyModeToSharedTools();
   renderSessionPanel();
@@ -1646,7 +1633,7 @@ function renderIndividualEditor() {
   }
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
   const summary=V2_STORAGE.getPersonalSummary(person); individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
-  updateStats(visible);
+  updateStats();
   window.requestAnimationFrame(updateStickyCategoryOffsets);
 }
 function hideIndividualEditor() {
@@ -1967,7 +1954,7 @@ function renderCoupleReader() {
   const minimumCounters=INTERACTION_MODEL.readerFilterCounters(minCounterSource,profile,includeFantasy,minOne,minTwo);
   configureReaderLogicControls(profile,names,{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo});
 
-  const grouped=new Map(); let visiblePractices=0,visibleVariants=0,completeVariants=0,compatible=0,strong=0,fantasies=0,limits=0,done=0;
+  const grouped=new Map(); let visiblePractices=0,completeVariants=0,compatible=0;
   for(const {entity,variants} of prepared) {
     const candidates=variants.filter(({pair})=>
       INTERACTION_MODEL.readerDsFilterMatches(entity,pair,profile,dsFilter) &&
@@ -1976,15 +1963,11 @@ function renderCoupleReader() {
     if(!candidates.length) continue;
     const categoryName=candidates[0].info.category||"Autres";
     if(!grouped.has(categoryName)) grouped.set(categoryName,[]);
-    grouped.get(categoryName).push({entity,variants:candidates}); visiblePractices++; visibleVariants+=candidates.length;
+    grouped.get(categoryName).push({entity,variants:candidates}); visiblePractices++;
     for(const {pair} of candidates) {
       const st=pair.compatibility?.status;
       if(st!=="incomplete") completeVariants++;
       if(COMPATIBLE_STATUSES.has(st)) compatible++;
-      if(STRONG_STATUSES.has(st)) strong++;
-      if(st==="fantasy") fantasies++;
-      if(st==="limit") limits++;
-      if(pair.common?.doneTogether===true) done++;
     }
   }
   const categories=[...grouped.keys()].sort((a,b)=>localizedCategory(a).localeCompare(localizedCategory(b),currentLang));
@@ -2029,17 +2012,9 @@ function renderCoupleReader() {
   }).join("");
   queueReaderCurrentCategoryUpdate();
   coupleReaderEmpty.hidden=visiblePractices!==0;
-  const summary=currentLang==="fr"?`${visiblePractices} pratiques · ${visibleVariants} configurations · ${completeVariants} résultats complets`:`${visiblePractices} practices · ${visibleVariants} configurations · ${completeVariants} complete results`;
-  statVisibleEl.textContent=summary;
-  statDoneEl.textContent=currentLang==="fr"?`${done} configurations déjà faites ensemble`:`${done} configurations already done together`;
-  statTogetherEl.textContent=currentLang==="fr"?`${compatible} compatibles · ${strong} fortes`:`${compatible} compatible · ${strong} strong`;
-  statRatedEl.textContent=currentLang==="fr"?`${completeVariants}/${visibleVariants} résultats calculables`:`${completeVariants}/${visibleVariants} calculable results`;
-  statStarredEl.textContent=currentLang==="fr"?`${fantasies} fantasmes · ${limits} limites`:`${fantasies} fantasies · ${limits} limits`;
-  if(statModeEl) statModeEl.textContent=currentLang==="fr"?"Mode : Lecture du couple":"Mode: Couple reading";
   compatIndicator.textContent=currentLang==="fr"?`${compatible} compatibilités · ${completeVariants} résultats complets`:`${compatible} matches · ${completeVariants} complete results`;
   compatIndicator.removeAttribute("role"); compatIndicator.removeAttribute("tabindex"); compatIndicator.title="";
   window.requestAnimationFrame(updateStickyCategoryOffsets);
-  return {visiblePractices,visibleVariants,completeVariants,compatible,strong,fantasies,limits,done,filterCounters:{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo}};
 }
 if(readerCurrentCategoryHead) readerCurrentCategoryHead.addEventListener("click",()=>{
   const cat=readerCurrentCategoryHead.dataset.readerCurrentCategory;
@@ -2162,50 +2137,9 @@ function updateCompatibilityIndicator() {
     : (currentLang==='fr'?`Tirables avec les options actuelles : ${baseEligible.length}`:`Eligible with current options: ${baseEligible.length}`);
 }
 
-function getStatsSnapshot() {
-  if(statsSnapshotCache.revision===derivedDataRevision&&statsSnapshotCache.value) return statsSnapshotCache.value;
-  let variants=0,complete=0,compatible=0,strong=0,done=0,favorites=0;
-  for(const {variants:pairs} of getReaderModelSnapshot(runtimeProfile())) {
-    for(const {pair} of pairs) {
-      variants++;
-      const st=pair.compatibility?.status;
-      if(st!=='incomplete') complete++;
-      if(COMPATIBLE_STATUSES.has(st)) compatible++;
-      if(STRONG_STATUSES.has(st)) strong++;
-      if(pair.common?.doneTogether===true) done++;
-      if(pair.compatibility?.scoreA===4&&pair.compatibility?.scoreB===4) favorites++;
-    }
-  }
-  const value=Object.freeze({variants,complete,compatible,strong,done,favorites});
-  statsSnapshotCache={revision:derivedDataRevision,value};
-  return value;
-}
-
-let lastStatsSignature = "";
-let lastVisibleStatCount = null;
-function updateStats(visibleCount = null) {
-  if(visibleCount!==null) lastVisibleStatCount=visibleCount;
-  if(!isReadingMode) {
-    const person=modelPersonKey(), summary=V2_STORAGE.getPersonalSummary(person), name=editorProfileName(person);
-    if(statVisibleEl) statVisibleEl.textContent=currentLang==='fr'?`${lastVisibleStatCount??summary.practicesTouched} pratiques visibles`:`${lastVisibleStatCount??summary.practicesTouched} visible practices`;
-    if(statDoneEl) statDoneEl.textContent='';
-    if(statTogetherEl) statTogetherEl.textContent='';
-    if(statRatedEl) statRatedEl.textContent=currentLang==='fr'?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
-    if(statStarredEl) statStarredEl.textContent='';
-    if(statModeEl) statModeEl.textContent=currentLang==='fr'?`Édition individuelle · ${name}`:`Individual editing · ${name}`;
-    updateCompatibilityIndicator(); renderSessionPanel(); return;
-  }
-  const x=getStatsSnapshot();
-  const signature=[currentLang,lastVisibleStatCount,x.variants,x.complete,x.compatible,x.strong,x.done,x.favorites].join('|');
-  if(signature!==lastStatsSignature){lastStatsSignature=signature;
-    if(statVisibleEl) statVisibleEl.textContent=currentLang==='fr'?`${lastVisibleStatCount??x.variants} pratiques visibles`:`${lastVisibleStatCount??x.variants} visible practices`;
-    if(statDoneEl) statDoneEl.textContent=currentLang==='fr'?`${x.complete}/${x.variants} résultats complets`:`${x.complete}/${x.variants} complete results`;
-    if(statTogetherEl) statTogetherEl.textContent=currentLang==='fr'?`${x.done} faites ensemble`:`${x.done} done together`;
-    if(statRatedEl) statRatedEl.textContent=currentLang==='fr'?`${x.compatible} configurations compatibles`:`${x.compatible} compatible variants`;
-    if(statStarredEl) statStarredEl.textContent=currentLang==='fr'?`${x.favorites} favoris communs`:`${x.favorites} shared favorites`;
-    if(statModeEl) statModeEl.textContent=currentLang==='fr'?`Lecture du couple · ${x.strong} très compatibles`:`Couple reading · ${x.strong} strong matches`;
-  }
-  updateCompatibilityIndicator(); renderSessionPanel();
+function updateStats() {
+  updateCompatibilityIndicator();
+  renderSessionPanel();
 }
 
 let randomPickedId = null;
@@ -2599,8 +2533,6 @@ resetChecklistBtn.addEventListener("click", () => {
   randomPickedId = null;
   invalidateDerivedData();
   lastSessionPanelSignature = "";
-  lastStatsSignature = "";
-  lastVisibleStatCount = null;
   lastExchange = null;
   clearSafetyForm();
 

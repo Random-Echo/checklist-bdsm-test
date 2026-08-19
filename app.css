@@ -5668,3 +5668,83 @@ header .editor-top-dock .profile-edit-button{
   .individual-practice-card > .practice-note-panel > span{font-size:.55rem}
   .individual-practice-card > .practice-note-panel textarea{min-height:31px;height:31px}
 }
+
+
+/* V1.1.149 — compact backup status: detailed diagnostic stats removed */
+.backup-status-row{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:6px;
+  align-items:stretch;
+  margin-top:7px;
+}
+.backup-status-row .exchange-info,
+.autosave-info{
+  min-width:0;
+  min-height:31px;
+  margin:0;
+  padding:6px 9px;
+  border:1px solid #dde2e6;
+  border-radius:8px;
+  background:#f7f8f9;
+  color:var(--muted);
+  font-size:9.5px;
+  line-height:1.2;
+}
+.autosave-info{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  white-space:nowrap;
+  font-weight:750;
+}
+.autosave-info>span[aria-hidden="true"]{font-weight:950}
+@media(max-width:650px){
+  .backup-status-row{grid-template-columns:minmax(0,1fr) auto;gap:5px}
+  .backup-status-row .exchange-info,.autosave-info{min-height:30px;padding:5px 7px;font-size:8.5px}
+}
+
+
+/* V1.1.149 — more compact reading filters in fixed header */
+body[data-view-mode="read"] header .reader-top-dock{
+  margin:4px 0 0 !important;
+  gap:4px;
+}
+body[data-view-mode="read"] header .reader-filter-dock{
+  border-radius:13px;
+  box-shadow:0 6px 16px rgba(38,24,34,.08), inset 0 1px 0 rgba(255,255,255,.14);
+}
+body[data-view-mode="read"] header .reader-filter-summary-row{
+  min-height:38px;
+  gap:7px;
+  padding:6px 9px;
+}
+body[data-view-mode="read"] header .reader-filter-summary-title{
+  gap:6px;
+  font-size:.74rem;
+  line-height:1.05;
+}
+body[data-view-mode="read"] header .reader-filter-summary-title > span[aria-hidden="true"]{
+  width:20px;
+  height:20px;
+  font-size:.78rem;
+}
+body[data-view-mode="read"] header .reader-filter-summary-value{
+  padding:4px 8px;
+  font-size:.64rem;
+  line-height:1;
+}
+body[data-view-mode="read"] header .reader-filter-chevron{
+  font-size:.82rem;
+}
+@media (max-width:760px){
+  body[data-view-mode="read"] header .reader-top-dock{margin:3px 0 0 !important;gap:3px}
+  body[data-view-mode="read"] header .reader-filter-dock{border-radius:12px}
+  body[data-view-mode="read"] header .reader-filter-summary-row{min-height:34px;gap:6px;padding:5px 8px}
+  body[data-view-mode="read"] header .reader-filter-summary-title{font-size:.69rem}
+  body[data-view-mode="read"] header .reader-filter-summary-title > span[aria-hidden="true"]{width:18px;height:18px;font-size:.72rem}
+  body[data-view-mode="read"] header .reader-filter-summary-value{font-size:.6rem;padding:4px 7px}
+  body[data-view-mode="read"] header .reader-filter-chevron{font-size:.76rem}
+}
