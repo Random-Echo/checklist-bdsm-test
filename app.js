@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.165";
+const APP_VERSION = "V1.1.167";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -417,7 +417,6 @@ const readerHeaderDs = document.getElementById("readerHeaderDs");
 const readerHeaderDsButtons = [...document.querySelectorAll("[data-reader-header-ds]")];
 const readerMinimumOneChips = document.getElementById("readerMinimumOneChips");
 const readerMinimumTwoChips = document.getElementById("readerMinimumTwoChips");
-const readerAdvancedFilters = document.getElementById("readerAdvancedFilters");
 const riskFilter = document.getElementById("riskFilter");
 const randomOnlyNew = document.getElementById("randomOnlyNew");
 const randomIncludeNeutralNeutral = document.getElementById("randomIncludeNeutralNeutral");
@@ -598,7 +597,10 @@ function applyModeToSharedTools() {
   // "Lecture" locks personal answers, not shared couple tools.
   safetyFields.forEach(el => { el.disabled = false; });
   importJsonBtn.disabled = false; importJsonBtn.title = "";
-  resetChecklistBtn.disabled = isReadingMode; resetChecklistBtn.title = isReadingMode ? (currentLang === "fr" ? "Passez en Édition pour réinitialiser toutes les données." : "Switch to Edit to reset all data.") : "";
+  const resetZone = resetChecklistBtn?.closest(".reset-zone");
+  if (resetZone) resetZone.hidden = isReadingMode;
+  resetChecklistBtn.disabled = false;
+  resetChecklistBtn.title = "";
   resetSessionBtn.disabled = variantSessionOrder.length === 0; resetSessionBtn.title = "";
 }
 
@@ -1421,17 +1423,13 @@ appMainScrollport?.addEventListener("scroll", queueReaderStickyHeaderUpdate, {pa
 window.addEventListener("resize", queueReaderStickyHeaderUpdate, {passive:true});
 window.addEventListener("orientationchange", queueReaderStickyHeaderUpdate, {passive:true});
 if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => PROFILE_API?.open?.());
-if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => {
-  const cats=[...new Set(CATALOG_ENTITIES.map(entity=>entity.category).filter(Boolean))];
-  collapsedCategories=new Set(cats);
+function setAllEditorCategoriesCollapsed(shouldCollapse) {
+  collapsedCategories = shouldCollapse ? new Set(allCatalogCategories) : new Set();
   saveCollapsedCategories();
   render();
-});
-if (individualEditorExpandAll) individualEditorExpandAll.addEventListener("click", () => {
-  collapsedCategories.clear();
-  saveCollapsedCategories();
-  render();
-});
+}
+if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => setAllEditorCategoriesCollapsed(true));
+if (individualEditorExpandAll) individualEditorExpandAll.addEventListener("click", () => setAllEditorCategoriesCollapsed(false));
 
 function modelPersonKey() { return activeEditPerson === "person-b" ? "personB" : "personA"; }
 function legacyBlockForEditorSlot(entity, person, slot) {
@@ -1579,7 +1577,7 @@ function renderIndividualEditor() {
   }
   const categories=[...grouped.keys()].sort((a,b)=>a.localeCompare(b,currentLang)); let html="";
   for(const catName of categories) {
-    const rows=grouped.get(catName); const collapsed=collapsedCategories.has(catName) && !q && !cat && !risk;
+    const rows=grouped.get(catName); const collapsed=collapsedCategories.has(catName);
     html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slotStates,info,practiceNote})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}" data-result-key="${editorPracticeVisualKey(slotStates)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-headmain"><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.explanation?`<p class="individual-practice-explanation">${esc(info.explanation)}</p>`:''}</div><div class="individual-practice-headtools">${info.risk==='normal'?'':riskBadge({risk:info.risk})}${renderEditorPracticeNote(entity,person,practiceNote)}</div></header><div class="individual-slots${slotStates.length>1?' has-multiple':''}">${slotStates.map(({slot,state})=>renderEditorSlot(entity,person,slot,profile,state)).join('')}</div>${renderEditorPracticeNotePanel(entity,practiceNote)}</article>`).join('')}</div>`}</section>`;
   }
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
@@ -2100,6 +2098,30 @@ function updateStats() {
   renderSessionPanel();
 }
 
+function focusRandomPickedPractice(picked) {
+  if(!picked || !coupleReaderList) return;
+  const categoryName=picked.info?.category||"";
+  if(categoryName && collapsedCategories.has(categoryName)){
+    collapsedCategories.delete(categoryName);
+    saveCollapsedCategories();
+    renderCoupleReader();
+  }
+  const focusTarget=()=>{
+    coupleReaderList.querySelectorAll(".is-random-picked").forEach(el=>el.classList.remove("is-random-picked"));
+    const id=CSS.escape(String(picked.entity.id));
+    const variant=CSS.escape(String(picked.pair.variant));
+    const target=
+      coupleReaderList.querySelector(`[data-v2-id="${id}"][data-reader-variant="${variant}"]`) ||
+      coupleReaderList.querySelector(`[data-v2-id="${id}"] [data-reader-variant="${variant}"]`) ||
+      coupleReaderList.querySelector(`[data-v2-id="${id}"]`);
+    if(!target) return;
+    target.classList.add("is-random-picked");
+    target.scrollIntoView({behavior:"smooth",block:"center",inline:"nearest"});
+    window.setTimeout(()=>target.classList.remove("is-random-picked"),2200);
+  };
+  requestAnimationFrame(()=>requestAnimationFrame(focusTarget));
+}
+
 function pickRandomPractice() {
   if(!isReadingMode) setViewMode('read');
   const snapshot=getRandomEligibilitySnapshot(); let eligible=snapshot.eligible, cycleRestarted=false;
@@ -2107,11 +2129,24 @@ function pickRandomPractice() {
     randomResult.innerHTML=currentLang==='fr'?'Aucune configuration ne correspond aux critères actuels.':'No variant matches the current criteria.';
     updateRandomEligibilitySummary(); return;
   }
-  if(randomNoRepeat.checked&&!eligible.length){randomDrawHistory.clear();saveRandomHistory();invalidateRandomEligibility();eligible=[...snapshot.baseEligible];cycleRestarted=true;}
+  if(randomNoRepeat.checked&&!eligible.length){
+    randomDrawHistory.clear();
+    saveRandomHistory();
+    invalidateRandomEligibility();
+    eligible=[...snapshot.baseEligible];
+    cycleRestarted=true;
+  }
   const picked=eligible[Math.floor(Math.random()*eligible.length)];
-  if(randomNoRepeat.checked){randomDrawHistory.add(picked.key);saveRandomHistory();invalidateRandomEligibility();}
-  search.value='';category.value='';status.value='';minFilterScore.value='';riskFilter.value='';setReaderFilterState('minOne','');setReaderFilterState('minTwo','');setReaderFilterState('ds','a-dominant');setReaderFilterState('includeFantasy',false);if(readerIncludeFantasy)readerIncludeFantasy.checked=false;sessionOnlyFilter=false;render();
-  const card=coupleReaderList?.querySelector(`[data-v2-id="${CSS.escape(picked.entity.id)}"]`); if(card)card.scrollIntoView({behavior:'smooth',block:'center'});
+  if(!picked) return;
+  if(randomNoRepeat.checked){
+    randomDrawHistory.add(picked.key);
+    saveRandomHistory();
+    invalidateRandomEligibility();
+  }
+
+  /* The draw must use the active Reading filter, not destroy it. */
+  focusRandomPickedPractice(picked);
+
   const already=isVariantInSession(picked.entity.id,picked.pair.variant), blocked=picked.pair.compatibility?.status==='limit';
   const fantasy=picked.pair.compatibility?.status==='fantasy';
   const riskInfo=picked.info.risk==='normal'?'':` · <strong>${esc(riskLabel(picked.info.risk))}</strong>`;
@@ -2195,12 +2230,6 @@ for(const btn of readerHeaderDsButtons){
   setReaderFilterState(key, btn.dataset.readerMin||"");
   render();
 }));
-if(readerAdvancedFilters) readerAdvancedFilters.addEventListener("click",()=>{
-  if(allTools) allTools.open=true;
-  const target=document.querySelector(".filters-backup-section");
-  if(target) requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"start"}));
-});
-
 showSessionBtn.addEventListener("click", () => {
   if (!isReadingMode) setViewMode("read");
   sessionOnlyFilter = !sessionOnlyFilter;
