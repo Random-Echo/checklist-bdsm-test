@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = window.CHECKLIST_RELEASE || "V1.1.159";
+const APP_VERSION = window.CHECKLIST_RELEASE || "V1.1.160";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1474,12 +1474,12 @@ function editorAfterButtons(v2Id,slot,state) {
   const unknown=`<button class="score-btn unknown-score${Number.isInteger(state.after)?"":" selected"}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="unknown" type="button">?</button>`;
   return unknown+SCORE_BUTTON_ORDER.map(n=>{const ui=cachedScoreUi(n,role),sel=state.after===n;return `<button class="score-btn semantic-score-btn${n===0?' limit-score':''}${sel?' selected':''}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="${n}" type="button" title="${ui.title}" aria-pressed="${sel?'true':'false'}">${ui.label}</button>`}).join("");
 }
-function editorResultKeyFromScore(score){
+function resultKeyFromScore(score){
   return Number.isInteger(score) ? ({0:"limit",1:"later",2:"compatible",3:"strong",4:"excellent",5:"fantasy"}[score] || "incomplete") : "incomplete";
 }
 function editorStateVisualKey(state){
-  if(Number.isInteger(state?.after)) return editorResultKeyFromScore(state.after);
-  if(Number.isInteger(state?.preference)) return editorResultKeyFromScore(state.preference);
+  if(Number.isInteger(state?.after)) return resultKeyFromScore(state.after);
+  if(Number.isInteger(state?.preference)) return resultKeyFromScore(state.preference);
   return "incomplete";
 }
 function editorPracticeVisualKey(slotStates){
@@ -1667,16 +1667,21 @@ function readerNotesHtml(entityId,names=readerNames()) {
 function readerResultPanel(entity,pair,names=readerNames()) {
   const c=pair.compatibility||{status:"incomplete",scoreA:null,scoreB:null};
   const aRole=readerScoreRole(pair.personA.slot), bRole=readerScoreRole(pair.personB.slot);
-  const aScore=scoreButtonLabel(readerEffectiveState(pair.personA.state).score,aRole);
-  const bScore=scoreButtonLabel(readerEffectiveState(pair.personB.state).score,bRole);
+  const aEffective=readerEffectiveState(pair.personA.state);
+  const bEffective=readerEffectiveState(pair.personB.state);
+  const aScore=scoreButtonLabel(aEffective.score,aRole);
+  const bScore=scoreButtonLabel(bEffective.score,bRole);
+  const aResultKey=resultKeyFromScore(aEffective.score);
+  const bResultKey=resultKeyFromScore(bEffective.score);
+  const commonResultKey=["excellent","strong","compatible","later","fantasy","limit","incomplete"].includes(c.status)?c.status:"incomplete";
   const commonScore=readerCommonScoreEmoji(c);
   const done=pair.common?.doneTogether===true;
   const blocked=c.status==="limit", fantasy=c.status==="fantasy";
   const togetherLabel=done?(currentLang==="fr"?"Déjà fait ensemble":"Already done together"):(currentLang==="fr"?"Marquer fait ensemble":"Mark done together");
   return `<div class="couple-result-grid" data-result="${esc(c.status)}" aria-label="${esc(readerCompatibilityLabel(c.status))}">
-    <span class="couple-result-cell person-a" title="${esc(`${names.personA} · ${readerSlotLabel(pair.personA.slot)} : ${aScore}`)}"><span class="couple-result-emoji">${aScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personA.state)}</span></span>
-    <span class="couple-result-cell person-b" title="${esc(`${names.personB} · ${readerSlotLabel(pair.personB.slot)} : ${bScore}`)}"><span class="couple-result-emoji">${bScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personB.state)}</span></span>
-    <span class="couple-result-cell couple-result-common-cell" title="${esc(readerCompatibilityLabel(c.status))}"><span class="couple-result-emoji">${commonScore}</span><button class="couple-result-tick couple-together-tick${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} aria-label="${esc(togetherLabel)}" title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):togetherLabel)}">${done?'✓':'—'}</button></span>
+    <span class="couple-result-cell person-a" data-result-key="${aResultKey}" title="${esc(`${names.personA} · ${readerSlotLabel(pair.personA.slot)} : ${aScore}`)}"><span class="couple-result-emoji">${aScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personA.state)}</span></span>
+    <span class="couple-result-cell person-b" data-result-key="${bResultKey}" title="${esc(`${names.personB} · ${readerSlotLabel(pair.personB.slot)} : ${bScore}`)}"><span class="couple-result-emoji">${bScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personB.state)}</span></span>
+    <span class="couple-result-cell couple-result-common-cell" data-result-key="${commonResultKey}" title="${esc(readerCompatibilityLabel(c.status))}"><span class="couple-result-emoji">${commonScore}</span><button class="couple-result-tick couple-together-tick${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} aria-label="${esc(togetherLabel)}" title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):togetherLabel)}">${done?'✓':'—'}</button></span>
   </div>`;
 }
 function readerPinButton(entity,pair) {

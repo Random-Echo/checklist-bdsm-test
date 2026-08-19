@@ -1,4 +1,4 @@
-window.CHECKLIST_RELEASE = "V1.1.159";
+window.CHECKLIST_RELEASE = "V1.1.160";
 window.CHECKLIST_SITE = Object.freeze({
   languageKey: "bdsmChecklistSite_language_v1",
   adultKey: "bdsmChecklistSite_adultConfirmed_v1",
