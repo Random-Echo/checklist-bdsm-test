@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.157";
+const APP_VERSION = "V1.1.158";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1844,16 +1844,15 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
   renderReaderMinimumChips(readerMinimumOneChips,minOne,counters.minimumOne||{},1);
   renderReaderMinimumChips(readerMinimumTwoChips,minTwo,counters.minimumTwo||{},2);
   if (readerFilterSummary) {
-    const parts=[];
     const compatibleCount=Number.isFinite(summaryStats?.compatible) ? summaryStats.compatible : null;
-    if (compatibleCount !== null) {
-      const compactCountLabel = currentLang==='fr' ? 'compat.' : 'matches';
-      parts.push(`<span class="reader-filter-summary-count">${compatibleCount} ${compactCountLabel}</span>`);
-    }
-    if (!fixed) parts.push(readerDsChipHtml(dsValue,names));
-    parts.push(`<span class="reader-filter-summary-piece">${esc(minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All'))}</span>`);
-    if (includeFantasy) parts.push('<span class="reader-filter-summary-piece">💭</span>');
-    readerFilterSummary.innerHTML=parts.join('<span class="reader-filter-summary-sep"> · </span>');
+    const countLabel=currentLang==='fr' ? 'compat.' : 'matches';
+    const textParts=[];
+    if (!fixed) textParts.push(readerDsChipHtml(dsValue,names));
+    textParts.push(esc(minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All')));
+    if (includeFantasy) textParts.push('💭');
+    const countHtml = compatibleCount !== null ? `<span class="reader-filter-summary-count">${compatibleCount} ${countLabel}</span>` : '';
+    const summaryText = textParts.join('<span class="reader-filter-summary-sep"> · </span>') || '—';
+    readerFilterSummary.innerHTML=`${countHtml}<span class="reader-filter-summary-inline">${summaryText}</span>`;
   }
   if (!readerFilterDock.dataset.initialized) {
     readerFilterDock.dataset.initialized="true";
