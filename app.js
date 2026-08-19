@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.149";
+const APP_VERSION = "V1.1.151";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1850,7 +1850,7 @@ function renderReaderHeaderDs(profile,names,dsValue,counters={}) {
     btn.setAttribute("title", labels[value]);
   }
 }
-function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},minimumTwo:{}}) {
+function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},minimumTwo:{}},summaryStats=null) {
   if (!readerFilterDock) return;
   const fixed=profile?.dynamic?.mode && profile.dynamic.mode !== "switch";
   const { ds:dsValue, minOne, minTwo, includeFantasy } = readerFilterState;
@@ -1859,6 +1859,8 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
   renderReaderMinimumChips(readerMinimumTwoChips,minTwo,counters.minimumTwo||{},2);
   if (readerFilterSummary) {
     const parts=[];
+    const compatibleCount=Number.isFinite(summaryStats?.compatible) ? summaryStats.compatible : null;
+    if (compatibleCount !== null) parts.push(`<span class="reader-filter-summary-count">${compatibleCount} ${currentLang==='fr'?'compatibles':'matches'}</span>`);
     if (!fixed) parts.push(readerDsChipHtml(dsValue,names));
     parts.push(`<span class="reader-filter-summary-piece">${esc(minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All'))}</span>`);
     if (includeFantasy) parts.push('<span class="reader-filter-summary-piece">💭</span>');
@@ -1869,13 +1871,13 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
     try { if (window.matchMedia?.("(max-width: 700px)")?.matches) readerFilterDock.open=false; } catch (_) {}
   }
 }
-function configureReaderLogicControls(profile,names,counters={ds:{},minimumOne:{},minimumTwo:{}}) {
+function configureReaderLogicControls(profile,names,counters={ds:{},minimumOne:{},minimumTwo:{}},summaryStats=null) {
   if(readerIncludeFantasy){
     readerIncludeFantasy.checked=readerFilterState.includeFantasy;
     const span=readerIncludeFantasy.closest("label")?.querySelector("span");
     if(span) span.textContent=currentLang==="fr"?"💭 Inclure les fantasmes avec les minima":"💭 Include fantasies with the minimums";
   }
-  renderReaderFilterDock(profile,names,counters);
+  renderReaderFilterDock(profile,names,counters,summaryStats);
 }
 function configureEditorMinimumOptions(){
   if(!minFilterScore) return;
@@ -1952,7 +1954,7 @@ function renderCoupleReader() {
   const minCounterSource=baseEntries.filter(({entity,pair})=>INTERACTION_MODEL.readerDsFilterMatches(entity,pair,profile,dsFilter));
   const dsCounters=INTERACTION_MODEL.readerFilterCounters(dsCounterSource,profile,includeFantasy,minOne,minTwo).ds;
   const minimumCounters=INTERACTION_MODEL.readerFilterCounters(minCounterSource,profile,includeFantasy,minOne,minTwo);
-  configureReaderLogicControls(profile,names,{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo});
+  configureReaderLogicControls(profile,names,{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo},{compatible});
 
   const grouped=new Map(); let visiblePractices=0,completeVariants=0,compatible=0;
   for(const {entity,variants} of prepared) {
