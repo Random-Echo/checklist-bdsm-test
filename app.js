@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.163";
+const APP_VERSION = "V1.1.165";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1380,16 +1380,46 @@ const individualEditorExpandAll = document.getElementById("individualEditorExpan
 const coupleReader = document.getElementById("coupleReader");
 const coupleReaderList = document.getElementById("coupleReaderList");
 const coupleReaderEmpty = document.getElementById("coupleReaderEmpty");
-const readerCurrentCategoryDock = null;
-const readerCurrentCategoryHead = null;
-function clearReaderCurrentCategory(){}
-function queueReaderCurrentCategoryUpdate(){}
+const appMainScrollport = document.querySelector("main");
+let readerStickyHeaderRaf = 0;
+function clearReaderStickyHeaderStates(){
+  coupleReaderList?.querySelectorAll(".couple-reader-category-head.is-stuck").forEach(head=>head.classList.remove("is-stuck"));
+}
+function updateReaderStickyHeaderStates(){
+  readerStickyHeaderRaf = 0;
+  if(!appMainScrollport || document.body.dataset.viewMode!=="read" || coupleReader?.hidden){
+    clearReaderStickyHeaderStates();
+    return;
+  }
+  const mainTop = appMainScrollport.getBoundingClientRect().top;
+  for(const categoryNode of coupleReaderList?.querySelectorAll(".couple-reader-category") || []){
+    const head = categoryNode.querySelector(".couple-reader-category-head");
+    if(!head) continue;
+    if(categoryNode.classList.contains("is-collapsed")){
+      head.classList.remove("is-stuck");
+      continue;
+    }
+    const categoryRect = categoryNode.getBoundingClientRect();
+    const headRect = head.getBoundingClientRect();
+    const stillOwnsStickySpace = categoryRect.bottom > mainTop + headRect.height + 1;
+    const stuck = stillOwnsStickySpace && headRect.top <= mainTop + 1;
+    head.classList.toggle("is-stuck", stuck);
+  }
+}
+function queueReaderStickyHeaderUpdate(){
+  if(readerStickyHeaderRaf) return;
+  readerStickyHeaderRaf = requestAnimationFrame(updateReaderStickyHeaderStates);
+}
 function updateStickyCategoryOffsets(){
   const root=document.documentElement;
   if(!root) return;
   root.style.setProperty("--edit-category-sticky-top","0px");
   root.style.setProperty("--read-category-sticky-top","0px");
+  queueReaderStickyHeaderUpdate();
 }
+appMainScrollport?.addEventListener("scroll", queueReaderStickyHeaderUpdate, {passive:true});
+window.addEventListener("resize", queueReaderStickyHeaderUpdate, {passive:true});
+window.addEventListener("orientationchange", queueReaderStickyHeaderUpdate, {passive:true});
 if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => PROFILE_API?.open?.());
 if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => {
   const cats=[...new Set(CATALOG_ENTITIES.map(entity=>entity.category).filter(Boolean))];
@@ -1848,7 +1878,7 @@ function getReaderModelSnapshot(profile=runtimeProfile()) {
 }
 function hideCoupleReader() {
   if(coupleReader) coupleReader.hidden=true;
-  clearReaderCurrentCategory();
+  clearReaderStickyHeaderStates();
 }
 function renderCoupleReader() {
   if(!coupleReader||!coupleReaderList) return;
@@ -1946,7 +1976,7 @@ function renderCoupleReader() {
     const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${profileNameBadge('person-a', names.personA, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>${profileNameBadge('person-b', names.personB, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b><span class="profile-inline-text">🔗</span></b><small>✓ ${esc(togetherShort)}</small></span></span>`;
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span>${resultHead}</button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
-  queueReaderCurrentCategoryUpdate();
+  queueReaderStickyHeaderUpdate();
   coupleReaderEmpty.hidden=visiblePractices!==0;
   updateRandomEligibilitySummary();
   window.requestAnimationFrame(updateStickyCategoryOffsets);

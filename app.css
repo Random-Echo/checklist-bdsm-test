@@ -5972,7 +5972,7 @@ body[data-view-mode="read"] .reader-filter-content > .session-section{grid-area:
 }
 
 
-/* V1.1.163 — clean reading header and native sticky category headers */
+/* V1.1.165 — clean reading header and native sticky category headers */
 :root{--read-category-sticky-top:0px!important}
 body[data-view-mode="read"] .reader-current-category-dock,
 body[data-view-mode="read"] .reader-current-category-head{display:none!important}
@@ -6110,64 +6110,82 @@ body[data-view-mode="read"] .couple-result-cell[data-result-key]{
   box-shadow:inset 0 0 0 1px rgba(255,250,244,.13),0 2px 5px rgba(47,30,36,.12)!important;
 }
 
-
-/* V1.1.163 — rebuild Reading category frame: no parent rounded border under sticky header. */
+/* V1.1.165 — unified Reading category frame + true sticky-state corners */
 body[data-view-mode="read"] .couple-reader-category{
+  position:relative !important;
   border:0 !important;
-  border-radius:11px !important;
+  border-radius:10px !important;
   background:transparent !important;
   box-shadow:none !important;
   overflow:visible !important;
 }
-
 body[data-view-mode="read"] .couple-reader-category-head{
+  position:sticky !important;
+  top:0 !important;
+  z-index:23 !important;
   width:100% !important;
-  box-sizing:border-box !important;
+  min-height:36px !important;
   margin:0 !important;
+  box-sizing:border-box !important;
   border:1px solid var(--read-dominant-line) !important;
-  border-radius:10px 10px 0 0 !important;
+  border-radius:9px 9px 0 0 !important;
   background:linear-gradient(90deg,
     color-mix(in srgb,var(--dominant-soft) 90%,#fff 10%) 0%,
     color-mix(in srgb,var(--dominant-soft) 72%,#f6eee8 28%) 100%) !important;
-  background-clip:border-box !important;
-  box-shadow:0 3px 9px rgba(45,30,20,.08) !important;
+  box-shadow:0 2px 7px rgba(45,30,20,.07) !important;
+  isolation:isolate !important;
 }
-
+/* When the header is actually stuck against the top edge of <main>, square the
+   upper corners so the gold page background cannot peek through them. */
+body[data-view-mode="read"] .couple-reader-category-head.is-stuck{
+  border-radius:0 !important;
+  box-shadow:0 3px 9px rgba(45,30,20,.10) !important;
+}
 body[data-view-mode="read"] .couple-reader-category-head::after{
   left:0 !important;
   right:0 !important;
   bottom:-1px !important;
 }
-
 body[data-view-mode="read"] .couple-reader-category-body{
+  display:flex !important;
+  flex-direction:column !important;
+  position:relative !important;
   box-sizing:border-box !important;
+  margin:0 !important;
   border-left:1px solid var(--read-dominant-line) !important;
   border-right:1px solid var(--read-dominant-line) !important;
   border-bottom:1px solid var(--read-dominant-line) !important;
-  border-radius:0 0 10px 10px !important;
+  border-radius:0 0 9px 9px !important;
   overflow:hidden !important;
-  box-shadow:0 3px 9px rgba(45,30,20,.06) !important;
+  background:var(--read-dominant-panel) !important;
+  box-shadow:0 2px 7px rgba(45,30,20,.05) !important;
 }
-
+body[data-view-mode="read"] .couple-reader-category-body > .couple-practice:first-child,
+body[data-view-mode="read"] .couple-reader-category-body > .couple-practice-grouped:first-child{
+  margin-top:0 !important;
+}
 body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head{
-  border-radius:10px !important;
+  position:relative !important;
+  top:auto !important;
+  border-radius:9px !important;
+  box-shadow:0 2px 7px rgba(45,30,20,.06) !important;
 }
-
+body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head.is-stuck{
+  border-radius:9px !important;
+}
 body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-body{
   display:none !important;
 }
-
 @media (max-width:700px){
-  body[data-view-mode="read"] .couple-reader-category{
-    border-radius:8px !important;
-  }
+  body[data-view-mode="read"] .couple-reader-category{border-radius:8px !important}
   body[data-view-mode="read"] .couple-reader-category-head{
-    border-radius:8px 8px 0 0 !important;
+    min-height:34px !important;
+    border-radius:7px 7px 0 0 !important;
   }
-  body[data-view-mode="read"] .couple-reader-category-body{
-    border-radius:0 0 8px 8px !important;
-  }
-  body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head{
-    border-radius:8px !important;
+  body[data-view-mode="read"] .couple-reader-category-head.is-stuck{border-radius:0 !important}
+  body[data-view-mode="read"] .couple-reader-category-body{border-radius:0 0 7px 7px !important}
+  body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head,
+  body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head.is-stuck{
+    border-radius:7px !important;
   }
 }
