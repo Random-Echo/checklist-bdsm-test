@@ -1,4 +1,3 @@
-window.CHECKLIST_RELEASE = "V1.1.160";
 window.CHECKLIST_SITE = Object.freeze({
   languageKey: "bdsmChecklistSite_language_v1",
   adultKey: "bdsmChecklistSite_adultConfirmed_v1",
@@ -17,15 +16,4 @@ window.CHECKLIST_SITE = Object.freeze({
   } catch (_) {
     document.documentElement.classList.add("adult-gate-required");
   }
-})();
-
-
-(() => {
-  const applyRelease = () => {
-    const release = window.CHECKLIST_RELEASE || "";
-    document.documentElement.dataset.appVersion = release;
-    document.querySelectorAll("[data-app-version]").forEach(el => { el.textContent = release; });
-  };
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applyRelease, {once:true});
-  else applyRelease();
 })();

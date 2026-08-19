@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = window.CHECKLIST_RELEASE || "V1.1.160";
+const APP_VERSION = "V1.1.161";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1380,17 +1380,16 @@ const individualEditorExpandAll = document.getElementById("individualEditorExpan
 const coupleReader = document.getElementById("coupleReader");
 const coupleReaderList = document.getElementById("coupleReaderList");
 const coupleReaderEmpty = document.getElementById("coupleReaderEmpty");
+const readerCurrentCategoryDock = null;
+const readerCurrentCategoryHead = null;
+function clearReaderCurrentCategory(){}
+function queueReaderCurrentCategoryUpdate(){}
 function updateStickyCategoryOffsets(){
   const root=document.documentElement;
   if(!root) return;
-  /* <main> is the scrollport. Both category headers stick to its own top,
-     directly below the fixed application header. No cloned category header
-     or artificial offset is required. */
   root.style.setProperty("--edit-category-sticky-top","0px");
   root.style.setProperty("--read-category-sticky-top","0px");
 }
-window.addEventListener("resize", updateStickyCategoryOffsets, {passive:true});
-window.addEventListener("orientationchange", updateStickyCategoryOffsets, {passive:true});
 if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => PROFILE_API?.open?.());
 if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => {
   const cats=[...new Set(CATALOG_ENTITIES.map(entity=>entity.category).filter(Boolean))];
@@ -1474,12 +1473,12 @@ function editorAfterButtons(v2Id,slot,state) {
   const unknown=`<button class="score-btn unknown-score${Number.isInteger(state.after)?"":" selected"}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="unknown" type="button">?</button>`;
   return unknown+SCORE_BUTTON_ORDER.map(n=>{const ui=cachedScoreUi(n,role),sel=state.after===n;return `<button class="score-btn semantic-score-btn${n===0?' limit-score':''}${sel?' selected':''}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="${n}" type="button" title="${ui.title}" aria-pressed="${sel?'true':'false'}">${ui.label}</button>`}).join("");
 }
-function resultKeyFromScore(score){
+function editorResultKeyFromScore(score){
   return Number.isInteger(score) ? ({0:"limit",1:"later",2:"compatible",3:"strong",4:"excellent",5:"fantasy"}[score] || "incomplete") : "incomplete";
 }
 function editorStateVisualKey(state){
-  if(Number.isInteger(state?.after)) return resultKeyFromScore(state.after);
-  if(Number.isInteger(state?.preference)) return resultKeyFromScore(state.preference);
+  if(Number.isInteger(state?.after)) return editorResultKeyFromScore(state.after);
+  if(Number.isInteger(state?.preference)) return editorResultKeyFromScore(state.preference);
   return "incomplete";
 }
 function editorPracticeVisualKey(slotStates){
@@ -1664,6 +1663,9 @@ function readerNotesHtml(entityId,names=readerNames()) {
   if(!notes.length) return "";
   return `<div class="couple-reader-notes">${notes.map(([person,name,note])=>`<div class="couple-reader-note"><strong>${profileNameBadge(person,name,true)}</strong><span>${profileNamesInTextHtml(note,names)}</span></div>`).join("")}</div>`;
 }
+function readerCellResultKey(score){
+  return Number.isInteger(score) ? ({0:"limit",1:"later",2:"compatible",3:"strong",4:"excellent",5:"fantasy"}[score] || "incomplete") : "incomplete";
+}
 function readerResultPanel(entity,pair,names=readerNames()) {
   const c=pair.compatibility||{status:"incomplete",scoreA:null,scoreB:null};
   const aRole=readerScoreRole(pair.personA.slot), bRole=readerScoreRole(pair.personB.slot);
@@ -1671,8 +1673,8 @@ function readerResultPanel(entity,pair,names=readerNames()) {
   const bEffective=readerEffectiveState(pair.personB.state);
   const aScore=scoreButtonLabel(aEffective.score,aRole);
   const bScore=scoreButtonLabel(bEffective.score,bRole);
-  const aResultKey=resultKeyFromScore(aEffective.score);
-  const bResultKey=resultKeyFromScore(bEffective.score);
+  const aResultKey=readerCellResultKey(aEffective.score);
+  const bResultKey=readerCellResultKey(bEffective.score);
   const commonResultKey=["excellent","strong","compatible","later","fantasy","limit","incomplete"].includes(c.status)?c.status:"incomplete";
   const commonScore=readerCommonScoreEmoji(c);
   const done=pair.common?.doneTogether===true;
@@ -1786,15 +1788,15 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
   renderReaderMinimumChips(readerMinimumTwoChips,minTwo,counters.minimumTwo||{},2);
   if (readerFilterSummary) {
     const compatibleCount=Number.isFinite(summaryStats?.compatible) ? summaryStats.compatible : null;
-    const dsName=dsValue === "b-dominant" ? names.personB : names.personA;
-    const dsText=currentLang === "fr" ? `${dsName} domine` : `${dsName} dominant`;
-    const minimumText=(minOne || minTwo) ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : "";
-    const parts=[];
-    if (compatibleCount !== null) parts.push(`<span class="reader-filter-summary-count">${compatibleCount} ${currentLang==='fr'?'compat.':'matches'}</span>`);
-    if (!fixed) parts.push(`<span class="reader-filter-summary-ds">${esc(dsText)}</span>`);
-    if (minimumText) parts.push(`<span class="reader-filter-summary-min">${esc(minimumText)}</span>`);
-    if (includeFantasy) parts.push('<span class="reader-filter-summary-fantasy">💭</span>');
-    readerFilterSummary.innerHTML=parts.join('<span class="reader-filter-summary-sep"> · </span>') || `<span>${currentLang==='fr'?'Tous':'All'}</span>`;
+    let summaryDs=dsValue;
+    if(profile?.dynamic?.mode==='a-dom') summaryDs='a-dominant';
+    else if(profile?.dynamic?.mode==='b-dom') summaryDs='b-dominant';
+    const person=summaryDs==='b-dominant'?'person-b':'person-a';
+    const dominantName=person==='person-b'?names.personB:names.personA;
+    const verb=currentLang==='fr'?'domine':'dominant';
+    const minimumText=minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All');
+    const countHtml=compatibleCount===null?'':`<span class="reader-filter-summary-count">${compatibleCount} ${currentLang==='fr'?'compat.':'matches'}</span>`;
+    readerFilterSummary.innerHTML=`${countHtml}<span class="reader-filter-summary-inline"><span class="reader-filter-summary-name ${profilePersonClass(person)}">${esc(dominantName)}</span> ${esc(verb)} · ${esc(minimumText)}${includeFantasy?' · 💭':''}</span>`;
   }
   if (!readerFilterDock.dataset.initialized) {
     readerFilterDock.dataset.initialized="true";
@@ -1846,6 +1848,7 @@ function getReaderModelSnapshot(profile=runtimeProfile()) {
 }
 function hideCoupleReader() {
   if(coupleReader) coupleReader.hidden=true;
+  clearReaderCurrentCategory();
 }
 function renderCoupleReader() {
   if(!coupleReader||!coupleReaderList) return;
@@ -1943,6 +1946,7 @@ function renderCoupleReader() {
     const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${profileNameBadge('person-a', names.personA, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>${profileNameBadge('person-b', names.personB, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b><span class="profile-inline-text">🔗</span></b><small>✓ ${esc(togetherShort)}</small></span></span>`;
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span>${resultHead}</button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
+  queueReaderCurrentCategoryUpdate();
   coupleReaderEmpty.hidden=visiblePractices!==0;
   updateRandomEligibilitySummary();
   window.requestAnimationFrame(updateStickyCategoryOffsets);
