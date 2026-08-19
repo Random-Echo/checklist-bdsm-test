@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.151";
+const APP_VERSION = "V1.1.154";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -216,7 +216,6 @@ const SCORE_TEXT=Object.freeze({
   en:Object.freeze({full:Object.freeze(["🚫 Limit","Not now","Neutral","🔥 Want to"]),short:Object.freeze(["🚫","Not now","Neutral","🔥"])})
 });
 const SCORE_DESCRIPTION_KEYS=Object.freeze(["scoreLimitDesc","scoreLaterDesc","scoreNeutralDesc","scoreWantDesc"]);
-const RANDOM_THRESHOLD_RANK=Object.freeze({fantasy:1,neutral:2,want:3,favorite:4});
 
 
 // Semantic score helpers used by the unified Edit/Read renderers.
@@ -317,17 +316,19 @@ function closeRiskInfo() {
 // Caches de données dérivées : un changement de réponse les invalide une seule fois.
 // Les statistiques et le tirage ne reparcourent ainsi pas les 600 pratiques plusieurs fois par cycle UI.
 let derivedDataRevision = 0;
-let randomSnapshotCache = { revision:-1, value:null };
+let randomEligibilityCache = { revision:-1, filterKey:"", value:null };
 let readerModelCache = { revision:-1, lang:'', value:null };
-let randomStateRevision = 0;
-function invalidateRandomSnapshot() {
-  randomStateRevision++;
-  randomSnapshotCache.revision = -1;
+let activeReaderCandidatesCache = { revision:-1, filterKey:"", value:null };
+let randomOptionsRevision = 0;
+function invalidateRandomEligibility() {
+  randomOptionsRevision++;
+  randomEligibilityCache.revision = -1;
 }
 function invalidateDerivedData() {
   derivedDataRevision++;
   readerModelCache.revision = -1;
-  invalidateRandomSnapshot();
+  activeReaderCandidatesCache.revision = -1;
+  activeReaderCandidatesCache.value = null;
 }
 
 // Legacy numeric session state is no longer active. Sessions are stored as practice + logical variant.
@@ -418,15 +419,12 @@ const readerMinimumOneChips = document.getElementById("readerMinimumOneChips");
 const readerMinimumTwoChips = document.getElementById("readerMinimumTwoChips");
 const readerAdvancedFilters = document.getElementById("readerAdvancedFilters");
 const riskFilter = document.getElementById("riskFilter");
-const minRandomOne = document.getElementById("minRandomOne");
-const minRandomOther = document.getElementById("minRandomOther");
 const randomOnlyNew = document.getElementById("randomOnlyNew");
 const randomIncludeNeutralNeutral = document.getElementById("randomIncludeNeutralNeutral");
 const randomExcludeHighRisk = document.getElementById("randomExcludeHighRisk");
 const randomNoRepeat = document.getElementById("randomNoRepeat");
 const resetRandomCycleBtn = document.getElementById("resetRandomCycle");
-const compatIndicator = document.getElementById("compatIndicator");
-const compatDetails = document.getElementById("compatDetails");
+const randomSummaryDetails = document.getElementById("randomSummaryDetails");
 const randomCandidateInfo = document.getElementById("randomCandidateInfo");
 const exchangeInfo = document.getElementById("exchangeInfo");
 const showSessionBtn = document.getElementById("showSession");
@@ -468,8 +466,6 @@ if (readerIncludeFantasy) readerIncludeFantasy.checked = readerFilterState.inclu
 
 function getRandomPreferences() {
   return {
-    minOne:minRandomOne.value,
-    minOther:minRandomOther.value,
     includeNeutralNeutral:!!randomIncludeNeutralNeutral.checked,
     onlyNew:!!randomOnlyNew.checked,
     excludeHighRisk:!!randomExcludeHighRisk.checked,
@@ -477,19 +473,13 @@ function getRandomPreferences() {
   };
 }
 
-function normalizeRandomThreshold(value, fallback) {
-  return ["fantasy","neutral","want","favorite"].includes(value) ? value : fallback;
-}
-
 function applyRandomPreferences(prefs, persist=false) {
   const p = prefs && typeof prefs === "object" ? prefs : {};
-  minRandomOne.value = normalizeRandomThreshold(p.minOne, "want");
-  minRandomOther.value = normalizeRandomThreshold(p.minOther, "neutral");
   randomIncludeNeutralNeutral.checked = p.includeNeutralNeutral === true;
   if (typeof p.onlyNew === "boolean") randomOnlyNew.checked = p.onlyNew;
   if (typeof p.excludeHighRisk === "boolean") randomExcludeHighRisk.checked = p.excludeHighRisk;
   if (typeof p.noRepeat === "boolean") randomNoRepeat.checked = p.noRepeat;
-  invalidateRandomSnapshot();
+  invalidateRandomEligibility();
   if (persist) V2_STORAGE.setRandomPreferences(getRandomPreferences());
 }
 
@@ -511,9 +501,9 @@ function saveRandomHistory() {
 
 function clearRandomHistory(showMessage=true) {
   randomDrawHistory.clear();
-  invalidateRandomSnapshot();
+  invalidateRandomEligibility();
   saveRandomHistory();
-  updateCompatibilityIndicator();
+  updateRandomEligibilitySummary();
   if (showMessage) randomResult.innerHTML = `<strong>${t("randomCycleReset")}</strong>`;
 }
 
@@ -1479,10 +1469,6 @@ if (individualEditorExpandAll) individualEditorExpandAll.addEventListener("click
 });
 
 function modelPersonKey() { return activeEditPerson === "person-b" ? "personB" : "personA"; }
-function editorProfileName(person=modelPersonKey()) {
-  const p=runtimeProfile();
-  return person === "personA" ? (p?.personA?.name || (currentLang==="fr"?"Personne A":"Person A")) : (p?.personB?.name || (currentLang==="fr"?"Personne B":"Person B"));
-}
 function legacyBlockForEditorSlot(entity, person, slot) {
   for (const [legacySourceKey,scenarioName] of [["aDom","a-dom"],["bDom","b-dom"]]) {
     if (INTERACTION_MODEL.slotForLegacyPerson(entity,scenarioName,person) === slot && entity?.scenarios?.[legacySourceKey]) return {block:entity.scenarios[legacySourceKey],legacySourceKey};
@@ -1954,9 +1940,8 @@ function renderCoupleReader() {
   const minCounterSource=baseEntries.filter(({entity,pair})=>INTERACTION_MODEL.readerDsFilterMatches(entity,pair,profile,dsFilter));
   const dsCounters=INTERACTION_MODEL.readerFilterCounters(dsCounterSource,profile,includeFantasy,minOne,minTwo).ds;
   const minimumCounters=INTERACTION_MODEL.readerFilterCounters(minCounterSource,profile,includeFantasy,minOne,minTwo);
-  configureReaderLogicControls(profile,names,{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo},{compatible});
 
-  const grouped=new Map(); let visiblePractices=0,completeVariants=0,compatible=0;
+  const grouped=new Map(), activeReaderCandidates=[]; let visiblePractices=0,compatible=0;
   for(const {entity,variants} of prepared) {
     const candidates=variants.filter(({pair})=>
       INTERACTION_MODEL.readerDsFilterMatches(entity,pair,profile,dsFilter) &&
@@ -1966,12 +1951,15 @@ function renderCoupleReader() {
     const categoryName=candidates[0].info.category||"Autres";
     if(!grouped.has(categoryName)) grouped.set(categoryName,[]);
     grouped.get(categoryName).push({entity,variants:candidates}); visiblePractices++;
-    for(const {pair} of candidates) {
+    for(const {pair,info} of candidates) {
+      activeReaderCandidates.push({entity,pair,info});
       const st=pair.compatibility?.status;
-      if(st!=="incomplete") completeVariants++;
       if(COMPATIBLE_STATUSES.has(st)) compatible++;
     }
   }
+  activeReaderCandidatesCache={revision:derivedDataRevision,filterKey:readerActiveFilterKey(),value:activeReaderCandidates};
+  configureReaderLogicControls(profile,names,{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo},{compatible});
+
   const categories=[...grouped.keys()].sort((a,b)=>localizedCategory(a).localeCompare(localizedCategory(b),currentLang));
   const beforeShort=currentLang==="fr"?"Av.":"Before";
   const togetherShort=currentLang==="fr"?"Ens.":"Together";
@@ -2014,8 +2002,7 @@ function renderCoupleReader() {
   }).join("");
   queueReaderCurrentCategoryUpdate();
   coupleReaderEmpty.hidden=visiblePractices!==0;
-  compatIndicator.textContent=currentLang==="fr"?`${compatible} compatibilités · ${completeVariants} résultats complets`:`${compatible} matches · ${completeVariants} complete results`;
-  compatIndicator.removeAttribute("role"); compatIndicator.removeAttribute("tabindex"); compatIndicator.title="";
+  updateRandomEligibilitySummary();
   window.requestAnimationFrame(updateStickyCategoryOffsets);
 }
 if(readerCurrentCategoryHead) readerCurrentCategoryHead.addEventListener("click",()=>{
@@ -2052,117 +2039,114 @@ function render() {
 
 
 
-function randomThresholdRank(value) {
-  return RANDOM_THRESHOLD_RANK[value] || 0;
+function readerActiveFilterKey() {
+  return [
+    derivedDataRevision, currentLang, experienceMaxLevel(),
+    search.value.trim().toLowerCase(), category.value, status.value, riskFilter.value,
+    sessionOnlyFilter ? 1 : 0,
+    readerFilterState.ds, readerFilterState.minOne, readerFilterState.minTwo, readerFilterState.includeFantasy ? 1 : 0
+  ].join("|");
 }
 
-function randomPreferenceRank(score) {
-  const v = validScore(score);
-  if (v === FANTASY_SCORE) return 1;
-  if (v === 2) return 2;
-  if (v === 3) return 3;
-  if (v === FAVORITE_SCORE) return 4;
-  // ? / 🚫 / Pas maintenant ne sont jamais tirables.
-  return 0;
-}
-
-function randomThresholdLabel(value) {
-  if (value === "fantasy") return t("drawFantasy");
-  if (value === "neutral") return t("drawNeutral");
-  if (value === "want") return t("drawWant");
-  if (value === "favorite") return t("drawFavorite");
-  return "—";
-}
-
-function randomPairRanks(pair) {
-  const a = randomPreferenceRank(pair?.compatibility?.scoreA);
-  const b = randomPreferenceRank(pair?.compatibility?.scoreB);
-  return {a,b};
-}
-
-function matchesRandomVariantCriterion(pair) {
-  const {a,b}=randomPairRanks(pair);
-  if(!a||!b) return false;
-  const one=randomThresholdRank(minRandomOne.value), other=randomThresholdRank(minRandomOther.value);
-  if(!((a>=one&&b>=other)||(a>=other&&b>=one))) return false;
-  if(!randomIncludeNeutralNeutral.checked && pair.compatibility?.scoreA===2 && pair.compatibility?.scoreB===2) return false;
+function readerVariantMatchesActiveFilter(entity,pair,info,profile) {
+  if(info.level>experienceMaxLevel()) return false;
+  const selectedCategory=category.value, selectedRisk=riskFilter.value;
+  if(selectedCategory&&info.category!==selectedCategory) return false;
+  if(selectedRisk&&info.risk!==selectedRisk) return false;
+  if(sessionOnlyFilter&&!isVariantInSession(entity.id,pair.variant)) return false;
+  if(!readerStatusMatches(pair,status.value)) return false;
+  const dsFilter=readerSelectedDsFilter(readerFilterState.ds);
+  if(!INTERACTION_MODEL.readerDsFilterMatches(entity,pair,profile,dsFilter)) return false;
+  const {minOne,minTwo,includeFantasy}=readerFilterState;
+  if(!INTERACTION_MODEL.readerMinimumMatches(pair,minOne,minTwo,includeFantasy)) return false;
+  const q=search.value.trim().toLowerCase();
+  if(q){
+    const notes=`${V2_STORAGE.getPersonalPracticeNote(entity.id,'personA')||''} ${V2_STORAGE.getPersonalPracticeNote(entity.id,'personB')||''}`;
+    const haystack=`${info.title||''} ${info.explanation||''} ${info.category||''} ${notes}`.toLowerCase();
+    if(!haystack.includes(q)) return false;
+  }
   return true;
 }
 
 function getRandomEligibilitySnapshot() {
-  if (randomSnapshotCache.revision === randomStateRevision && randomSnapshotCache.value) return randomSnapshotCache.value;
+  const filterKey=readerActiveFilterKey();
+  if (randomEligibilityCache.revision === randomOptionsRevision && randomEligibilityCache.filterKey === filterKey && randomEligibilityCache.value) return randomEligibilityCache.value;
   const profile=runtimeProfile();
   const pairEligible=[], baseEligible=[], eligible=[];
   let bothFavorite=0,newTogether=0,fantasyCount=0;
-  for(const {entity,variants} of getReaderModelSnapshot(profile)) {
-    for(const {pair,info} of variants) {
-      if(info.level>experienceMaxLevel()) continue;
-      if(!matchesRandomVariantCriterion(pair)) continue;
-      const candidate={entity,pair,info,key:`${entity.id}|${pair.variant}`};
-      pairEligible.push(candidate);
-      if(pair.compatibility?.scoreA===FAVORITE_SCORE&&pair.compatibility?.scoreB===FAVORITE_SCORE) bothFavorite++;
-      if(pair.common?.doneTogether!==true) newTogether++;
-      if(pair.compatibility?.status==='fantasy') fantasyCount++;
-      if(randomOnlyNew.checked&&pair.common?.doneTogether===true) continue;
-      if(randomExcludeHighRisk.checked&&info.risk==='high'&&pair.compatibility?.status!=='fantasy') continue;
-      baseEligible.push(candidate);
-      if(!randomNoRepeat.checked||!randomDrawHistory.has(candidate.key)) eligible.push(candidate);
+
+  const addCandidate=(entity,pair,info)=>{
+    if(!randomIncludeNeutralNeutral.checked && pair.compatibility?.scoreA===2 && pair.compatibility?.scoreB===2) return;
+    const candidate={entity,pair,info,key:`${entity.id}|${pair.variant}`};
+    pairEligible.push(candidate);
+    if(pair.compatibility?.scoreA===FAVORITE_SCORE&&pair.compatibility?.scoreB===FAVORITE_SCORE) bothFavorite++;
+    if(pair.common?.doneTogether!==true) newTogether++;
+    if(pair.compatibility?.status==='fantasy') fantasyCount++;
+    if(randomOnlyNew.checked&&pair.common?.doneTogether===true) return;
+    if(randomExcludeHighRisk.checked&&info.risk==='high'&&pair.compatibility?.status!=='fantasy') return;
+    baseEligible.push(candidate);
+    if(!randomNoRepeat.checked||!randomDrawHistory.has(candidate.key)) eligible.push(candidate);
+  };
+
+  const cached=activeReaderCandidatesCache.revision===derivedDataRevision && activeReaderCandidatesCache.filterKey===filterKey
+    ? activeReaderCandidatesCache.value
+    : null;
+  if(Array.isArray(cached)){
+    for(const {entity,pair,info} of cached) addCandidate(entity,pair,info);
+  }else{
+    for(const {entity,variants} of getReaderModelSnapshot(profile)) {
+      for(const {pair,info} of variants) {
+        if(readerVariantMatchesActiveFilter(entity,pair,info,profile)) addCandidate(entity,pair,info);
+      }
     }
   }
   const snapshot={pairEligible,baseEligible,eligible,bothFavorite,newTogether,fantasyCount};
-  randomSnapshotCache={revision:randomStateRevision,value:snapshot};
+  randomEligibilityCache={revision:randomOptionsRevision,filterKey,value:snapshot};
   return snapshot;
 }
 
-let lastCompatibilitySignature = "";
-function updateCompatibilityIndicator() {
+let lastRandomSummarySignature = "";
+function updateRandomEligibilitySummary() {
   if(!isReadingMode) {
-    if(compatIndicator) compatIndicator.textContent=currentLang==='fr'?'Édition individuelle':'Individual editing';
-    if(compatDetails) compatDetails.innerHTML='';
+    lastRandomSummarySignature = "";
+    if(randomSummaryDetails) randomSummaryDetails.innerHTML='';
     if(randomCandidateInfo) randomCandidateInfo.textContent='';
     return;
   }
   const snapshot=getRandomEligibilitySnapshot();
   const {pairEligible,baseEligible,eligible,bothFavorite,newTogether,fantasyCount}=snapshot;
-  const thresholdValues=[minRandomOne.value,minRandomOther.value].sort((a,b)=>randomThresholdRank(b)-randomThresholdRank(a));
-  const thresholdLabels=thresholdValues.map(randomThresholdLabel);
-  const criterionLabel=thresholdValues[0]===thresholdValues[1]?thresholdLabels[0]:`${thresholdLabels[0]} + ${thresholdLabels[1]}`;
-  const signature=[currentLang,thresholdValues.join(','),pairEligible.length,baseEligible.length,eligible.length,bothFavorite,newTogether,fantasyCount,randomNoRepeat.checked?1:0].join('|');
-  if(signature===lastCompatibilitySignature)return; lastCompatibilitySignature=signature;
-  compatIndicator.textContent=currentLang==='fr'?`${pairEligible.length} configurations au critère : ${criterionLabel}`:`${pairEligible.length} variants match: ${criterionLabel}`;
-  compatIndicator.removeAttribute('role'); compatIndicator.removeAttribute('tabindex'); compatIndicator.title='';
-  compatDetails.innerHTML=currentLang==='fr'
+  const signature=[currentLang,readerFilterState.ds,readerFilterState.minOne,readerFilterState.minTwo,readerFilterState.includeFantasy?1:0,search.value,category.value,status.value,riskFilter.value,pairEligible.length,baseEligible.length,eligible.length,bothFavorite,newTogether,fantasyCount,randomNoRepeat.checked?1:0].join('|');
+  if(signature===lastRandomSummarySignature)return; lastRandomSummarySignature=signature;
+  randomSummaryDetails.innerHTML=currentLang==='fr'
     ? `<span>👑+👑 ${bothFavorite} favoris communs</span><span>○ ${newTogether} jamais faites ensemble</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantasme${fantasyCount>1?'s':''}</span>`:''}`
     : `<span>👑+👑 ${bothFavorite} shared favorites</span><span>○ ${newTogether} never done together</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantas${fantasyCount>1?'ies':'y'}</span>`:''}`;
   randomCandidateInfo.textContent=randomNoRepeat.checked
-    ? (currentLang==='fr'?`Tirables : ${eligible.length}/${baseEligible.length} restantes dans ce cycle`:`Eligible: ${eligible.length}/${baseEligible.length} remaining in this cycle`)
-    : (currentLang==='fr'?`Tirables avec les options actuelles : ${baseEligible.length}`:`Eligible with current options: ${baseEligible.length}`);
+    ? (currentLang==='fr'?`Tirables avec le filtre de lecture : ${eligible.length}/${baseEligible.length}`:`Eligible with reading filter: ${eligible.length}/${baseEligible.length}`)
+    : (currentLang==='fr'?`Tirables avec le filtre de lecture : ${baseEligible.length}`:`Eligible with reading filter: ${baseEligible.length}`);
 }
 
 function updateStats() {
-  updateCompatibilityIndicator();
+  updateRandomEligibilitySummary();
   renderSessionPanel();
 }
 
-let randomPickedId = null;
 function pickRandomPractice() {
   if(!isReadingMode) setViewMode('read');
   const snapshot=getRandomEligibilitySnapshot(); let eligible=snapshot.eligible, cycleRestarted=false;
   if(!snapshot.baseEligible.length){
     randomResult.innerHTML=currentLang==='fr'?'Aucune configuration ne correspond aux critères actuels.':'No variant matches the current criteria.';
-    updateCompatibilityIndicator(); return;
+    updateRandomEligibilitySummary(); return;
   }
-  if(randomNoRepeat.checked&&!eligible.length){randomDrawHistory.clear();saveRandomHistory();invalidateRandomSnapshot();eligible=[...snapshot.baseEligible];cycleRestarted=true;}
+  if(randomNoRepeat.checked&&!eligible.length){randomDrawHistory.clear();saveRandomHistory();invalidateRandomEligibility();eligible=[...snapshot.baseEligible];cycleRestarted=true;}
   const picked=eligible[Math.floor(Math.random()*eligible.length)];
-  randomPickedId=picked.key;
-  if(randomNoRepeat.checked){randomDrawHistory.add(picked.key);saveRandomHistory();invalidateRandomSnapshot();}
+  if(randomNoRepeat.checked){randomDrawHistory.add(picked.key);saveRandomHistory();invalidateRandomEligibility();}
   search.value='';category.value='';status.value='';minFilterScore.value='';riskFilter.value='';setReaderFilterState('minOne','');setReaderFilterState('minTwo','');setReaderFilterState('ds','a-dominant');setReaderFilterState('includeFantasy',false);if(readerIncludeFantasy)readerIncludeFantasy.checked=false;sessionOnlyFilter=false;render();
   const card=coupleReaderList?.querySelector(`[data-v2-id="${CSS.escape(picked.entity.id)}"]`); if(card)card.scrollIntoView({behavior:'smooth',block:'center'});
   const already=isVariantInSession(picked.entity.id,picked.pair.variant), blocked=picked.pair.compatibility?.status==='limit';
   const fantasy=picked.pair.compatibility?.status==='fantasy';
   const riskInfo=picked.info.risk==='normal'?'':` · <strong>${esc(riskLabel(picked.info.risk))}</strong>`;
   randomResult.innerHTML=`<strong>${esc(picked.info.title)}</strong> · ${profileNamesInTextHtml(readerVariantLabel(picked.entity,picked.pair.variant),readerNames())}${riskInfo}<br><span>${esc(readerCompatibilityLabel(picked.pair.compatibility?.status))}</span>${fantasy?`<div class="random-fantasy-warning">${esc(t('randomFantasyWarning'))}</div>`:''}${cycleRestarted?`<div class="random-candidate-info">${currentLang==='fr'?'Nouveau cycle démarré automatiquement.':'A new cycle started automatically.'}</div>`:''}<div class="random-result-actions"><button class="random-session-btn" data-random-practice-id="${esc(picked.entity.id)}" data-random-variant="${esc(picked.pair.variant)}" type="button" ${already||blocked?'disabled':''}>${already?t('alreadyInSession'):t('addRandomToSession')}</button></div>`;
-  updateCompatibilityIndicator();
+  updateRandomEligibilitySummary();
 }
 
 function getSafety() {
@@ -2250,12 +2234,6 @@ if(readerAdvancedFilters) readerAdvancedFilters.addEventListener("click",()=>{
 showSessionBtn.addEventListener("click", () => {
   if (!isReadingMode) setViewMode("read");
   sessionOnlyFilter = !sessionOnlyFilter;
-  search.value = ""; category.value = ""; status.value = ""; minFilterScore.value = "";
-  setReaderFilterState("minOne", "", false);
-  setReaderFilterState("minTwo", "", false);
-  setReaderFilterState("ds", "a-dominant", false);
-  setReaderFilterState("includeFantasy", false, false);
-  if(readerIncludeFantasy) readerIncludeFantasy.checked=false;
   showSessionBtn.classList.toggle("active", sessionOnlyFilter);
   showSessionBtn.textContent = sessionOnlyFilter ? (currentLang==="fr"?"📌 Afficher tout":"📌 Show all") : t("showSession");
   render();
@@ -2303,7 +2281,6 @@ experienceSwitch.addEventListener("click", (e) => {
   if (!["beginner","confirmed","advanced"].includes(mode)) return;
   experienceMode = mode;
   V2_STORAGE.setDisplay("experienceMode", experienceMode, false);
-  invalidateRandomSnapshot();
   renderExperienceModeUI();
     render();
 });
@@ -2321,12 +2298,12 @@ randomResult.addEventListener("click", (e) => {
   btn.disabled=true; btn.textContent=t("alreadyInSession");
 });
 resetRandomCycleBtn.addEventListener("click", () => clearRandomHistory(true));
-[minRandomOne, minRandomOther, randomOnlyNew, randomIncludeNeutralNeutral, randomExcludeHighRisk, randomNoRepeat].forEach(el => {
+[randomOnlyNew, randomIncludeNeutralNeutral, randomExcludeHighRisk, randomNoRepeat].forEach(el => {
   const onChange = () => {
     if (randomDrawHistory.size) { randomDrawHistory.clear(); saveRandomHistory(); }
-    invalidateRandomSnapshot();
+    invalidateRandomEligibility();
     saveRandomPreferences();
-    updateCompatibilityIndicator();
+    updateRandomEligibilitySummary();
   };
   el.addEventListener("change", onChange);
 });
@@ -2532,7 +2509,6 @@ resetChecklistBtn.addEventListener("click", () => {
   safetyDirty = false;
 
   V2_STORAGE.resetAllUserData();
-  randomPickedId = null;
   invalidateDerivedData();
   lastSessionPanelSignature = "";
   lastExchange = null;

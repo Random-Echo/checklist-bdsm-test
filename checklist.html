@@ -5,15 +5,15 @@
 <meta content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" name="viewport"/>
 <title>Checklist BDSM — Personnes A &amp; B</title>
 <link href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23070509'/%3E%3Cstop offset='1' stop-color='%23140a10'/%3E%3C/linearGradient%3E%3ClinearGradient id='cr' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23f03a67'/%3E%3Cstop offset='.55' stop-color='%23cf1748'/%3E%3Cstop offset='1' stop-color='%23990d35'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='2' y='2' width='60' height='60' rx='15' fill='url(%23bg)' stroke='%23301823' stroke-width='2'/%3E%3Cpath d='M13 24.5 22.2 31 32 14.5 41.8 31 51 24.5 46.2 44.5H17.8z' fill='url(%23cr)'/%3E%3Cpath d='M18.8 46.5h26.4v4.5H18.8z' rx='2' fill='%23b50f3d'/%3E%3Cpath d='M20 38.5h24' stroke='%23ff6d8d' stroke-opacity='.55' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='31.8' r='2.4' fill='%23f2b75d'/%3E%3Ccircle cx='13' cy='23.5' r='3' fill='%23e52556'/%3E%3Ccircle cx='32' cy='13.5' r='3.2' fill='%23f03a67'/%3E%3Ccircle cx='51' cy='23.5' r='3' fill='%23e52556'/%3E%3C/svg%3E" rel="icon" type="image/svg+xml"/>
-<link href="app.css?v=V1.1.151" rel="stylesheet"/>
-<script src="bootstrap.js?v=V1.1.151"></script>
-<script defer src="profiles.js?v=V1.1.151"></script>
-<script defer src="interaction-model.js?v=V1.1.151"></script>
-<script defer src="practice-catalog.js?v=V1.1.151"></script>
-<script defer src="storage.js?v=V1.1.151"></script>
-<script defer src="app.js?v=V1.1.151"></script>
+<link href="app.css?v=V1.1.154" rel="stylesheet"/>
+<script src="bootstrap.js?v=V1.1.154"></script>
+<script defer src="profiles.js?v=V1.1.154"></script>
+<script defer src="interaction-model.js?v=V1.1.154"></script>
+<script defer src="practice-catalog.js?v=V1.1.154"></script>
+<script defer src="storage.js?v=V1.1.154"></script>
+<script defer src="app.js?v=V1.1.154"></script>
 </head>
-<!-- Checklist BDSM unifiée V1.1.151 -->
+<!-- Checklist BDSM unifiée V1.1.154 -->
 <body data-view-mode="edit">
 <div aria-labelledby="adultGateTitleFr" aria-modal="true" class="adult-gate" id="adultGate" role="dialog">
 <div aria-hidden="true" class="adult-gate-backdrop"></div>
@@ -46,7 +46,7 @@
 <header>
 <div class="top">
 <div class="title-role-row">
-<h1><span data-i18n="appTitle">Checklist BDSM — Personnes A &amp; B</span> <span class="version-badge">V1.1.151</span> <span class="title-extra" data-i18n="titleExtra"></span></h1>
+<h1><span data-i18n="appTitle">Checklist BDSM — Personnes A &amp; B</span> <span class="version-badge">V1.1.154</span> <span class="title-extra" data-i18n="titleExtra"></span></h1>
 <div class="title-actions">
 <a aria-label="Accueil / Home" class="home-button" href="index.html" title="Accueil / Home"><span class="adult-lang-fr">⌂ Accueil</span><span class="adult-lang-en">⌂ Home</span></a>
 <div aria-label="Personne qui répond" class="role-switch" role="group">
@@ -86,7 +86,7 @@
 </div>
 
 <details class="all-tools" id="allTools">
-<summary><span data-i18n="toolsOptions">☰ Outils &amp; options</span><span class="individual-editor-progress editor-tools-progress" id="individualEditorProgress">—</span><span aria-hidden="true" class="compat-summary compat-summary-hidden" id="compatIndicator"></span></summary>
+<summary><span data-i18n="toolsOptions">☰ Outils &amp; options</span><span class="individual-editor-progress editor-tools-progress" id="individualEditorProgress">—</span></summary>
 <div class="all-tools-content">
 <section class="tool-section exploration-tool-section">
 <h2 data-i18n="explorationDisplay">🧭 Exploration &amp; affichage</h2>
@@ -139,50 +139,6 @@
 <div class="autosave-info"><span aria-hidden="true">✓</span><span class="adult-lang-fr">Sauvegarde auto</span><span class="adult-lang-en">Auto-save</span></div>
 </div>
 </div>
-</section>
-<section class="tool-section random-tool-section">
-<h2 data-i18n="randomTitle">🎲 Tirage aléatoire</h2>
-<div class="randomizer">
-<div aria-label="Critère de préférence du couple" class="random-thresholds">
-<label data-i18n="minOneLabel" for="minRandomOne">L’un des deux :</label>
-<select id="minRandomOne">
-<option data-i18n="drawFantasy" value="fantasy">💭 Fantasme</option>
-<option data-i18n="drawNeutral" value="neutral">Neutre</option>
-<option data-i18n="drawWant" selected="" value="want">🔥 Envie</option>
-<option data-i18n="drawFavorite" value="favorite">👑 Favori</option>
-</select>
-<label data-i18n="minOtherLabel" for="minRandomOther">L’autre :</label>
-<select id="minRandomOther">
-<option data-i18n="drawFantasy" value="fantasy">💭 Fantasme</option>
-<option data-i18n="drawNeutral" selected="" value="neutral">Neutre</option>
-<option data-i18n="drawWant" value="want">🔥 Envie</option>
-<option data-i18n="drawFavorite" value="favorite">👑 Favori</option>
-</select>
-</div>
-<button class="random-btn" data-i18n="choosePractice" id="randomBtn" type="button">🎲 Choisir une pratique</button>
-<div class="random-options">
-<label><input id="randomOnlyNew" type="checkbox"/> <span data-i18n="onlyNeverTogether">Jamais fait ensemble uniquement</span></label>
-<label><input id="randomIncludeNeutralNeutral" type="checkbox"/> <span data-i18n="includeNeutralNeutral">Inclure Neutre + Neutre</span></label>
-<label><input checked="" id="randomExcludeHighRisk" type="checkbox"/> <span data-i18n="excludeHighRisk">Exclure les pratiques à risque élevé sauf en fantasme</span></label>
-<label><input checked="" id="randomNoRepeat" type="checkbox"/> <span data-i18n="noRepeatDraw">Ne pas répéter dans le cycle</span></label>
-<button class="random-cycle-reset" data-i18n="resetRandomCycle" id="resetRandomCycle" type="button">↺ Nouveau cycle</button>
-</div>
-<div class="compat-details" id="compatDetails"></div>
-<div class="random-candidate-info" id="randomCandidateInfo"></div>
-<div aria-live="polite" class="random-result" data-i18n-html="randomIntro" id="randomResult">
-              Le tirage compare les deux préférences <strong>sans attribuer un seuil à un rôle précis</strong>. Par défaut, l’un doit avoir au moins 🔥 Envie et l’autre au moins Neutre. 💭 Fantasme devient tirable uniquement si l’un des deux seuils est réglé sur Fantasme. Dès qu’au moins l’un des deux est en 💭 Fantasme, le résultat entier reste un fantasme, même si l’autre a Envie ou Favori.
-            </div>
-</div>
-</section>
-<section class="tool-section session-section">
-<h2 data-i18n="sessionTitle">📌 Sélection de séance</h2>
-<div class="session-toolbar">
-<button class="action session-mode-btn" data-i18n="openSessionMode" id="openSessionMode" type="button">▶ Mode séance</button>
-<button class="action" data-i18n="showSession" id="showSession" type="button">📌 Afficher la séance</button>
-<button class="action reset-session-btn" data-i18n="resetSession" id="resetSession" type="button">↺ Reset séance</button>
-</div>
-<div class="session-summary" id="sessionSummary">Aucune pratique sélectionnée.</div>
-<div class="session-list" id="sessionList"></div>
 </section>
 <section class="tool-section safety-tool-section">
 <h2 data-i18n="safetyTitle">🛡️ Sécurité, limites &amp; aftercare</h2>
@@ -262,11 +218,13 @@
 <div class="reader-top-dock" id="readerTopDock">
     <details class="reader-filter-dock" id="readerFilterDock" open>
     <summary class="reader-filter-summary-row">
-      <span class="reader-filter-summary-title"><span aria-hidden="true">🔎</span> <span class="adult-lang-fr">Filtres Lecture</span><span class="adult-lang-en">Reading filters</span></span>
+      <span class="reader-filter-summary-title"><span aria-hidden="true">✦</span> <span class="adult-lang-fr">Exploration &amp; séance</span><span class="adult-lang-en">Explore &amp; session</span></span>
       <span class="reader-filter-summary-value" id="readerFilterSummary">—</span>
       <span class="reader-filter-chevron" aria-hidden="true">⌄</span>
     </summary>
     <div class="reader-filter-content">
+      <section class="reader-explore-section reader-filter-core">
+      <div class="reader-explore-section-head"><h2><span class="adult-lang-fr">🔎 Filtre de lecture</span><span class="adult-lang-en">🔎 Reading filter</span></h2></div>
       <div class="reader-filter-group reader-dual-minimum-group">
         <span class="reader-filter-label"><span class="adult-lang-fr">Minima des deux</span><span class="adult-lang-en">Both minimums</span></span>
         <span class="reader-filter-hint"><span class="adult-lang-fr">Ordre indifférent</span><span class="adult-lang-en">Order independent</span></span>
@@ -283,6 +241,34 @@
         <label class="reader-filter-fantasy"><input id="readerIncludeFantasy" type="checkbox"/> <span><span aria-hidden="true">💭</span> <span class="adult-lang-fr">Inclure les fantasmes</span><span class="adult-lang-en">Include fantasies</span></span></label>
         <button class="reader-filter-advanced" id="readerAdvancedFilters" type="button"><span class="adult-lang-fr">⚙ Autres filtres</span><span class="adult-lang-en">⚙ More filters</span></button>
       </div>
+      </section>
+      <section class="tool-section random-tool-section reader-explore-section reader-random-section">
+<div class="reader-explore-section-head"><h2 data-i18n="randomTitle">🎲 Tirage aléatoire</h2><small><span class="adult-lang-fr">Utilise le filtre de lecture actif.</span><span class="adult-lang-en">Uses the active reading filter.</span></small></div>
+<div class="randomizer">
+
+<button class="random-btn" data-i18n="choosePractice" id="randomBtn" type="button">🎲 Choisir une pratique</button>
+<div class="random-options">
+<label><input id="randomOnlyNew" type="checkbox"/> <span data-i18n="onlyNeverTogether">Jamais fait ensemble uniquement</span></label>
+<label><input id="randomIncludeNeutralNeutral" type="checkbox"/> <span data-i18n="includeNeutralNeutral">Inclure Neutre + Neutre</span></label>
+<label><input checked="" id="randomExcludeHighRisk" type="checkbox"/> <span data-i18n="excludeHighRisk">Exclure les pratiques à risque élevé sauf en fantasme</span></label>
+<label><input checked="" id="randomNoRepeat" type="checkbox"/> <span data-i18n="noRepeatDraw">Ne pas répéter dans le cycle</span></label>
+<button class="random-cycle-reset" data-i18n="resetRandomCycle" id="resetRandomCycle" type="button">↺ Nouveau cycle</button>
+</div>
+<div class="random-summary-details" id="randomSummaryDetails"></div>
+<div class="random-candidate-info" id="randomCandidateInfo"></div>
+<div aria-live="polite" class="random-result" id="randomResult"><span class="adult-lang-fr">Le tirage choisit parmi les pratiques correspondant au filtre de lecture actif.</span><span class="adult-lang-en">The draw picks from practices matching the active reading filter.</span></div>
+</div>
+</section>
+      <section class="tool-section session-section reader-explore-section reader-session-section">
+<div class="reader-explore-section-head"><h2><span class="adult-lang-fr">📌 Séance</span><span class="adult-lang-en">📌 Session</span></h2><small><span class="adult-lang-fr">Pratiques épinglées depuis la lecture.</span><span class="adult-lang-en">Practices pinned from Reading.</span></small></div>
+<div class="session-toolbar">
+<button class="action session-mode-btn" data-i18n="openSessionMode" id="openSessionMode" type="button">▶ Mode séance</button>
+<button class="action" data-i18n="showSession" id="showSession" type="button">📌 Afficher la séance</button>
+<button class="action reset-session-btn" data-i18n="resetSession" id="resetSession" type="button">↺ Reset séance</button>
+</div>
+<div class="session-summary" id="sessionSummary">Aucune pratique sélectionnée.</div>
+<div class="session-list" id="sessionList"></div>
+</section>
     </div>
     </details>
   </div>
@@ -310,7 +296,7 @@
 <section class="help-section"><h3>7. Configuration & sauvegardes</h3><p><strong>🔗 Partager la configuration</strong> sert surtout si vous utilisez deux appareils : le bouton crée un lien contenant uniquement les deux profils, leurs attributs, couleurs et la dynamique D/s, sans réponses. Envoyez-le par SMS, Discord, WhatsApp, Mail, AirDrop… ; votre partenaire l’ouvre simplement avant de répondre. <strong>💾 Complète</strong> exporte tout le couple. Les sauvegardes <strong>Personne A/B</strong> contiennent les réponses de la personne ainsi qu’une copie de la configuration utilisée, afin de détecter une éventuelle différence lors de la fusion.</p></section>
 <section class="help-section"><h3>8. Mode lecture</h3><p>Le mode Lecture affiche les deux réponses complémentaires et le résultat du couple. Les réponses personnelles sont verrouillées ; les actions communes « Fait ensemble » et séance restent disponibles.</p></section>
 <section class="help-section"><h3>9. Données locales</h3><p>Les réponses sont enregistrées localement dans le navigateur. Un autre appareil ne reçoit rien automatiquement : utilisez les sauvegardes JSON pour transférer les données.</p></section>
-<div class="help-end">V1.1.151</div>
+<div class="help-end">V1.1.154</div>
 </div>
 <div class="help-lang" data-help-lang="en">
 <p class="help-intro">The checklist has two distinct uses: <strong>Edit</strong> for each person to answer separately without seeing their partner’s choices, and <strong>Reading</strong> to match complementary answers and show couple results. Names, relevant anatomy and the couple dynamic are defined in the profile.</p>
@@ -323,7 +309,7 @@
 <section class="help-section"><h3>7. Configuration & backups</h3><p><strong>🔗 Share configuration</strong> is mainly for two-device use: it creates a link containing only both profiles, anatomy, colors and the D/s dynamic, with no answers. Send it by SMS, Discord, WhatsApp, Mail, AirDrop…; your partner simply opens it before answering. <strong>💾 Full</strong> exports the entire couple. <strong>Person A/B</strong> backups include that person's answers plus a copy of the configuration used, so configuration differences can be detected during a merge.</p></section>
 <section class="help-section"><h3>8. Reading mode</h3><p>Reading mode shows both complementary answers and the couple result. Personal answers stay locked while shared Done together and session actions remain available.</p></section>
 <section class="help-section"><h3>9. Local data</h3><p>Answers are stored locally in this browser. Another device receives nothing automatically; use JSON backups to transfer data.</p></section>
-<div class="help-end">V1.1.151</div>
+<div class="help-end">V1.1.154</div>
 </div>
 </div>
 </section>
