@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.155";
+const APP_VERSION = "V1.1.156";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1846,7 +1846,10 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
   if (readerFilterSummary) {
     const parts=[];
     const compatibleCount=Number.isFinite(summaryStats?.compatible) ? summaryStats.compatible : null;
-    if (compatibleCount !== null) parts.push(`<span class="reader-filter-summary-count">${compatibleCount} ${currentLang==='fr'?'compatibles':'matches'}</span>`);
+    if (compatibleCount !== null) {
+      const compactCountLabel = currentLang==='fr' ? 'compat.' : 'matches';
+      parts.push(`<span class="reader-filter-summary-count">${compatibleCount} ${compactCountLabel}</span>`);
+    }
     if (!fixed) parts.push(readerDsChipHtml(dsValue,names));
     parts.push(`<span class="reader-filter-summary-piece">${esc(minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All'))}</span>`);
     if (includeFantasy) parts.push('<span class="reader-filter-summary-piece">💭</span>');
