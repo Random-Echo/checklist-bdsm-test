@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.158";
+const APP_VERSION = window.CHECKLIST_RELEASE || "V1.1.159";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1380,81 +1380,17 @@ const individualEditorExpandAll = document.getElementById("individualEditorExpan
 const coupleReader = document.getElementById("coupleReader");
 const coupleReaderList = document.getElementById("coupleReaderList");
 const coupleReaderEmpty = document.getElementById("coupleReaderEmpty");
-const readerCurrentCategoryDock = document.getElementById("readerCurrentCategoryDock");
-const readerCurrentCategoryHead = document.getElementById("readerCurrentCategoryHead");
-let readerStickyRaf = 0;
-let readerStickyCategoryName = "";
-function clearReaderCurrentCategory(){
-  readerStickyCategoryName = "";
-  if(readerCurrentCategoryDock){
-    readerCurrentCategoryDock.classList.remove("is-active");
-    readerCurrentCategoryDock.setAttribute("aria-hidden","true");
-  }
-  if(readerCurrentCategoryHead){
-    readerCurrentCategoryHead.innerHTML="";
-    readerCurrentCategoryHead.removeAttribute("data-reader-current-category");
-  }
-}
-function updateReaderCurrentCategory(){
-  readerStickyRaf = 0;
-  if(!readerCurrentCategoryDock || !readerCurrentCategoryHead || !coupleReaderList || document.body.dataset.viewMode!=="read" || coupleReader?.hidden){
-    clearReaderCurrentCategory(); return;
-  }
-  const categories=[...coupleReaderList.querySelectorAll(".couple-reader-category")];
-  if(!categories.length){clearReaderCurrentCategory();return;}
-  const stickyRect=(readerTopDock || readerFilterDock)?.getBoundingClientRect();
-  const threshold=(stickyRect?.bottom ?? document.querySelector("main")?.getBoundingClientRect().top ?? 0)-1;
-  const listRect=coupleReaderList.getBoundingClientRect();
-  if(listRect.top>threshold+1 || listRect.bottom<=threshold){clearReaderCurrentCategory();return;}
-  let active=categories[0];
-  for(const cat of categories){
-    if(cat.getBoundingClientRect().top<=threshold+1) active=cat; else break;
-  }
-  const source=active.querySelector(".couple-reader-category-head");
-  if(!source){clearReaderCurrentCategory();return;}
-  const categoryName=source.dataset.readerCategoryToggle||active.dataset.category||source.querySelector("strong")?.textContent||"";
-  if(readerStickyCategoryName!==categoryName || readerCurrentCategoryHead.dataset.expanded!==source.getAttribute("aria-expanded")){
-    readerStickyCategoryName=categoryName;
-    readerCurrentCategoryHead.innerHTML=source.innerHTML;
-    readerCurrentCategoryHead.dataset.readerCurrentCategory=categoryName;
-    readerCurrentCategoryHead.dataset.expanded=source.getAttribute("aria-expanded")||"";
-    readerCurrentCategoryHead.setAttribute("aria-expanded",source.getAttribute("aria-expanded")||"true");
-  }
-  const color=getComputedStyle(active).getPropertyValue("--reader-category-color").trim()||"#aaa";
-  const sourceHeight=Math.max(1,Math.ceil(source.getBoundingClientRect().height));
-  readerCurrentCategoryDock.style.setProperty("--reader-current-category-color",color);
-  readerCurrentCategoryDock.style.setProperty("--reader-current-category-height",`${sourceHeight}px`);
-  readerCurrentCategoryDock.classList.add("is-active");
-  readerCurrentCategoryDock.setAttribute("aria-hidden","false");
-}
-function queueReaderCurrentCategoryUpdate(){
-  if(readerStickyRaf) return;
-  readerStickyRaf=requestAnimationFrame(updateReaderCurrentCategory);
-}
 function updateStickyCategoryOffsets(){
   const root=document.documentElement;
   if(!root) return;
+  /* <main> is the scrollport. Both category headers stick to its own top,
+     directly below the fixed application header. No cloned category header
+     or artificial offset is required. */
   root.style.setProperty("--edit-category-sticky-top","0px");
-  let readTop=0;
-  const stickySource=(readerTopDock && !readerTopDock.hidden) ? readerTopDock : readerFilterDock;
-  if(coupleReader && !coupleReader.hidden && stickySource){
-    const styles=window.getComputedStyle(stickySource);
-    if(styles.display!=="none" && styles.visibility!=="hidden"){
-      readTop=stickySource.offsetHeight || 0;
-      if(readTop>0) readTop=Math.max(0, readTop-1);
-    }
-  }
-  root.style.setProperty("--read-category-sticky-top", `${Math.max(0,Math.round(readTop))}px`);
-  queueReaderCurrentCategoryUpdate();
+  root.style.setProperty("--read-category-sticky-top","0px");
 }
-const appMainScrollport=document.querySelector("main");
-if(appMainScrollport) appMainScrollport.addEventListener("scroll",queueReaderCurrentCategoryUpdate,{passive:true});
 window.addEventListener("resize", updateStickyCategoryOffsets, {passive:true});
 window.addEventListener("orientationchange", updateStickyCategoryOffsets, {passive:true});
-if(readerFilterDock) {
-  readerFilterDock.addEventListener("toggle", ()=>window.requestAnimationFrame(updateStickyCategoryOffsets));
-  if("ResizeObserver" in window) new ResizeObserver(()=>updateStickyCategoryOffsets()).observe(readerFilterDock);
-}
 if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => PROFILE_API?.open?.());
 if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => {
   const cats=[...new Set(CATALOG_ENTITIES.map(entity=>entity.category).filter(Boolean))];
@@ -1845,14 +1781,15 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
   renderReaderMinimumChips(readerMinimumTwoChips,minTwo,counters.minimumTwo||{},2);
   if (readerFilterSummary) {
     const compatibleCount=Number.isFinite(summaryStats?.compatible) ? summaryStats.compatible : null;
-    const countLabel=currentLang==='fr' ? 'compat.' : 'matches';
-    const textParts=[];
-    if (!fixed) textParts.push(readerDsChipHtml(dsValue,names));
-    textParts.push(esc(minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All')));
-    if (includeFantasy) textParts.push('💭');
-    const countHtml = compatibleCount !== null ? `<span class="reader-filter-summary-count">${compatibleCount} ${countLabel}</span>` : '';
-    const summaryText = textParts.join('<span class="reader-filter-summary-sep"> · </span>') || '—';
-    readerFilterSummary.innerHTML=`${countHtml}<span class="reader-filter-summary-inline">${summaryText}</span>`;
+    const dsName=dsValue === "b-dominant" ? names.personB : names.personA;
+    const dsText=currentLang === "fr" ? `${dsName} domine` : `${dsName} dominant`;
+    const minimumText=(minOne || minTwo) ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : "";
+    const parts=[];
+    if (compatibleCount !== null) parts.push(`<span class="reader-filter-summary-count">${compatibleCount} ${currentLang==='fr'?'compat.':'matches'}</span>`);
+    if (!fixed) parts.push(`<span class="reader-filter-summary-ds">${esc(dsText)}</span>`);
+    if (minimumText) parts.push(`<span class="reader-filter-summary-min">${esc(minimumText)}</span>`);
+    if (includeFantasy) parts.push('<span class="reader-filter-summary-fantasy">💭</span>');
+    readerFilterSummary.innerHTML=parts.join('<span class="reader-filter-summary-sep"> · </span>') || `<span>${currentLang==='fr'?'Tous':'All'}</span>`;
   }
   if (!readerFilterDock.dataset.initialized) {
     readerFilterDock.dataset.initialized="true";
@@ -1904,7 +1841,6 @@ function getReaderModelSnapshot(profile=runtimeProfile()) {
 }
 function hideCoupleReader() {
   if(coupleReader) coupleReader.hidden=true;
-  clearReaderCurrentCategory();
 }
 function renderCoupleReader() {
   if(!coupleReader||!coupleReaderList) return;
@@ -2002,17 +1938,10 @@ function renderCoupleReader() {
     const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${profileNameBadge('person-a', names.personA, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>${profileNameBadge('person-b', names.personB, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b><span class="profile-inline-text">🔗</span></b><small>✓ ${esc(togetherShort)}</small></span></span>`;
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span>${resultHead}</button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
-  queueReaderCurrentCategoryUpdate();
   coupleReaderEmpty.hidden=visiblePractices!==0;
   updateRandomEligibilitySummary();
   window.requestAnimationFrame(updateStickyCategoryOffsets);
 }
-if(readerCurrentCategoryHead) readerCurrentCategoryHead.addEventListener("click",()=>{
-  const cat=readerCurrentCategoryHead.dataset.readerCurrentCategory;
-  if(!cat) return;
-  if(collapsedCategories.has(cat)) collapsedCategories.delete(cat); else collapsedCategories.add(cat);
-  saveCollapsedCategories(); renderCoupleReader();
-});
 if(coupleReaderList) coupleReaderList.addEventListener("click",e=>{
   const action=e.target.closest("button[data-couple-action]");
   if(action){
