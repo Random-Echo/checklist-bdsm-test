@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.169";
+const APP_VERSION = "V1.1.171";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -413,8 +413,6 @@ const readerIncludeFantasy = document.getElementById("readerIncludeFantasy");
 const readerFilterDock = document.getElementById("readerFilterDock");
 const readerTopDock = document.getElementById("readerTopDock");
 const readerFilterSummary = document.getElementById("readerFilterSummary");
-const readerCollapseAll = document.getElementById("readerCollapseAll");
-const readerExpandAll = document.getElementById("readerExpandAll");
 const readerHeaderDs = document.getElementById("readerHeaderDs");
 const readerHeaderDsButtons = [...document.querySelectorAll("[data-reader-header-ds]")];
 const readerMinimumOneChips = document.getElementById("readerMinimumOneChips");
@@ -1431,8 +1429,6 @@ function setAllCategoriesCollapsed(shouldCollapse) {
 }
 if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => setAllCategoriesCollapsed(true));
 if (individualEditorExpandAll) individualEditorExpandAll.addEventListener("click", () => setAllCategoriesCollapsed(false));
-if (readerCollapseAll) readerCollapseAll.addEventListener("click", () => setAllCategoriesCollapsed(true));
-if (readerExpandAll) readerExpandAll.addEventListener("click", () => setAllCategoriesCollapsed(false));
 
 function modelPersonKey() { return activeEditPerson === "person-b" ? "personB" : "personA"; }
 function legacyBlockForEditorSlot(entity, person, slot) {
