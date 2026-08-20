@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.167";
+const APP_VERSION = "V1.1.169";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -413,6 +413,8 @@ const readerIncludeFantasy = document.getElementById("readerIncludeFantasy");
 const readerFilterDock = document.getElementById("readerFilterDock");
 const readerTopDock = document.getElementById("readerTopDock");
 const readerFilterSummary = document.getElementById("readerFilterSummary");
+const readerCollapseAll = document.getElementById("readerCollapseAll");
+const readerExpandAll = document.getElementById("readerExpandAll");
 const readerHeaderDs = document.getElementById("readerHeaderDs");
 const readerHeaderDsButtons = [...document.querySelectorAll("[data-reader-header-ds]")];
 const readerMinimumOneChips = document.getElementById("readerMinimumOneChips");
@@ -423,7 +425,6 @@ const randomIncludeNeutralNeutral = document.getElementById("randomIncludeNeutra
 const randomExcludeHighRisk = document.getElementById("randomExcludeHighRisk");
 const randomNoRepeat = document.getElementById("randomNoRepeat");
 const resetRandomCycleBtn = document.getElementById("resetRandomCycle");
-const randomSummaryDetails = document.getElementById("randomSummaryDetails");
 const randomCandidateInfo = document.getElementById("randomCandidateInfo");
 const exchangeInfo = document.getElementById("exchangeInfo");
 const showSessionBtn = document.getElementById("showSession");
@@ -1423,13 +1424,15 @@ appMainScrollport?.addEventListener("scroll", queueReaderStickyHeaderUpdate, {pa
 window.addEventListener("resize", queueReaderStickyHeaderUpdate, {passive:true});
 window.addEventListener("orientationchange", queueReaderStickyHeaderUpdate, {passive:true});
 if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => PROFILE_API?.open?.());
-function setAllEditorCategoriesCollapsed(shouldCollapse) {
+function setAllCategoriesCollapsed(shouldCollapse) {
   collapsedCategories = shouldCollapse ? new Set(allCatalogCategories) : new Set();
   saveCollapsedCategories();
   render();
 }
-if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => setAllEditorCategoriesCollapsed(true));
-if (individualEditorExpandAll) individualEditorExpandAll.addEventListener("click", () => setAllEditorCategoriesCollapsed(false));
+if (individualEditorCollapseAll) individualEditorCollapseAll.addEventListener("click", () => setAllCategoriesCollapsed(true));
+if (individualEditorExpandAll) individualEditorExpandAll.addEventListener("click", () => setAllCategoriesCollapsed(false));
+if (readerCollapseAll) readerCollapseAll.addEventListener("click", () => setAllCategoriesCollapsed(true));
+if (readerExpandAll) readerExpandAll.addEventListener("click", () => setAllCategoriesCollapsed(false));
 
 function modelPersonKey() { return activeEditPerson === "person-b" ? "personB" : "personA"; }
 function legacyBlockForEditorSlot(entity, person, slot) {
@@ -2040,18 +2043,13 @@ function getRandomEligibilitySnapshot() {
   const filterKey=readerActiveFilterKey();
   if (randomEligibilityCache.revision === randomOptionsRevision && randomEligibilityCache.filterKey === filterKey && randomEligibilityCache.value) return randomEligibilityCache.value;
   const profile=runtimeProfile();
-  const pairEligible=[], baseEligible=[], eligible=[];
-  let bothFavorite=0,newTogether=0,fantasyCount=0;
+  const baseEligible=[], eligible=[];
 
   const addCandidate=(entity,pair,info)=>{
     if(!randomIncludeNeutralNeutral.checked && pair.compatibility?.scoreA===2 && pair.compatibility?.scoreB===2) return;
-    const candidate={entity,pair,info,key:`${entity.id}|${pair.variant}`};
-    pairEligible.push(candidate);
-    if(pair.compatibility?.scoreA===FAVORITE_SCORE&&pair.compatibility?.scoreB===FAVORITE_SCORE) bothFavorite++;
-    if(pair.common?.doneTogether!==true) newTogether++;
-    if(pair.compatibility?.status==='fantasy') fantasyCount++;
     if(randomOnlyNew.checked&&pair.common?.doneTogether===true) return;
     if(randomExcludeHighRisk.checked&&info.risk==='high'&&pair.compatibility?.status!=='fantasy') return;
+    const candidate={entity,pair,info,key:`${entity.id}|${pair.variant}`};
     baseEligible.push(candidate);
     if(!randomNoRepeat.checked||!randomDrawHistory.has(candidate.key)) eligible.push(candidate);
   };
@@ -2068,7 +2066,7 @@ function getRandomEligibilitySnapshot() {
       }
     }
   }
-  const snapshot={pairEligible,baseEligible,eligible,bothFavorite,newTogether,fantasyCount};
+  const snapshot={baseEligible,eligible};
   randomEligibilityCache={revision:randomOptionsRevision,filterKey,value:snapshot};
   return snapshot;
 }
@@ -2077,18 +2075,14 @@ let lastRandomSummarySignature = "";
 function updateRandomEligibilitySummary() {
   if(!isReadingMode) {
     lastRandomSummarySignature = "";
-    if(randomSummaryDetails) randomSummaryDetails.innerHTML='';
     if(randomCandidateInfo) randomCandidateInfo.textContent='';
     return;
   }
-  const snapshot=getRandomEligibilitySnapshot();
-  const {pairEligible,baseEligible,eligible,bothFavorite,newTogether,fantasyCount}=snapshot;
-  const signature=[currentLang,readerFilterState.ds,readerFilterState.minOne,readerFilterState.minTwo,readerFilterState.includeFantasy?1:0,search.value,category.value,status.value,riskFilter.value,pairEligible.length,baseEligible.length,eligible.length,bothFavorite,newTogether,fantasyCount,randomNoRepeat.checked?1:0].join('|');
-  if(signature===lastRandomSummarySignature)return; lastRandomSummarySignature=signature;
-  randomSummaryDetails.innerHTML=currentLang==='fr'
-    ? `<span>👑+👑 ${bothFavorite} favoris communs</span><span>○ ${newTogether} jamais faites ensemble</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantasme${fantasyCount>1?'s':''}</span>`:''}`
-    : `<span>👑+👑 ${bothFavorite} shared favorites</span><span>○ ${newTogether} never done together</span>${fantasyCount?`<span class="random-fantasy-badge">💭 ${fantasyCount} fantas${fantasyCount>1?'ies':'y'}</span>`:''}`;
-  randomCandidateInfo.textContent=randomNoRepeat.checked
+  const {baseEligible,eligible}=getRandomEligibilitySnapshot();
+  const signature=[currentLang,readerFilterState.ds,readerFilterState.minOne,readerFilterState.minTwo,readerFilterState.includeFantasy?1:0,search.value,category.value,status.value,riskFilter.value,baseEligible.length,eligible.length,randomNoRepeat.checked?1:0].join('|');
+  if(signature===lastRandomSummarySignature)return;
+  lastRandomSummarySignature=signature;
+  if(randomCandidateInfo) randomCandidateInfo.textContent=randomNoRepeat.checked
     ? (currentLang==='fr'?`Tirables avec le filtre de lecture : ${eligible.length}/${baseEligible.length}`:`Eligible with reading filter: ${eligible.length}/${baseEligible.length}`)
     : (currentLang==='fr'?`Tirables avec le filtre de lecture : ${baseEligible.length}`:`Eligible with reading filter: ${baseEligible.length}`);
 }
@@ -2199,7 +2193,6 @@ function scheduleSafetySave() {
   safetySaveTimer = setTimeout(flushSafetySave, 140);
 }
 safetyFields.forEach(el => el.addEventListener("input", scheduleSafetySave));
-window.addEventListener("pagehide", flushSafetySave);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") { flushPersonalNoteSaves(); flushSafetySave(); }
 });
@@ -2306,15 +2299,13 @@ resetRandomCycleBtn.addEventListener("click", () => clearRandomHistory(true));
   };
   el.addEventListener("change", onChange);
 });
-const cats = allCatalogCategories;
-
 function renderCategoryControls() {
   const currentValue = category.value;
   category.replaceChildren();
   const allOption = new Option(t("allCategories"), "");
   category.appendChild(allOption);
-  for (const name of cats) category.appendChild(new Option(localizedCategory(name), name));
-  category.value = cats.includes(currentValue) ? currentValue : "";
+  for (const name of allCatalogCategories) category.appendChild(new Option(localizedCategory(name), name));
+  category.value = allCatalogCategories.includes(currentValue) ? currentValue : "";
 }
 
 
