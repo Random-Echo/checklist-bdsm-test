@@ -1,5 +1,5 @@
 :root{
-  /* V1.1.173 — canonical global colour system.
+  /* V1.1.175 — canonical global colour system.
      Edit and Reading must consume these exact same tokens. */
   --ui-night:#151116;
   --ui-night-2:#241a20;
@@ -6143,13 +6143,13 @@ body[data-view-mode="read"] .reader-session-section .session-toolbar .action{min
 }
 
 
-/* V1.1.173 — one shared category action dock in Edit and Reading */
+/* V1.1.175 — one shared category action dock in Edit and Reading */
 body[data-view-mode="read"] header .editor-top-dock{
   display:grid !important;
 }
 
 
-/* V1.1.173 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
+/* V1.1.175 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
 body[data-view-mode="read"] header .all-tools-content{
   display:grid !important;
   grid-template-columns:minmax(0,1fr) !important;
@@ -6363,7 +6363,7 @@ body[data-view-mode="read"] .reset-zone{display:none !important}
 }
 
 
-/* V1.1.173 — Reading legend: explicit, readable line breaks on mobile. */
+/* V1.1.175 — Reading legend: explicit, readable line breaks on mobile. */
 body[data-view-mode="read"] .display-filter-section .reading-legend-card{
   grid-column:1 / -1;
   display:grid !important;
@@ -6415,7 +6415,7 @@ body[data-view-mode="read"] .display-filter-section .reading-legend-pin{
 
 
 /* ==========================================================================
-   V1.1.173 — ONE DA / ONE GLOBAL PALETTE
+   V1.1.175 — ONE DA / ONE GLOBAL PALETTE
    Edit and Reading deliberately share the exact same derived theme variables.
    No mode is allowed to invent a second set of colours.
    ========================================================================== */
@@ -6598,4 +6598,175 @@ body[data-view-mode="read"] .couple-reader-notes{
   border-color:color-mix(in srgb,var(--theme-line) 76%,var(--ui-panel) 24%) !important;
   background:var(--ui-panel) !important;
   color:var(--theme-ink) !important;
+}
+
+/* ========================================================================== 
+   V1.1.175 — readability pass
+   Goal: avoid dark-on-dark / low-contrast text on themed purple surfaces.
+   This block is intentionally last so it wins over earlier layered overrides.
+   ========================================================================== */
+:root{
+  --readability-ink-strong:#20191d;
+  --readability-ink:#352d32;
+  --readability-ink-soft:#51464d;
+  --readability-chip-bg:rgba(255,251,247,.94);
+}
+
+:is(body[data-view-mode="edit"],body[data-view-mode="read"]){
+  --theme-panel:color-mix(in srgb,var(--dominant-soft) 26%,#fff 74%);
+  --theme-panel-2:color-mix(in srgb,var(--dominant-soft) 34%,#fff 66%);
+  --theme-panel-3:color-mix(in srgb,var(--dominant-soft) 42%,#fff 58%);
+  --theme-section:color-mix(in srgb,var(--dominant-soft) 22%,#fff 78%);
+  --theme-category-start:color-mix(in srgb,var(--dominant-soft) 32%,#fff 68%);
+  --theme-category-end:color-mix(in srgb,var(--dominant-soft) 44%,#fff 56%);
+  --theme-ink:var(--readability-ink-strong);
+  --theme-muted:var(--readability-ink-soft);
+  --edit-theme-ink:var(--readability-ink-strong);
+  --edit-theme-muted:var(--readability-ink-soft);
+  --read-dominant-ink:var(--readability-ink-strong);
+}
+
+/* Shared control surfaces */
+:is(body[data-view-mode="edit"],body[data-view-mode="read"]) :is(.all-tools > summary,.individual-editor-bulk-btn,.profile-edit-button,.reader-filter-summary-row){
+  color:var(--readability-ink-strong) !important;
+}
+:is(body[data-view-mode="edit"],body[data-view-mode="read"]) :is(.individual-editor-progress,.reader-filter-summary-value,.individual-category-head > span:nth-of-type(2),.reader-filter-summary-count){
+  background:var(--readability-chip-bg) !important;
+  color:var(--readability-ink) !important;
+}
+
+/* Edit mode */
+body[data-view-mode="edit"] .individual-practice-card{
+  color:var(--readability-ink) !important;
+}
+body[data-view-mode="edit"] .individual-practice-card > header{
+  background:color-mix(in srgb,var(--edit-result-panel-strong,#efe7e1) 70%,#fff 30%) !important;
+  border-bottom-color:color-mix(in srgb,var(--edit-result-line,#d7ccc0) 82%,#fff 18%) !important;
+}
+body[data-view-mode="edit"] .individual-slot,
+body[data-view-mode="edit"] .individual-after[data-result-key],
+body[data-view-mode="edit"] .individual-note-panel,
+body[data-view-mode="edit"] .individual-note-panel textarea{
+  color:var(--readability-ink) !important;
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key],
+body[data-view-mode="edit"] .individual-after[data-result-key]{
+  background:color-mix(in srgb,var(--edit-slot-bg,rgba(255,252,248,.88)) 84%,#fff 16%) !important;
+}
+body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main,
+body[data-view-mode="edit"] .individual-after[data-result-key] .individual-score-row{
+  background:rgba(255,252,248,.44) !important;
+}
+body[data-view-mode="edit"] .individual-practice-card :is(h3,.individual-slot-label,.individual-field-label,.individual-note-panel > span,.individual-category-head strong){
+  color:var(--readability-ink-strong) !important;
+}
+body[data-view-mode="edit"] .individual-practice-card :is(.individual-practice-explanation,.individual-practice-category,.individual-prior,.individual-note-toggle,.individual-applicability){
+  color:var(--readability-ink-soft) !important;
+}
+body[data-view-mode="edit"] .individual-practice-category,
+body[data-view-mode="edit"] .individual-prior,
+body[data-view-mode="edit"] .individual-note-toggle{
+  background:var(--readability-chip-bg) !important;
+}
+
+/* Reading mode */
+body[data-view-mode="read"] .couple-reader-category-head,
+body[data-view-mode="read"] .couple-reader-category-head > strong,
+body[data-view-mode="read"] .couple-result-head small,
+body[data-view-mode="read"] .couple-practice-title-line strong,
+body[data-view-mode="read"] .reader-filter-summary-title,
+body[data-view-mode="read"] .reader-filter-summary-inline,
+body[data-view-mode="read"] .reader-filter-chevron{
+  color:var(--readability-ink-strong) !important;
+}
+body[data-view-mode="read"] .couple-practice-description,
+body[data-view-mode="read"] .couple-reader-note span,
+body[data-view-mode="read"] .reader-filter-label,
+body[data-view-mode="read"] .reader-filter-hint,
+body[data-view-mode="read"] .reader-filter-fantasy{
+  color:var(--readability-ink-soft) !important;
+}
+body[data-view-mode="read"] .couple-result-tick,
+body[data-view-mode="read"] .couple-reader-notes,
+body[data-view-mode="read"] .reader-filter-chip,
+body[data-view-mode="read"] .reader-filter-chip-count{
+  background:var(--readability-chip-bg) !important;
+  color:var(--readability-ink) !important;
+}
+body[data-view-mode="read"] .reader-filter-chip:hover{
+  background:rgba(255,247,241,.96) !important;
+}
+body[data-view-mode="read"] .reader-filter-chip.is-active{
+  background:linear-gradient(145deg,#372b31,#21191d) !important;
+  color:#fffaf6 !important;
+}
+body[data-view-mode="read"] .reader-filter-chip.is-active .reader-filter-chip-count{
+  background:rgba(255,255,255,.18) !important;
+  color:#fffaf6 !important;
+}
+
+/* Tools copy / helper texts */
+:is(body[data-view-mode="edit"],body[data-view-mode="read"]) :is(.backup-hint,.exchange-info,.explore-copy,.experience-label,.experience-note,.tool-check,.safety label,.legend-help,.reading-legend-line,.tool-section p,.tool-section li){
+  color:var(--readability-ink-soft) !important;
+}
+
+/* ========================================================================== 
+   V1.1.175 — random picked card formatting
+   ========================================================================== */
+.random-picked-card{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.random-picked-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  color:var(--readability-ink-strong,var(--theme-ink,#20191d));
+  font-size:.96rem;
+  line-height:1.2;
+}
+.random-picked-title strong{
+  font-weight:900;
+  color:inherit;
+}
+.random-picked-risk{
+  display:inline-flex;
+  align-items:center;
+}
+.random-picked-risk .risk-badge{
+  position:static;
+  transform:none;
+}
+.random-picked-explanation{
+  color:var(--readability-ink,#352d32);
+  line-height:1.35;
+  font-size:.94rem;
+}
+.random-picked-explanation .profile-inline-badge{
+  vertical-align:baseline;
+}
+.random-picked-compat{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+  color:var(--readability-ink,#352d32);
+  line-height:1.25;
+}
+.random-picked-compat-label{
+  font-weight:850;
+  color:var(--readability-ink-strong,var(--theme-ink,#20191d));
+}
+.random-picked-compat-value{
+  font-weight:700;
+}
+body[data-view-mode="read"] .reader-random-section .random-result{
+  font-size:.72rem;
+}
+@media (max-width:760px){
+  .random-picked-title{font-size:.88rem}
+  .random-picked-explanation{font-size:.82rem}
+  .random-picked-compat{font-size:.8rem}
 }
