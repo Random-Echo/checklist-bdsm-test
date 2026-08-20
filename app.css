@@ -1,5 +1,5 @@
 :root{
-  /* V1.1.177 — canonical global colour system.
+  /* V1.1.178 — canonical global colour system.
      Edit and Reading must consume these exact same tokens. */
   --ui-night:#151116;
   --ui-night-2:#241a20;
@@ -6143,13 +6143,13 @@ body[data-view-mode="read"] .reader-session-section .session-toolbar .action{min
 }
 
 
-/* V1.1.177 — one shared category action dock in Edit and Reading */
+/* V1.1.178 — one shared category action dock in Edit and Reading */
 body[data-view-mode="read"] header .editor-top-dock{
   display:grid !important;
 }
 
 
-/* V1.1.177 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
+/* V1.1.178 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
 body[data-view-mode="read"] header .all-tools-content{
   display:grid !important;
   grid-template-columns:minmax(0,1fr) !important;
@@ -6363,7 +6363,7 @@ body[data-view-mode="read"] .reset-zone{display:none !important}
 }
 
 
-/* V1.1.177 — Reading legend: explicit, readable line breaks on mobile. */
+/* V1.1.178 — Reading legend: explicit, readable line breaks on mobile. */
 body[data-view-mode="read"] .display-filter-section .reading-legend-card{
   grid-column:1 / -1;
   display:grid !important;
@@ -6415,7 +6415,7 @@ body[data-view-mode="read"] .display-filter-section .reading-legend-pin{
 
 
 /* ==========================================================================
-   V1.1.177 — ONE DA / ONE GLOBAL PALETTE
+   V1.1.178 — ONE DA / ONE GLOBAL PALETTE
    Edit and Reading deliberately share the exact same derived theme variables.
    No mode is allowed to invent a second set of colours.
    ========================================================================== */
@@ -6601,7 +6601,7 @@ body[data-view-mode="read"] .couple-reader-notes{
 }
 
 /* ========================================================================== 
-   V1.1.177 — readability pass
+   V1.1.178 — readability pass
    Goal: avoid dark-on-dark / low-contrast text on themed purple surfaces.
    This block is intentionally last so it wins over earlier layered overrides.
    ========================================================================== */
@@ -6711,7 +6711,7 @@ body[data-view-mode="read"] .reader-filter-chip.is-active .reader-filter-chip-co
 }
 
 /* ========================================================================== 
-   V1.1.177 — random picked card formatting
+   V1.1.178 — random picked card formatting
    ========================================================================== */
 .random-picked-card{
   display:flex;
@@ -6767,7 +6767,7 @@ body[data-view-mode="read"] .reader-random-section .random-result{
   .random-picked-compat{font-size:.8rem}
 }
 
-/* V1.1.177 — random result: standalone compatibility result, no label */
+/* V1.1.178 — random result: standalone compatibility result, no label */
 .random-picked-compat{
   margin-top:1px;
 }
@@ -6777,7 +6777,7 @@ body[data-view-mode="read"] .reader-random-section .random-result{
 }
 
 
-/* V1.1.177 — tools chevron aligned right and dark */
+/* V1.1.178 — tools chevron aligned right and dark */
 header .all-tools > summary{
   display:flex !important;
   align-items:center !important;
@@ -6794,4 +6794,49 @@ header .all-tools > summary::after{
 header .all-tools > summary .editor-tools-progress{
   margin-left:auto !important;
   margin-right:8px !important;
+}
+
+
+/* === V1.1.178 header cleanup === */
+header .title-actions > .home-button{display:none !important;}
+
+/* Keep the first row compact after removing the home button. */
+header .title-actions > .role-switch,
+header .title-actions > .reader-header-ds{
+  grid-column:1 !important;
+  grid-row:1 !important;
+}
+header .title-actions > .language-switch{
+  grid-column:2 !important;
+  grid-row:1 !important;
+}
+header .title-actions > .help-button{
+  grid-column:3 !important;
+  grid-row:1 !important;
+}
+header .title-actions > .mode-switch{
+  grid-column:1 / -1 !important;
+  grid-row:2 !important;
+}
+header .title-actions{
+  grid-template-columns:minmax(0,1fr) 74px 34px !important;
+}
+@media (max-width:380px){
+  header .title-actions{
+    grid-template-columns:minmax(0,1fr) 68px 32px !important;
+  }
+}
+
+/* Invert the utility disclosure button style: light fill, black frame, black arrow. */
+header .all-tools > summary::after{
+  border:1.6px solid #171212 !important;
+  background:linear-gradient(180deg,#fffdfa 0%,#f5efe7 100%) !important;
+  color:#171212 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7) !important;
+}
+header .all-tools[open] > summary::after,
+header .all-tools > summary:hover::after{
+  border-color:#171212 !important;
+  background:linear-gradient(180deg,#fffdfa 0%,#f0e9e0 100%) !important;
+  color:#171212 !important;
 }
