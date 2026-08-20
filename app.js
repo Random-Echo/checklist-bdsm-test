@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.171";
+const APP_VERSION = "V1.1.173";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -812,9 +812,11 @@ function applyDominantViewTheme() {
   body.dataset.themeSide = side;
   const styles = getComputedStyle(root);
   const prefix = side === "person-b" ? "--person-b-role" : "--person-a-role";
-  root.style.setProperty("--dominant-color", (styles.getPropertyValue(`${prefix}-color`) || "").trim() || "#9B782A");
-  root.style.setProperty("--dominant-dark", (styles.getPropertyValue(`${prefix}-dark`) || "").trim() || "#70561B");
-  root.style.setProperty("--dominant-soft", (styles.getPropertyValue(`${prefix}-soft`) || "").trim() || "#F8F0D9");
+  const fallbackPrefix = "--person-a-role";
+  const themeToken = suffix => (styles.getPropertyValue(`${prefix}-${suffix}`) || "").trim() || (styles.getPropertyValue(`${fallbackPrefix}-${suffix}`) || "").trim();
+  root.style.setProperty("--dominant-color", themeToken("color"));
+  root.style.setProperty("--dominant-dark", themeToken("dark"));
+  root.style.setProperty("--dominant-soft", themeToken("soft"));
 }
 
 function renderRoleUI() {
