@@ -1,5 +1,5 @@
 :root{
-  /* V1.1.175 — canonical global colour system.
+  /* V1.1.177 — canonical global colour system.
      Edit and Reading must consume these exact same tokens. */
   --ui-night:#151116;
   --ui-night-2:#241a20;
@@ -6143,13 +6143,13 @@ body[data-view-mode="read"] .reader-session-section .session-toolbar .action{min
 }
 
 
-/* V1.1.175 — one shared category action dock in Edit and Reading */
+/* V1.1.177 — one shared category action dock in Edit and Reading */
 body[data-view-mode="read"] header .editor-top-dock{
   display:grid !important;
 }
 
 
-/* V1.1.175 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
+/* V1.1.177 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
 body[data-view-mode="read"] header .all-tools-content{
   display:grid !important;
   grid-template-columns:minmax(0,1fr) !important;
@@ -6363,7 +6363,7 @@ body[data-view-mode="read"] .reset-zone{display:none !important}
 }
 
 
-/* V1.1.175 — Reading legend: explicit, readable line breaks on mobile. */
+/* V1.1.177 — Reading legend: explicit, readable line breaks on mobile. */
 body[data-view-mode="read"] .display-filter-section .reading-legend-card{
   grid-column:1 / -1;
   display:grid !important;
@@ -6415,7 +6415,7 @@ body[data-view-mode="read"] .display-filter-section .reading-legend-pin{
 
 
 /* ==========================================================================
-   V1.1.175 — ONE DA / ONE GLOBAL PALETTE
+   V1.1.177 — ONE DA / ONE GLOBAL PALETTE
    Edit and Reading deliberately share the exact same derived theme variables.
    No mode is allowed to invent a second set of colours.
    ========================================================================== */
@@ -6601,7 +6601,7 @@ body[data-view-mode="read"] .couple-reader-notes{
 }
 
 /* ========================================================================== 
-   V1.1.175 — readability pass
+   V1.1.177 — readability pass
    Goal: avoid dark-on-dark / low-contrast text on themed purple surfaces.
    This block is intentionally last so it wins over earlier layered overrides.
    ========================================================================== */
@@ -6711,7 +6711,7 @@ body[data-view-mode="read"] .reader-filter-chip.is-active .reader-filter-chip-co
 }
 
 /* ========================================================================== 
-   V1.1.175 — random picked card formatting
+   V1.1.177 — random picked card formatting
    ========================================================================== */
 .random-picked-card{
   display:flex;
@@ -6755,10 +6755,6 @@ body[data-view-mode="read"] .reader-filter-chip.is-active .reader-filter-chip-co
   color:var(--readability-ink,#352d32);
   line-height:1.25;
 }
-.random-picked-compat-label{
-  font-weight:850;
-  color:var(--readability-ink-strong,var(--theme-ink,#20191d));
-}
 .random-picked-compat-value{
   font-weight:700;
 }
@@ -6769,4 +6765,33 @@ body[data-view-mode="read"] .reader-random-section .random-result{
   .random-picked-title{font-size:.88rem}
   .random-picked-explanation{font-size:.82rem}
   .random-picked-compat{font-size:.8rem}
+}
+
+/* V1.1.177 — random result: standalone compatibility result, no label */
+.random-picked-compat{
+  margin-top:1px;
+}
+.random-picked-compat-value{
+  color:var(--readability-ink-strong,var(--theme-ink,#20191d));
+  font-weight:850;
+}
+
+
+/* V1.1.177 — tools chevron aligned right and dark */
+header .all-tools > summary{
+  display:flex !important;
+  align-items:center !important;
+}
+header .all-tools > summary::after{
+  margin-left:auto !important;
+  margin-right:0 !important;
+  order:99 !important;
+  background:linear-gradient(180deg,#191217 0%,#0f0b0e 100%) !important;
+  border:1px solid rgba(22,15,20,.92) !important;
+  color:#f5efe6 !important;
+  box-shadow:0 3px 8px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+header .all-tools > summary .editor-tools-progress{
+  margin-left:auto !important;
+  margin-right:8px !important;
 }

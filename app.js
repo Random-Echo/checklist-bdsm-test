@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.175";
+const APP_VERSION = "V1.1.177";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -206,6 +206,7 @@ function setLanguage(lang, persist = true) {
   renderRoleUI();
   renderExchangeInfo();
   render();
+  renderLastRandomPick();
 }
 
 const FAVORITE_SCORE = 4;
@@ -2114,10 +2115,26 @@ function focusRandomPickedPractice(picked) {
   requestAnimationFrame(()=>requestAnimationFrame(focusTarget));
 }
 
+let lastRandomPick = null;
+function renderLastRandomPick() {
+  if(!lastRandomPick || !randomResult) return;
+  const entity=UNIFIED_ENTITY_BY_ID.get(lastRandomPick.practiceId);
+  if(!entity){ lastRandomPick=null; return; }
+  const pair=INTERACTION_MODEL.readingPair(entity,lastRandomPick.variant,V2_STORAGE.getReaderPractice(entity.id),runtimeProfile());
+  if(!pair){ lastRandomPick=null; return; }
+  const info=readerVariantInfo(entity,lastRandomPick.variant);
+  const already=isVariantInSession(entity.id,pair.variant), blocked=pair.compatibility?.status==='limit';
+  const fantasy=pair.compatibility?.status==='fantasy';
+  const explanationHtml=readerContextualExplanationHtml(entity,pair,info,readerNames()) || profileNamesInTextHtml(readerVariantLabel(entity,pair.variant),readerNames());
+  const riskInline=info.risk==='normal'?'':`<span class="random-picked-risk">${riskBadge({risk:info.risk})}</span>`;
+  randomResult.innerHTML=`<div class="random-picked-card"><div class="random-picked-title"><strong>${esc(info.title)}</strong>${riskInline}</div><div class="random-picked-explanation">${explanationHtml}</div><div class="random-picked-compat"><span class="random-picked-compat-value">${esc(readerCompatibilityLabel(pair.compatibility?.status))}</span></div>${fantasy?`<div class="random-fantasy-warning">${esc(t('randomFantasyWarning'))}</div>`:''}${lastRandomPick.cycleRestarted?`<div class="random-candidate-info">${currentLang==='fr'?'Nouveau cycle démarré automatiquement.':'A new cycle started automatically.'}</div>`:''}<div class="random-result-actions"><button class="random-session-btn" data-random-practice-id="${esc(entity.id)}" data-random-variant="${esc(pair.variant)}" type="button" ${already||blocked?'disabled':''}>${already?t('alreadyInSession'):t('addRandomToSession')}</button></div></div>`;
+}
+
 function pickRandomPractice() {
   if(!isReadingMode) setViewMode('read');
   const snapshot=getRandomEligibilitySnapshot(); let eligible=snapshot.eligible, cycleRestarted=false;
   if(!snapshot.baseEligible.length){
+    lastRandomPick=null;
     randomResult.innerHTML=currentLang==='fr'?'Aucune configuration ne correspond aux critères actuels.':'No variant matches the current criteria.';
     updateRandomEligibilitySummary(); return;
   }
@@ -2138,13 +2155,8 @@ function pickRandomPractice() {
 
   /* The draw must use the active Reading filter, not destroy it. */
   focusRandomPickedPractice(picked);
-
-  const already=isVariantInSession(picked.entity.id,picked.pair.variant), blocked=picked.pair.compatibility?.status==='limit';
-  const fantasy=picked.pair.compatibility?.status==='fantasy';
-  const explanationHtml = readerContextualExplanationHtml(picked.entity,picked.pair,picked.info,readerNames()) || profileNamesInTextHtml(readerVariantLabel(picked.entity,picked.pair.variant),readerNames());
-  const compatLabel = currentLang==='fr' ? 'Compatibilité' : 'Compatibility';
-  const riskInline = picked.info.risk==='normal' ? '' : `<span class="random-picked-risk">${riskBadge({risk:picked.info.risk})}</span>`;
-  randomResult.innerHTML=`<div class="random-picked-card"><div class="random-picked-title"><strong>${esc(picked.info.title)}</strong>${riskInline}</div><div class="random-picked-explanation">${explanationHtml}</div><div class="random-picked-compat"><span class="random-picked-compat-label">${esc(compatLabel)}</span><span class="random-picked-compat-value">${esc(readerCompatibilityLabel(picked.pair.compatibility?.status))}</span></div>${fantasy?`<div class="random-fantasy-warning">${esc(t('randomFantasyWarning'))}</div>`:''}${cycleRestarted?`<div class="random-candidate-info">${currentLang==='fr'?'Nouveau cycle démarré automatiquement.':'A new cycle started automatically.'}</div>`:''}<div class="random-result-actions"><button class="random-session-btn" data-random-practice-id="${esc(picked.entity.id)}" data-random-variant="${esc(picked.pair.variant)}" type="button" ${already||blocked?'disabled':''}>${already?t('alreadyInSession'):t('addRandomToSession')}</button></div></div>`;
+  lastRandomPick={practiceId:picked.entity.id,variant:picked.pair.variant,cycleRestarted};
+  renderLastRandomPick();
   updateRandomEligibilitySummary();
 }
 
@@ -2287,7 +2299,7 @@ randomResult.addEventListener("click", (e) => {
   const pair=INTERACTION_MODEL.readingPair(entity,variant,V2_STORAGE.getReaderPractice(practiceId),runtimeProfile());
   if(!pair||pair.compatibility?.status==='limit'){window.alert(t("sessionLimitWarning"));btn.disabled=true;return;}
   toggleSessionVariant(practiceId,variant);
-  btn.disabled=true; btn.textContent=t("alreadyInSession");
+  renderLastRandomPick();
 });
 resetRandomCycleBtn.addEventListener("click", () => clearRandomHistory(true));
 [randomOnlyNew, randomIncludeNeutralNeutral, randomExcludeHighRisk, randomNoRepeat].forEach(el => {
