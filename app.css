@@ -1,5 +1,5 @@
 :root{
-  /* V1.1.178 — canonical global colour system.
+  /* V1.1.181 — canonical global colour system.
      Edit and Reading must consume these exact same tokens. */
   --ui-night:#151116;
   --ui-night-2:#241a20;
@@ -6143,13 +6143,13 @@ body[data-view-mode="read"] .reader-session-section .session-toolbar .action{min
 }
 
 
-/* V1.1.178 — one shared category action dock in Edit and Reading */
+/* V1.1.181 — one shared category action dock in Edit and Reading */
 body[data-view-mode="read"] header .editor-top-dock{
   display:grid !important;
 }
 
 
-/* V1.1.178 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
+/* V1.1.181 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
 body[data-view-mode="read"] header .all-tools-content{
   display:grid !important;
   grid-template-columns:minmax(0,1fr) !important;
@@ -6363,7 +6363,7 @@ body[data-view-mode="read"] .reset-zone{display:none !important}
 }
 
 
-/* V1.1.178 — Reading legend: explicit, readable line breaks on mobile. */
+/* V1.1.181 — Reading legend: explicit, readable line breaks on mobile. */
 body[data-view-mode="read"] .display-filter-section .reading-legend-card{
   grid-column:1 / -1;
   display:grid !important;
@@ -6415,7 +6415,7 @@ body[data-view-mode="read"] .display-filter-section .reading-legend-pin{
 
 
 /* ==========================================================================
-   V1.1.178 — ONE DA / ONE GLOBAL PALETTE
+   V1.1.181 — ONE DA / ONE GLOBAL PALETTE
    Edit and Reading deliberately share the exact same derived theme variables.
    No mode is allowed to invent a second set of colours.
    ========================================================================== */
@@ -6601,7 +6601,7 @@ body[data-view-mode="read"] .couple-reader-notes{
 }
 
 /* ========================================================================== 
-   V1.1.178 — readability pass
+   V1.1.181 — readability pass
    Goal: avoid dark-on-dark / low-contrast text on themed purple surfaces.
    This block is intentionally last so it wins over earlier layered overrides.
    ========================================================================== */
@@ -6711,7 +6711,7 @@ body[data-view-mode="read"] .reader-filter-chip.is-active .reader-filter-chip-co
 }
 
 /* ========================================================================== 
-   V1.1.178 — random picked card formatting
+   V1.1.181 — random picked card formatting
    ========================================================================== */
 .random-picked-card{
   display:flex;
@@ -6767,7 +6767,7 @@ body[data-view-mode="read"] .reader-random-section .random-result{
   .random-picked-compat{font-size:.8rem}
 }
 
-/* V1.1.178 — random result: standalone compatibility result, no label */
+/* V1.1.181 — random result: standalone compatibility result, no label */
 .random-picked-compat{
   margin-top:1px;
 }
@@ -6777,7 +6777,7 @@ body[data-view-mode="read"] .reader-random-section .random-result{
 }
 
 
-/* V1.1.178 — tools chevron aligned right and dark */
+/* V1.1.181 — tools chevron aligned right and dark */
 header .all-tools > summary{
   display:flex !important;
   align-items:center !important;
@@ -6797,7 +6797,7 @@ header .all-tools > summary .editor-tools-progress{
 }
 
 
-/* === V1.1.178 header cleanup === */
+/* === V1.1.181 header cleanup === */
 header .title-actions > .home-button{display:none !important;}
 
 /* Keep the first row compact after removing the home button. */
@@ -6839,4 +6839,367 @@ header .all-tools > summary:hover::after{
   border-color:#171212 !important;
   background:linear-gradient(180deg,#fffdfa 0%,#f0e9e0 100%) !important;
   color:#171212 !important;
+}
+
+
+/* === V1.1.181 spacing harmonization === */
+@media (max-width: 760px){
+  header .title-actions{
+    row-gap:6px !important;
+    column-gap:6px !important;
+    margin-bottom:2px !important;
+  }
+  header .mode-switch{
+    margin:0 !important;
+  }
+  header .mode-switch button{
+    min-height:42px !important;
+    padding:8px 10px !important;
+  }
+
+  header .all-tools{
+    margin-top:4px !important;
+  }
+  header .all-tools > summary{
+    min-height:42px !important;
+    padding:0 12px !important;
+  }
+
+  header .editor-top-dock{
+    gap:4px !important;
+    margin-top:4px !important;
+  }
+  header .editor-top-dock .individual-editor-bulk-btn,
+  header .editor-top-dock .profile-edit-button{
+    min-height:40px !important;
+    padding:8px 10px !important;
+  }
+
+  body[data-view-mode="read"] header .reader-top-dock{
+    margin-top:4px !important;
+    gap:4px !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-dock{
+    border-radius:12px !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-row{
+    min-height:34px !important;
+    padding:5px 8px !important;
+    gap:6px !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-content{
+    padding:5px !important;
+    gap:5px !important;
+  }
+
+  body[data-view-mode="read"] .couple-reader-category{
+    margin-top:6px !important;
+    border-radius:10px !important;
+  }
+  body[data-view-mode="read"] .couple-reader-category-head{
+    min-height:36px !important;
+    padding:4px 8px !important;
+    gap:6px !important;
+  }
+  body[data-view-mode="read"] .couple-reader-category-body{
+    border-top-width:1px !important;
+  }
+  body[data-view-mode="read"] .couple-practice-row{
+    min-height:60px !important;
+    padding:5px 6px !important;
+    gap:5px !important;
+  }
+
+  body[data-view-mode="edit"] .individual-category-head{
+    min-height:30px !important;
+    padding:4px 7px !important;
+    gap:6px !important;
+  }
+  body[data-view-mode="edit"] .individual-practice-card > header{
+    padding:5px 7px !important;
+  }
+
+  .legend.semantic-legend,
+  .reading-legend-card,
+  .tool-section,
+  .reader-session-section,
+  .random-tool-section{
+    margin-top:6px !important;
+  }
+}
+
+
+/* === V1.1.181 individual backup colors + compact exploration level === */
+.backup-actions .person-a-backup,
+.backup-actions .person-b-backup{
+  position:relative;
+  overflow:hidden;
+  min-height:50px;
+  padding:10px 12px;
+  border-width:1px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 1px 2px rgba(0,0,0,.04);
+}
+.backup-actions .person-a-backup{
+  background:color-mix(in srgb,var(--person-a-role-soft) 88%, white);
+  color:var(--contrast-ink-strong);
+  border-color:color-mix(in srgb,var(--person-a-role-color) 38%, #cabaa4 62%);
+  box-shadow:inset 0 -5px 0 color-mix(in srgb,var(--person-a-role-color) 72%, transparent), inset 0 1px 0 rgba(255,255,255,.55), 0 1px 2px rgba(0,0,0,.04);
+}
+.backup-actions .person-b-backup{
+  background:color-mix(in srgb,var(--person-b-role-soft) 88%, white);
+  color:var(--contrast-ink-strong);
+  border-color:color-mix(in srgb,var(--person-b-role-color) 38%, #cabaa4 62%);
+  box-shadow:inset 0 -5px 0 color-mix(in srgb,var(--person-b-role-color) 72%, transparent), inset 0 1px 0 rgba(255,255,255,.55), 0 1px 2px rgba(0,0,0,.04);
+}
+.backup-actions .person-a-backup .profile-inline-name,
+.backup-actions .person-b-backup .profile-inline-name{
+  font-size:1rem;
+  padding:4px 11px;
+  border-width:1px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+.exploration-tool-section .explore-strip{
+  gap:6px 10px !important;
+  padding:8px 10px !important;
+  border-radius:12px !important;
+}
+.exploration-tool-section .explore-copy{
+  font-size:10px !important;
+  line-height:1.22 !important;
+  font-weight:800 !important;
+  color:#4c4348 !important;
+}
+.exploration-tool-section .experience-controls{
+  display:grid !important;
+  grid-template-columns:auto minmax(0,1fr) !important;
+  gap:4px 8px !important;
+  align-items:center !important;
+  width:100% !important;
+}
+.exploration-tool-section .experience-label{
+  font-size:10px !important;
+  line-height:1.1 !important;
+}
+.exploration-tool-section .experience-switch{
+  width:100% !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+}
+.exploration-tool-section .experience-switch button{
+  min-height:31px !important;
+  padding:4px 8px !important;
+  font-size:10px !important;
+  line-height:1.1 !important;
+}
+.exploration-tool-section .experience-note{
+  grid-column:1 / -1 !important;
+  margin-top:-1px !important;
+  font-size:8px !important;
+  line-height:1.15 !important;
+}
+.exploration-tool-section .incompatible-display-toggle{
+  margin-top:6px !important;
+}
+.exploration-tool-section .incompatible-display-toggle > span{
+  font-size:11px !important;
+  line-height:1.2 !important;
+}
+
+@media (max-width:650px){
+  .backup-actions .person-a-backup,
+  .backup-actions .person-b-backup{
+    min-height:46px;
+    padding:8px 10px;
+  }
+  .backup-actions .person-a-backup .profile-inline-name,
+  .backup-actions .person-b-backup .profile-inline-name{
+    font-size:.96rem;
+    padding:3px 10px;
+  }
+  .exploration-tool-section .explore-strip{
+    gap:5px !important;
+    padding:7px 8px !important;
+  }
+  .exploration-tool-section .explore-copy{
+    font-size:9px !important;
+    line-height:1.18 !important;
+  }
+  .exploration-tool-section .experience-controls{
+    grid-template-columns:1fr !important;
+    gap:3px !important;
+  }
+  .exploration-tool-section .experience-label{
+    display:none !important;
+  }
+  .exploration-tool-section .experience-switch button{
+    min-height:29px !important;
+    padding:4px 3px !important;
+    font-size:8.5px !important;
+  }
+  .exploration-tool-section .experience-note{
+    font-size:7.5px !important;
+  }
+  .exploration-tool-section .incompatible-display-toggle > span{
+    font-size:10px !important;
+  }
+}
+
+
+/* === V1.1.181 visual pass: filters/saves premium + more compact exploration === */
+.filters-backup-section{
+  background:linear-gradient(180deg,rgba(255,255,255,.97) 0%, rgba(252,250,255,.97) 100%);
+}
+.filters-backup-section .toolbar{
+  gap:5px !important;
+  align-items:stretch !important;
+}
+.filters-backup-section :is(input[type="search"],select){
+  min-height:39px;
+  padding:8px 12px;
+  border-radius:12px;
+  border-color:color-mix(in srgb,var(--border) 74%,var(--edit-theme-line) 26%);
+  background:linear-gradient(180deg,#fff 0%,#fbf9fd 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 1px 2px rgba(29,12,28,.04);
+}
+.filters-backup-section .backup-actions{
+  gap:6px !important;
+  margin-top:6px !important;
+}
+.filters-backup-section .backup-actions .action{
+  min-height:42px;
+  border-radius:13px;
+  font-size:.82rem;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72), 0 2px 5px rgba(32,16,27,.05);
+}
+.filters-backup-section .restore-backup,
+.filters-backup-section .full-backup{
+  background:linear-gradient(180deg,#fffdfa 0%,#f7f3f7 100%);
+}
+.filters-backup-section .person-a-backup,
+.filters-backup-section .person-b-backup{
+  position:relative;
+  isolation:isolate;
+  align-items:center;
+  justify-content:center;
+}
+.filters-backup-section .person-a-backup::after,
+.filters-backup-section .person-b-backup::after{
+  content:"";
+  position:absolute;
+  left:8px;
+  right:8px;
+  bottom:6px;
+  height:4px;
+  border-radius:999px;
+  opacity:.95;
+  z-index:0;
+}
+.filters-backup-section .person-a-backup::after{ background:var(--person-a-role-color); }
+.filters-backup-section .person-b-backup::after{ background:var(--person-b-role-color); }
+.filters-backup-section .person-a-backup{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--person-a-role-soft) 94%,white) 0%, color-mix(in srgb,var(--person-a-role-soft) 84%,#f4f6f8) 100%);
+  color:var(--person-a-role-dark);
+  border-color:color-mix(in srgb,var(--person-a-role-color) 40%,#d7d7d7);
+}
+.filters-backup-section .person-b-backup{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--person-b-role-soft) 94%,white) 0%, color-mix(in srgb,var(--person-b-role-soft) 84%,#f6f1f4) 100%);
+  color:var(--person-b-role-dark);
+  border-color:color-mix(in srgb,var(--person-b-role-color) 40%,#d7d7d7);
+}
+.filters-backup-section .person-a-backup .profile-inline-name,
+.filters-backup-section .person-b-backup .profile-inline-name{
+  position:relative;
+  z-index:1;
+  font-size:1rem;
+  padding:4px 11px;
+  border-radius:999px;
+}
+.filters-backup-section .config-share{
+  margin-top:6px !important;
+  min-height:42px !important;
+  border-radius:13px !important;
+}
+.filters-backup-section .backup-hint{
+  margin-top:5px !important;
+  padding-inline:2px !important;
+  font-size:.64rem !important;
+  line-height:1.3 !important;
+  color:color-mix(in srgb,var(--muted) 82%,#6b5e68 18%) !important;
+}
+.filters-backup-section .backup-status-row{
+  margin-top:6px !important;
+}
+.filters-backup-section .backup-status-row .exchange-info{
+  min-height:30px;
+  border-radius:10px;
+  background:linear-gradient(180deg,#f9fafb 0%,#f3f5f7 100%);
+}
+
+.exploration-tool-section{
+  background:linear-gradient(180deg,rgba(255,255,255,.98) 0%,rgba(250,248,252,.98) 100%);
+}
+.exploration-tool-section .explore-strip{
+  gap:5px 8px !important;
+  padding:7px 8px !important;
+  border-radius:11px !important;
+  background:linear-gradient(180deg,#fff 0%,#faf8fc 100%) !important;
+}
+.exploration-tool-section .explore-copy{
+  font-size:9.5px !important;
+  line-height:1.16 !important;
+  font-weight:780 !important;
+  letter-spacing:-.01em;
+}
+.exploration-tool-section .experience-controls{
+  grid-template-columns:auto minmax(0,1fr) !important;
+  gap:3px 7px !important;
+  align-items:center !important;
+}
+.exploration-tool-section .experience-label{
+  font-size:9.5px !important;
+  line-height:1.05 !important;
+  white-space:nowrap;
+}
+.exploration-tool-section .experience-switch{
+  align-self:center;
+  width:100% !important;
+}
+.exploration-tool-section .experience-switch button{
+  min-height:28px !important;
+  padding:4px 6px !important;
+  font-size:9px !important;
+  line-height:1.05 !important;
+}
+.exploration-tool-section .experience-note{
+  grid-column:2 / -1 !important;
+  margin-top:-2px !important;
+  font-size:7.6px !important;
+  line-height:1.1 !important;
+  opacity:.88;
+}
+.exploration-tool-section .incompatible-display-toggle{
+  margin-top:5px !important;
+  padding:7px 9px !important;
+  border-radius:10px !important;
+}
+.exploration-tool-section .incompatible-display-toggle > span{
+  font-size:10.5px !important;
+  line-height:1.15 !important;
+}
+
+@media (max-width:760px){
+  .filters-backup-section .toolbar{ gap:4px !important; }
+  .filters-backup-section :is(input[type="search"],select){ min-height:37px; padding:7px 10px; border-radius:11px; }
+  .filters-backup-section .backup-actions .action{ min-height:40px; font-size:.76rem; }
+  .filters-backup-section .person-a-backup::after,
+  .filters-backup-section .person-b-backup::after{ left:7px; right:7px; bottom:5px; height:3px; }
+  .filters-backup-section .backup-hint{ font-size:.58rem !important; line-height:1.24 !important; }
+
+  .exploration-tool-section .explore-strip{ gap:4px !important; padding:6px 7px !important; }
+  .exploration-tool-section .explore-copy{ font-size:8.4px !important; line-height:1.12 !important; }
+  .exploration-tool-section .experience-controls{ grid-template-columns:1fr !important; gap:3px !important; }
+  .exploration-tool-section .experience-label{ display:none !important; }
+  .exploration-tool-section .experience-switch button{ min-height:27px !important; padding:3px 2px !important; font-size:8px !important; }
+  .exploration-tool-section .experience-note{ grid-column:1 / -1 !important; font-size:7px !important; line-height:1.05 !important; margin-top:-1px !important; }
+  .exploration-tool-section .incompatible-display-toggle > span{ font-size:9.8px !important; }
 }
