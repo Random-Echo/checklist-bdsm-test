@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.197";
+const APP_VERSION = "V1.1.199";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1686,7 +1686,10 @@ function readerCommonScoreEmoji(compatibility) {
 function readerTriedMark(state) {
   const done=state?.prior===true;
   const label=currentLang==="fr"?"Av.":"Before";
-  return `<span class="couple-result-tick couple-before-tick${done?' is-done':''}"><span aria-hidden="true">${done?'✓':'✕'}</span><span>${esc(label)}</span></span>`;
+  const icon=done
+    ? `<span class="couple-result-icon couple-result-icon-check" aria-hidden="true">✓</span>`
+    : `<span class="couple-result-icon couple-result-icon-cross" aria-hidden="true"></span>`;
+  return `<span class="couple-result-tick couple-before-tick${done?' is-done':''}">${icon}<span>${esc(label)}</span></span>`;
 }
 function readerNotesHtml(entityId,pair,names=readerNames()) {
   const notes=[
@@ -1832,7 +1835,7 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
     const verb=currentLang==='fr'?'domine':'dominant';
     const minimumText=minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All');
     const countHtml=compatibleCount===null?'':`<span class="reader-filter-summary-count">${compatibleCount} ${currentLang==='fr'?'compat.':'matches'}</span>`;
-    readerFilterSummary.innerHTML=`${countHtml}<span class="reader-filter-summary-inline"><span class="reader-filter-summary-name ${profilePersonClass(person)}">${esc(dominantName)}</span> ${esc(verb)} · ${esc(minimumText)}${includeFantasy?' · 💭':''}</span>`;
+    readerFilterSummary.innerHTML=`<span class="reader-filter-summary-inline"><span class="reader-filter-summary-name ${profilePersonClass(person)}">${esc(dominantName)}</span> ${esc(verb)} · ${esc(minimumText)}${includeFantasy?' · 💭':''}</span>${countHtml}`;
   }
   if (!readerFilterDock.dataset.initialized) {
     readerFilterDock.dataset.initialized="true";
