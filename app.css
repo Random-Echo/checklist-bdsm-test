@@ -5803,10 +5803,10 @@ body[data-view-mode="read"] header .reader-filter-summary-title > span[aria-hidd
 body[data-view-mode="read"] header .reader-filter-summary-value{
   min-width:0!important;
   max-width:none!important;
-  display:flex!important;
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr)!important;
   align-items:center!important;
   justify-content:flex-start!important;
-  flex-wrap:nowrap!important;
   gap:5px!important;
   padding:0!important;
   border:0!important;
@@ -5817,8 +5817,9 @@ body[data-view-mode="read"] header .reader-filter-summary-value{
   white-space:nowrap!important;
 }
 body[data-view-mode="read"] header .reader-filter-summary-count{
-  flex:0 0 auto!important;
-  margin-left:auto!important;
+  grid-column:1!important;
+  justify-self:start!important;
+  align-self:center!important;
   display:inline-flex!important;
   align-items:center!important;
   min-height:19px!important;
@@ -5833,7 +5834,7 @@ body[data-view-mode="read"] header .reader-filter-summary-count{
   white-space:nowrap!important;
 }
 body[data-view-mode="read"] header .reader-filter-summary-inline{
-  flex:0 1 auto!important;
+  grid-column:2!important;
   min-width:0!important;
   overflow:hidden!important;
   text-overflow:ellipsis!important;
