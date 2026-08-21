@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.195";
+const APP_VERSION = "V1.1.196";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1684,7 +1684,9 @@ function readerCommonScoreEmoji(compatibility) {
   return scoreButtonLabel(Number.isInteger(c.score)?c.score:null,null);
 }
 function readerTriedMark(state) {
-  return state?.prior===true ? "✓" : "—";
+  const done=state?.prior===true;
+  const label=currentLang==="fr"?"Av.":"Before";
+  return `<span class="couple-result-tick couple-before-tick${done?' is-done':''}"><span aria-hidden="true">${done?'✓':'□'}</span><span>${esc(label)}</span></span>`;
 }
 function readerNotesHtml(entityId,pair,names=readerNames()) {
   const notes=[
@@ -1715,8 +1717,8 @@ function readerResultPanel(entity,pair,names=readerNames()) {
   const togetherShort=currentLang==="fr"?"Ens.":"Tog.";
   const togetherMark=done?"✓":"□";
   return `<div class="couple-result-grid" data-result="${esc(c.status)}" aria-label="${esc(readerCompatibilityLabel(c.status))}">
-    <span class="couple-result-cell person-a" data-result-key="${aResultKey}" title="${esc(`${names.personA} · ${readerSlotLabel(pair.personA.slot)} : ${aScore}`)}"><span class="couple-result-emoji">${aScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personA.state)}</span></span>
-    <span class="couple-result-cell person-b" data-result-key="${bResultKey}" title="${esc(`${names.personB} · ${readerSlotLabel(pair.personB.slot)} : ${bScore}`)}"><span class="couple-result-emoji">${bScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personB.state)}</span></span>
+    <span class="couple-result-cell person-a" data-result-key="${aResultKey}" title="${esc(`${names.personA} · ${readerSlotLabel(pair.personA.slot)} : ${aScore}`)}"><span class="couple-result-emoji">${aScore}</span>${readerTriedMark(pair.personA.state)}</span>
+    <span class="couple-result-cell person-b" data-result-key="${bResultKey}" title="${esc(`${names.personB} · ${readerSlotLabel(pair.personB.slot)} : ${bScore}`)}"><span class="couple-result-emoji">${bScore}</span>${readerTriedMark(pair.personB.state)}</span>
     <span class="couple-result-cell couple-result-common-cell" data-result-key="${commonResultKey}" title="${esc(readerCompatibilityLabel(c.status))}"><span class="couple-result-emoji">${commonScore}</span><button class="couple-result-tick couple-together-tick${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} aria-pressed="${done?'true':'false'}" aria-label="${esc(togetherLabel)}" title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):togetherLabel)}"><span aria-hidden="true">${togetherMark}</span><span>${togetherShort}</span></button></span>
   </div>`;
 }
