@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.192";
+const APP_VERSION = "V1.1.193";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1506,16 +1506,10 @@ function editorScoreButtons(v2Id,slot,state) {
   const unknown=`<button class="score-btn unknown-score${Number.isInteger(state.preference)?"":" selected"}" data-personal-action="preference" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="unknown" type="button" title="${esc(t("unknown"))}">?</button>`;
   return unknown+SCORE_BUTTON_ORDER.map(n=>{const ui=cachedScoreUi(n,role),sel=state.preference===n;return `<button class="score-btn semantic-score-btn${n===0?' limit-score':''}${sel?' selected':''}" data-personal-action="preference" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="${n}" type="button" title="${ui.title}" aria-pressed="${sel?'true':'false'}">${ui.label}</button>`}).join("");
 }
-function editorAfterButtons(v2Id,slot,state) {
-  const role = slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
-  const unknown=`<button class="score-btn unknown-score${Number.isInteger(state.after)?"":" selected"}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="unknown" type="button">?</button>`;
-  return unknown+SCORE_BUTTON_ORDER.map(n=>{const ui=cachedScoreUi(n,role),sel=state.after===n;return `<button class="score-btn semantic-score-btn${n===0?' limit-score':''}${sel?' selected':''}" data-personal-action="after" data-v2-id="${esc(v2Id)}" data-slot="${slot}" data-score="${n}" type="button" title="${ui.title}" aria-pressed="${sel?'true':'false'}">${ui.label}</button>`}).join("");
-}
 function editorResultKeyFromScore(score){
   return Number.isInteger(score) ? ({0:"limit",1:"later",2:"compatible",3:"strong",4:"excellent",5:"fantasy"}[score] || "incomplete") : "incomplete";
 }
 function editorStateVisualKey(state){
-  if(Number.isInteger(state?.after)) return editorResultKeyFromScore(state.after);
   if(Number.isInteger(state?.preference)) return editorResultKeyFromScore(state.preference);
   return "incomplete";
 }
@@ -1532,9 +1526,7 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
   const applicability=INTERACTION_MODEL.evaluateSlot(entity,person,slot,profile);
   const incompatible=applicability.status==="notApplicable";
   const incompatTitle=currentLang==="fr"?"Anatomie non compatible":"Anatomy not compatible";
-  const showAfter=state.prior===true||Number.isInteger(state.after);
   const visualKey=editorStateVisualKey(state);
-  const afterKey=editorResultKeyFromScore(state.after);
   const note=String(state.note||"");
   const hasNote=note.trim().length>0;
   const noteLabel=editorSlotNoteLabel(slot);
@@ -1550,19 +1542,18 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
       </div>
     </div>
     <label class="individual-slot-note-panel" hidden><span>${esc(noteLabel)}</span><textarea data-personal-note data-v2-id="${esc(entity.id)}" data-slot="${slot}" placeholder="${esc(currentLang==="fr"?`${noteLabel}…`:`${noteLabel}…`)}">${esc(note)}</textarea></label>
-    ${showAfter?`<div class="individual-after" data-result-key="${afterKey}"><span class="individual-field-label">${currentLang==="fr"?"Après":"After"}</span><div class="individual-score-row">${editorAfterButtons(entity.id,slot,state)}</div></div>`:""}
   </section>`;
 }
 
 function configureEditorStatusOptions() {
   const langKey=`edit-${currentLang}`; if(status.dataset.readerLang===langKey) return;
   const previous=status.value;
-  const options=currentLang==="fr"?[["","Tous mes choix"],["incomplete","? À compléter"],["want","🔥 Envie ou favori"],["favorite","👑 Favoris"],["fantasy","💭 Fantasmes"],["limit","🚫 Limites"],["tried","✓ Déjà essayé"],["after","Après essai renseigné"],["notes","Avec une note"]]:[["","All my choices"],["incomplete","? To complete"],["want","🔥 Want or favorite"],["favorite","👑 Favorites"],["fantasy","💭 Fantasies"],["limit","🚫 Limits"],["tried","✓ Already tried"],["after","After trying filled"],["notes","With a note"]];
+  const options=currentLang==="fr"?[["","Tous mes choix"],["incomplete","? À compléter"],["want","🔥 Envie ou favori"],["favorite","👑 Favoris"],["fantasy","💭 Fantasmes"],["limit","🚫 Limites"],["tried","✓ Déjà fait"],["notes","Avec une note"]]:[["","All my choices"],["incomplete","? To complete"],["want","🔥 Want or favorite"],["favorite","👑 Favorites"],["fantasy","💭 Fantasies"],["limit","🚫 Limits"],["tried","✓ Done before"],["notes","With a note"]];
   status.innerHTML=options.map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join("");
   status.value=options.some(([value])=>value===previous)?previous:""; status.dataset.readerLang=langKey;
 }
-function editorEffectiveScore(state){return Number.isInteger(state?.after)?state.after:Number.isInteger(state?.preference)?state.preference:null;}
-function editorSlotMatches(state,statusValue,minScore){const score=editorEffectiveScore(state);if(statusValue==="incomplete"&&Number.isInteger(state?.preference))return false;if(statusValue==="want"&&![3,4].includes(score))return false;if(statusValue==="favorite"&&score!==4)return false;if(statusValue==="fantasy"&&score!==5)return false;if(statusValue==="limit"&&score!==0)return false;if(statusValue==="tried"&&state?.prior!==true)return false;if(statusValue==="after"&&!Number.isInteger(state?.after))return false;if(statusValue==="notes"&&!String(state?.note||"").trim())return false;if(minScore!==null&&(score===5||!Number.isInteger(score)||score<minScore))return false;return true;}
+function editorEffectiveScore(state){return Number.isInteger(state?.preference)?state.preference:null;}
+function editorSlotMatches(state,statusValue,minScore){const score=editorEffectiveScore(state);if(statusValue==="incomplete"&&Number.isInteger(state?.preference))return false;if(statusValue==="want"&&![3,4].includes(score))return false;if(statusValue==="favorite"&&score!==4)return false;if(statusValue==="fantasy"&&score!==5)return false;if(statusValue==="limit"&&score!==0)return false;if(statusValue==="tried"&&state?.prior!==true)return false;if(statusValue==="notes"&&!String(state?.note||"").trim())return false;if(minScore!==null&&(score===5||!Number.isInteger(score)||score<minScore))return false;return true;}
 
 function renderIndividualEditor() {
   if(!individualEditor||!individualEditorList) return;
@@ -1628,7 +1619,7 @@ if(individualEditorList) {
     }
     const btn=e.target.closest("button[data-personal-action]"); if(!btn)return;
     const id=btn.dataset.v2Id,slot=btn.dataset.slot,person=modelPersonKey(); const state=V2_STORAGE.getPersonalSlotState(id,person,slot)||{}; const action=btn.dataset.personalAction;
-    if(action==="prior"){state.prior=!state.prior;if(!state.prior)delete state.after;}
+    if(action==="prior"){state.prior=!state.prior;}
     else {const value=btn.dataset.score==="unknown"?null:Number(btn.dataset.score);if(value===null)delete state[action];else state[action]=state[action]===value?undefined:value;if(state[action]===undefined)delete state[action];}
     V2_STORAGE.setPersonalSlotState(id,person,slot,state); invalidateDerivedData(); render();
   });
@@ -1682,9 +1673,8 @@ function readerScoreRole(slot) {
   return slot===INTERACTION_MODEL.SLOT.DOMINANT?"dom":slot===INTERACTION_MODEL.SLOT.SUBMISSIVE?"sub":null;
 }
 function readerEffectiveState(state) {
-  const after=Number.isInteger(state?.after)?state.after:null;
   const preference=Number.isInteger(state?.preference)?state.preference:null;
-  return {score:after!==null?after:preference,source:after!==null?"after":preference!==null?"preference":"unknown"};
+  return {score:preference,source:preference!==null?"preference":"unknown"};
 }
 function readerCommonScoreEmoji(compatibility) {
   const c=compatibility||{};
@@ -2513,7 +2503,7 @@ resetChecklistBtn.addEventListener("click", () => {
 
   const message = currentLang === "fr"
     ? "Réinitialiser la checklist ? Toutes les préférences, expériences antérieures, notes personnelles, données communes, l’historique de tirage, la sélection de séance et les réglages de sécurité seront effacés. Cette action est irréversible sans sauvegarde."
-    : "Reset the checklist? All preferences, prior-experience flags, after-experience ratings, personal notes, shared data, random-draw history, session selection and safety settings will be deleted. This cannot be undone without a backup.";
+    : "Reset the checklist? All preferences, prior-experience flags, personal notes, shared data, random-draw history, session selection and safety settings will be deleted. This cannot be undone without a backup.";
 
   const ok = window.confirm(message);
   if (!ok) return;

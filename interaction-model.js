@@ -2,7 +2,7 @@
   'use strict';
 
   const MODEL_SCHEMA_VERSION = 1;
-  const RESPONSE_SCHEMA_VERSION = 2;
+  const RESPONSE_SCHEMA_VERSION = 3;
   const AXIS = Object.freeze({
     SINGLE: 'single',
     DIRECTION: 'give-receive',
@@ -97,9 +97,12 @@
 
   function normalizePersonalState(raw) {
     const out = {};
-    const preference = score(raw?.preference); if (preference !== null) out.preference = preference;
+    /* V3 migration: the former post-experience rating becomes the single
+       current preference, because it was previously the effective value. */
+    const legacyAfter = score(raw?.after);
+    const preference = legacyAfter !== null ? legacyAfter : score(raw?.preference);
+    if (preference !== null) out.preference = preference;
     if (raw?.prior === true) out.prior = true;
-    const after = score(raw?.after); if (after !== null) out.after = after;
     if (typeof raw?.note === 'string' && raw.note.length) out.note = raw.note;
     return out;
   }
@@ -118,8 +121,6 @@
   }
 
   function effectiveScore(state) {
-    const after = score(state?.after);
-    if (after !== null) return after;
     return score(state?.preference);
   }
 
