@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.200";
+const APP_VERSION = "V1.1.201";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -422,6 +422,7 @@ const readerIncludeFantasy = document.getElementById("readerIncludeFantasy");
 const readerFilterDock = document.getElementById("readerFilterDock");
 const readerTopDock = document.getElementById("readerTopDock");
 const readerFilterSummary = document.getElementById("readerFilterSummary");
+const readerFilterCompatCount = document.getElementById("readerFilterCompatCount");
 const readerHeaderDs = document.getElementById("readerHeaderDs");
 const readerHeaderDsButtons = [...document.querySelectorAll("[data-reader-header-ds]")];
 const readerMinimumOneChips = document.getElementById("readerMinimumOneChips");
@@ -1834,8 +1835,16 @@ function renderReaderFilterDock(profile,names,counters={ds:{},minimumOne:{},mini
     const dominantName=person==='person-b'?names.personB:names.personA;
     const verb=currentLang==='fr'?'domine':'dominant';
     const minimumText=minOne || minTwo ? `${readerMinimumSummary(minOne)} + ${readerMinimumSummary(minTwo)}` : (currentLang==='fr'?'Tous':'All');
-    const countHtml=compatibleCount===null?'':`<span class="reader-filter-summary-count">${compatibleCount} ${currentLang==='fr'?'compat.':'matches'}</span>`;
-    readerFilterSummary.innerHTML=`${countHtml}<span class="reader-filter-summary-inline"><span class="reader-filter-summary-name ${profilePersonClass(person)}">${esc(dominantName)}</span> ${esc(verb)} · ${esc(minimumText)}${includeFantasy?' · 💭':''}</span>`;
+    readerFilterSummary.innerHTML=`<span class="reader-filter-summary-inline"><span class="reader-filter-summary-name ${profilePersonClass(person)}">${esc(dominantName)}</span> ${esc(verb)} · ${esc(minimumText)}${includeFantasy?' · 💭':''}</span>`;
+    if (readerFilterCompatCount) {
+      if (compatibleCount===null) {
+        readerFilterCompatCount.hidden = true;
+        readerFilterCompatCount.textContent = '';
+      } else {
+        readerFilterCompatCount.hidden = false;
+        readerFilterCompatCount.textContent = `${compatibleCount} ${currentLang==='fr'?'compat.':'matches'}`;
+      }
+    }
   }
   if (!readerFilterDock.dataset.initialized) {
     readerFilterDock.dataset.initialized="true";

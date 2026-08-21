@@ -5654,6 +5654,23 @@ body[data-view-mode="read"] .reader-explore-section-head small{
   font-weight:750;
   line-height:1.2;
 }
+body[data-view-mode="read"] .reader-filter-compat-count{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  padding:0 10px;
+  border:1px solid rgba(181,141,74,.30);
+  border-radius:999px;
+  background:rgba(181,141,74,.08);
+  color:#795d25;
+  font-size:.66rem;
+  font-weight:950;
+  line-height:1;
+  white-space:nowrap;
+}
+body[data-view-mode="read"] .reader-filter-compat-count[hidden]{display:none!important}
 
 body[data-view-mode="read"] .reader-random-section .randomizer{
   display:grid;
@@ -5711,6 +5728,7 @@ body[data-view-mode="read"] .reader-session-section .session-list{
   body[data-view-mode="read"] .reader-explore-section-head{align-items:flex-start;margin-bottom:6px}
   body[data-view-mode="read"] .reader-explore-section-head h2{font-size:.68rem !important}
   body[data-view-mode="read"] .reader-explore-section-head small{font-size:.52rem;text-align:right;max-width:48%}
+  body[data-view-mode="read"] .reader-filter-compat-count{min-height:22px;padding:0 9px;font-size:.61rem}
   body[data-view-mode="read"] .reader-random-section .randomizer{grid-template-columns:1fr;gap:6px}
   body[data-view-mode="read"] .reader-random-section .random-btn,
 body[data-view-mode="read"] .reader-random-section .random-options{grid-column:1;grid-row:auto}
