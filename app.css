@@ -7774,7 +7774,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important}
 
 
-/* V1.1.203 — Reading category list uses the same airy spacing/background spirit as Edit mode. */
+/* V1.1.204 — Reading category list uses the same airy spacing/background spirit as Edit mode. */
 body[data-view-mode="read"] .couple-reader{
   margin-top:8px !important;
 }
@@ -7811,4 +7811,54 @@ body[data-view-mode="read"] .couple-reader-category-body{
     min-height:30px !important;
     padding:4px 7px !important;
   }
+}
+
+
+/* V1.1.204 — Reading collapsed categories now mirror Edit container and spacing. */
+body[data-view-mode="read"] .couple-reader{
+  box-sizing:border-box !important;
+  padding:4px !important;
+  margin-top:3px !important;
+  border:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-radius:10px !important;
+  background:color-mix(in srgb,var(--dominant-soft) 84%,var(--dominant-color) 16%) !important;
+  box-shadow:0 10px 30px rgba(24,14,19,.08) !important;
+}
+body[data-view-mode="read"] .couple-reader-list{
+  gap:3px !important;
+}
+body[data-view-mode="read"] .couple-reader-category{
+  margin:0 !important;
+  border:0 !important;
+  border-radius:7px !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+body[data-view-mode="read"] .couple-reader-category-head,
+body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head,
+body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head.is-stuck{
+  min-height:30px !important;
+  padding:4px 7px !important;
+  border:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-radius:7px !important;
+  background:color-mix(in srgb,var(--dominant-soft) 84%,var(--dominant-color) 16%) !important;
+  box-shadow:0 2px 8px rgba(26,15,20,.08) !important;
+}
+body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head{
+  border-radius:7px 7px 0 0 !important;
+}
+body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-body{
+  border-color:color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-radius:0 0 7px 7px !important;
+  background:color-mix(in srgb,var(--dominant-soft) 84%,var(--dominant-color) 16%) !important;
+}
+@media (max-width:760px){
+  body[data-view-mode="read"] .couple-reader{
+    width:calc(100% - 4px) !important;
+    padding:4px !important;
+    margin:3px auto 10px !important;
+    border-radius:10px !important;
+  }
+  body[data-view-mode="read"] .couple-reader-list{gap:3px !important;}
+  body[data-view-mode="read"] .couple-reader-category{margin:0 !important;}
 }
