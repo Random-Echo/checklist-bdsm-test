@@ -1,5 +1,5 @@
 :root{
-  /* V1.1.181 — canonical global colour system.
+  /* V1.1.182 — canonical global colour system.
      Edit and Reading must consume these exact same tokens. */
   --ui-night:#151116;
   --ui-night-2:#241a20;
@@ -6143,13 +6143,13 @@ body[data-view-mode="read"] .reader-session-section .session-toolbar .action{min
 }
 
 
-/* V1.1.181 — one shared category action dock in Edit and Reading */
+/* V1.1.182 — one shared category action dock in Edit and Reading */
 body[data-view-mode="read"] header .editor-top-dock{
   display:grid !important;
 }
 
 
-/* V1.1.181 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
+/* V1.1.182 — unify Tools & options between Edit and Reading, with clean Reading wrapping */
 body[data-view-mode="read"] header .all-tools-content{
   display:grid !important;
   grid-template-columns:minmax(0,1fr) !important;
@@ -6363,7 +6363,7 @@ body[data-view-mode="read"] .reset-zone{display:none !important}
 }
 
 
-/* V1.1.181 — Reading legend: explicit, readable line breaks on mobile. */
+/* V1.1.182 — Reading legend: explicit, readable line breaks on mobile. */
 body[data-view-mode="read"] .display-filter-section .reading-legend-card{
   grid-column:1 / -1;
   display:grid !important;
@@ -6415,7 +6415,7 @@ body[data-view-mode="read"] .display-filter-section .reading-legend-pin{
 
 
 /* ==========================================================================
-   V1.1.181 — ONE DA / ONE GLOBAL PALETTE
+   V1.1.182 — ONE DA / ONE GLOBAL PALETTE
    Edit and Reading deliberately share the exact same derived theme variables.
    No mode is allowed to invent a second set of colours.
    ========================================================================== */
@@ -6601,7 +6601,7 @@ body[data-view-mode="read"] .couple-reader-notes{
 }
 
 /* ========================================================================== 
-   V1.1.181 — readability pass
+   V1.1.182 — readability pass
    Goal: avoid dark-on-dark / low-contrast text on themed purple surfaces.
    This block is intentionally last so it wins over earlier layered overrides.
    ========================================================================== */
@@ -6711,7 +6711,7 @@ body[data-view-mode="read"] .reader-filter-chip.is-active .reader-filter-chip-co
 }
 
 /* ========================================================================== 
-   V1.1.181 — random picked card formatting
+   V1.1.182 — random picked card formatting
    ========================================================================== */
 .random-picked-card{
   display:flex;
@@ -6767,7 +6767,7 @@ body[data-view-mode="read"] .reader-random-section .random-result{
   .random-picked-compat{font-size:.8rem}
 }
 
-/* V1.1.181 — random result: standalone compatibility result, no label */
+/* V1.1.182 — random result: standalone compatibility result, no label */
 .random-picked-compat{
   margin-top:1px;
 }
@@ -6777,7 +6777,7 @@ body[data-view-mode="read"] .reader-random-section .random-result{
 }
 
 
-/* V1.1.181 — tools chevron aligned right and dark */
+/* V1.1.182 — tools chevron aligned right and dark */
 header .all-tools > summary{
   display:flex !important;
   align-items:center !important;
@@ -6797,7 +6797,7 @@ header .all-tools > summary .editor-tools-progress{
 }
 
 
-/* === V1.1.181 header cleanup === */
+/* === V1.1.182 header cleanup === */
 header .title-actions > .home-button{display:none !important;}
 
 /* Keep the first row compact after removing the home button. */
@@ -6842,7 +6842,7 @@ header .all-tools > summary:hover::after{
 }
 
 
-/* === V1.1.181 spacing harmonization === */
+/* === V1.1.182 spacing harmonization === */
 @media (max-width: 760px){
   header .title-actions{
     row-gap:6px !important;
@@ -6929,7 +6929,7 @@ header .all-tools > summary:hover::after{
 }
 
 
-/* === V1.1.181 individual backup colors + compact exploration level === */
+/* === V1.1.182 individual backup colors + compact exploration level === */
 .backup-actions .person-a-backup,
 .backup-actions .person-b-backup{
   position:relative;
@@ -7045,7 +7045,7 @@ header .all-tools > summary:hover::after{
 }
 
 
-/* === V1.1.181 visual pass: filters/saves premium + more compact exploration === */
+/* === V1.1.182 visual pass: filters/saves premium + more compact exploration === */
 .filters-backup-section{
   background:linear-gradient(180deg,rgba(255,255,255,.97) 0%, rgba(252,250,255,.97) 100%);
 }
@@ -7202,4 +7202,160 @@ header .all-tools > summary:hover::after{
   .exploration-tool-section .experience-switch button{ min-height:27px !important; padding:3px 2px !important; font-size:8px !important; }
   .exploration-tool-section .experience-note{ grid-column:1 / -1 !important; font-size:7px !important; line-height:1.05 !important; margin-top:-1px !important; }
   .exploration-tool-section .incompatible-display-toggle > span{ font-size:9.8px !important; }
+}
+
+
+/* === V1.1.182 compact header pass === */
+@media (max-width:650px){
+  body > header{
+    box-shadow:0 2px 10px rgba(28,18,31,.08)!important;
+  }
+  header .top{
+    padding:5px 6px 6px !important;
+  }
+  header .title-role-row > h1{
+    margin:0 0 4px !important;
+    font-size:11.2px !important;
+    line-height:1.08 !important;
+    gap:4px !important;
+  }
+  header .version-badge{
+    padding:1px 6px !important;
+    font-size:10.2px !important;
+    line-height:1.05 !important;
+  }
+  header .title-actions{
+    min-height:62px !important;
+    grid-template-columns: minmax(0,1fr) 68px 30px !important;
+    grid-template-rows:30px 30px !important;
+    gap:4px !important;
+  }
+  header .title-actions > .role-switch{
+    grid-column:1 !important;
+    grid-row:1 !important;
+    height:30px !important;
+    min-height:30px !important;
+    border-radius:10px !important;
+  }
+  header .role-choice{
+    height:30px !important;
+    min-height:30px !important;
+    padding:2px 4px !important;
+    gap:1px !important;
+    border-radius:9px !important;
+  }
+  header .role-choice-name{
+    font-size:8.8px !important;
+    line-height:1 !important;
+  }
+  header .role-choice-ds{
+    font-size:5.9px !important;
+    line-height:1 !important;
+  }
+  header .title-actions > .language-switch{
+    grid-column:2 !important;
+    grid-row:1 !important;
+    width:68px !important;
+    min-width:68px !important;
+    height:30px !important;
+    min-height:30px !important;
+    border-radius:10px !important;
+  }
+  header .language-choice{
+    height:30px !important;
+    min-height:30px !important;
+    padding:0 1px !important;
+  }
+  header .flag-svg{ width:17px !important; height:11px !important; }
+  header .title-actions > .help-button{
+    grid-column:3 !important;
+    grid-row:1 !important;
+    width:30px !important;
+    min-width:30px !important;
+    height:30px !important;
+    min-height:30px !important;
+    border-radius:10px !important;
+    font-size:14px !important;
+  }
+  header .title-actions > .mode-switch{
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    min-height:30px !important;
+    height:30px !important;
+    padding:2px !important;
+    gap:2px !important;
+    border-radius:12px !important;
+  }
+  header .mode-switch button{
+    height:26px !important;
+    min-height:26px !important;
+    padding:0 8px !important;
+    border-radius:10px !important;
+    font-size:10.6px !important;
+    line-height:1 !important;
+  }
+  header .all-tools{
+    margin:4px 0 0 !important;
+    border-radius:12px !important;
+  }
+  header .all-tools > summary{
+    min-height:30px !important;
+    padding:4px 9px !important;
+    gap:6px !important;
+    font-size:.68rem !important;
+    border-radius:12px !important;
+  }
+  header .all-tools > summary::after{
+    width:20px !important;
+    min-width:20px !important;
+    height:20px !important;
+    border-radius:8px !important;
+    font-size:.66rem !important;
+  }
+  header .editor-top-dock{
+    gap:4px !important;
+    margin-top:4px !important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) 84px !important;
+  }
+  header .editor-top-dock .individual-editor-bulk-btn,
+  header .editor-top-dock .profile-edit-button{
+    min-height:32px !important;
+    padding:4px 6px !important;
+    border-radius:11px !important;
+    font-size:.66rem !important;
+  }
+  body[data-view-mode="read"] header .reader-top-dock{
+    margin:4px 0 0 !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-dock{
+    border-radius:11px !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-row{
+    min-height:30px !important;
+    padding:4px 7px !important;
+    gap:6px !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-title{
+    font-size:.64rem !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-value{
+    gap:4px !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-inline{
+    font-size:.55rem !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-count{
+    min-height:18px !important;
+    padding:0 6px !important;
+    font-size:.5rem !important;
+  }
+}
+
+@media (max-width:380px){
+  header .title-role-row > h1{font-size:10.6px !important;}
+  header .title-actions{grid-template-columns:minmax(0,1fr) 64px 28px !important;grid-template-rows:29px 29px !important;}
+  header .title-actions > .language-switch{width:64px !important;min-width:64px !important;height:29px !important;min-height:29px !important;}
+  header .title-actions > .help-button{width:28px !important;min-width:28px !important;height:29px !important;min-height:29px !important;}
+  header .mode-switch button{font-size:10.1px !important;padding:0 6px !important;}
+  header .editor-top-dock{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 78px !important;}
 }
