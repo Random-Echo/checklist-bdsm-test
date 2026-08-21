@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.206";
+const APP_VERSION = "V1.1.209";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -273,12 +273,6 @@ function scoreChoiceTitle(value, role = null) {
   const v = validScore(value);
   if (v === null) return t("unknown");
   return `${scoreLabel(v, false, role)} — ${scoreDescription(v)}`;
-}
-
-function riskLabel(risk) {
-  if (risk === "high") return t("riskHigh").replace(/^.*?:\s*/, "");
-  if (risk === "caution") return t("riskCaution").replace(/^.*?:\s*/, "");
-  return t("riskNormal").replace(/^.*?:\s*/, "");
 }
 
 function riskBadge(item) {
@@ -1385,7 +1379,6 @@ function cachedScoreUi(value, role=null) {
 const individualEditor = document.getElementById("individualEditor");
 const individualEditorList = document.getElementById("individualEditorList");
 const individualEditorEmpty = document.getElementById("individualEditorEmpty");
-const individualEditorProgress = document.getElementById("individualEditorProgress");
 const individualEditorLegend = document.getElementById("individualEditorLegend");
 const individualEditorProfile = document.getElementById("individualEditorProfile");
 const individualEditorCollapseAll = document.getElementById("individualEditorCollapseAll");
@@ -1586,7 +1579,6 @@ function renderIndividualEditor() {
   }
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
   const summary=V2_STORAGE.getPersonalSummary(person);
-  if(individualEditorProgress) individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
   updateStats();
   window.requestAnimationFrame(updateStickyCategoryOffsets);
 }

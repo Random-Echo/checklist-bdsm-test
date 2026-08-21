@@ -120,21 +120,6 @@
     if(practiceAfter) parts.push(practiceAfter);
     return joinUniqueNotes(parts);
   }
-  function legacyPracticeNote(practice,person,entity){
-    const parts=[];
-    const direct=directPracticeNote(practice,person);
-    if(direct) parts.push(direct);
-    for(const slot of INTERACTION.slotsForEntity(entity)){
-      const raw=practice?.persons?.[person]?.[slot];
-      const note=nonEmptyString(raw?.note);
-      if(note) parts.push(note);
-      const before=nonEmptyString(raw?.noteBefore)||nonEmptyString(raw?.beforeNote)||nonEmptyString(raw?.preNote);
-      const after=nonEmptyString(raw?.noteAfter)||nonEmptyString(raw?.afterNote)||nonEmptyString(raw?.postNote);
-      if(before) parts.push(before);
-      if(after) parts.push(after);
-    }
-    return joinUniqueNotes(parts);
-  }
   function normalizePersonalResponses(raw){
     const out=emptyPersonalResponses();
     for(const [v2Id,practice] of Object.entries(raw?.practices||{})){
