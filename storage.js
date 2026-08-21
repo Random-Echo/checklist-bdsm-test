@@ -104,7 +104,7 @@
     for(const part of parts||[]){const value=nonEmptyString(part);if(!value||seen.has(value))continue;seen.add(value);clean.push(value);}
     return clean.join("\n\n");
   }
-  function legacyPracticeNote(practice,person,entity){
+  function directPracticeNote(practice,person){
     const parts=[];
     const direct=nonEmptyString(practice?.notes?.[person])||nonEmptyString(practice?.[person==='personA'?'notePersonA':'notePersonB']);
     if(direct) parts.push(direct);
@@ -112,6 +112,12 @@
     const practiceAfter=nonEmptyString(practice?.noteAfter?.[person])||nonEmptyString(practice?.afterNote?.[person]);
     if(practiceBefore) parts.push(`Avant : ${practiceBefore}`);
     if(practiceAfter) parts.push(`Après : ${practiceAfter}`);
+    return joinUniqueNotes(parts);
+  }
+  function legacyPracticeNote(practice,person,entity){
+    const parts=[];
+    const direct=directPracticeNote(practice,person);
+    if(direct) parts.push(direct);
     for(const slot of INTERACTION.slotsForEntity(entity)){
       const raw=practice?.persons?.[person]?.[slot];
       const note=nonEmptyString(raw?.note);
@@ -129,14 +135,14 @@
       const entity=entityByV2.get(v2Id); if(!entity) continue;
       const dst={persons:{personA:{},personB:{}},notes:{}};
       for(const person of PERSON_KEYS){
-        const note=legacyPracticeNote(practice,person,entity); if(note) dst.notes[person]=note;
+        const legacyNote=directPracticeNote(practice,person);
         for(const slot of INTERACTION.slotsForEntity(entity)){
           const state=normalizeParticipant(practice?.persons?.[person]?.[slot]);
-          delete state.note;
+          if(!state.note&&legacyNote) state.note=legacyNote;
           if(Object.keys(state).length) dst.persons[person][slot]=state;
         }
       }
-      if(Object.keys(dst.persons.personA).length||Object.keys(dst.persons.personB).length||Object.keys(dst.notes).length) out.practices[v2Id]=dst;
+      if(Object.keys(dst.persons.personA).length||Object.keys(dst.persons.personB).length) out.practices[v2Id]=dst;
     }
     return out;
   }
@@ -146,10 +152,13 @@
       const dst=out.practices[v2Id]||{persons:{personA:{},personB:{}},notes:{}};
       dst.notes=dst.notes||{};
       for(const person of PERSON_KEYS){
-        for(const [slot,state] of Object.entries(p?.persons?.[person]||{})) if(!Object.keys(dst.persons[person]?.[slot]||{}).length&&Object.keys(state||{}).length) dst.persons[person][slot]=clone(state);
-        if(!nonEmptyString(dst.notes[person])&&nonEmptyString(p?.notes?.[person])) dst.notes[person]=p.notes[person];
+        for(const [slot,state] of Object.entries(p?.persons?.[person]||{})){
+          const incomingState=normalizeParticipant(state),existing=normalizeParticipant(dst.persons[person]?.[slot]);
+          if(!Object.keys(existing).length&&Object.keys(incomingState).length) dst.persons[person][slot]=clone(incomingState);
+          else if(!existing.note&&incomingState.note){existing.note=incomingState.note;dst.persons[person][slot]=existing;}
+        }
       }
-      if(Object.keys(dst.persons.personA).length||Object.keys(dst.persons.personB).length||Object.keys(dst.notes).length) out.practices[v2Id]=dst;
+      if(Object.keys(dst.persons.personA).length||Object.keys(dst.persons.personB).length) out.practices[v2Id]=dst;
     }
     return out;
   }
@@ -247,12 +256,20 @@
   function touchPerson(person){const m=getMeta(),now=nowIso();m.modifiedAt[person]=now;m.lastModifiedAt=now;m.initialized=true;setMeta(m);}
   function touchCommon(){const m=getMeta(),now=nowIso();m.modifiedAt.common=now;m.lastModifiedAt=now;m.initialized=true;setMeta(m);}
 
-  function getPersonalSlotState(v2Id,person,slot){if(!isPerson(person))return{};const entity=entityByV2.get(v2Id);if(!entity||!INTERACTION.slotsForEntity(entity).includes(slot))return{};const state=normalizeParticipant(personalResponsesStore()?.practices?.[v2Id]?.persons?.[person]?.[slot]);delete state.note;return state;}
-  function setPersonalSlotState(v2Id,person,slot,state){if(!isPerson(person))return false;const entity=entityByV2.get(v2Id);if(!entity||!INTERACTION.slotsForEntity(entity).includes(slot))return false;const store=personalResponsesStore(),p=store.practices[v2Id]||{persons:{personA:{},personB:{}},notes:{}},normalized=normalizeParticipant(state);delete normalized.note;p.notes=p.notes||{};if(Object.keys(normalized).length)p.persons[person][slot]=normalized;else delete p.persons[person][slot];if(Object.keys(p.persons.personA).length||Object.keys(p.persons.personB).length||Object.keys(p.notes).length)store.practices[v2Id]=p;else delete store.practices[v2Id];invalidatePersonalDerived(v2Id);persistPersonalResponses();touchPerson(person);return true;}
-  function getPersonalPracticeNote(v2Id,person){if(!isPerson(person)||!entityByV2.has(v2Id))return"";return nonEmptyString(personalResponsesStore()?.practices?.[v2Id]?.notes?.[person]);}
-  function setPersonalPracticeNote(v2Id,person,value){if(!isPerson(person)||!entityByV2.has(v2Id))return false;const store=personalResponsesStore(),p=store.practices[v2Id]||{persons:{personA:{},personB:{}},notes:{}};p.notes=p.notes||{};const note=nonEmptyString(value);if(note)p.notes[person]=note;else delete p.notes[person];if(Object.keys(p.persons?.personA||{}).length||Object.keys(p.persons?.personB||{}).length||Object.keys(p.notes).length)store.practices[v2Id]=p;else delete store.practices[v2Id];invalidatePersonalDerived(v2Id);persistPersonalResponses();touchPerson(person);return true;}
-  function copyPersonalSlots(entity, raw){const out={};for(const slot of INTERACTION.slotsForEntity(entity)){const state=normalizeParticipant(raw?.[slot]);delete state.note;if(Object.keys(state).length)out[slot]=state;}return out;}
-  function getPersonalPractice(v2Id){if(personalPracticeCache.has(v2Id))return personalPracticeCache.get(v2Id);const entity=entityByV2.get(v2Id);if(!entity)return null;const p=personalResponsesStore().practices?.[v2Id],result={persons:{personA:Object.freeze(copyPersonalSlots(entity,p?.persons?.personA)),personB:Object.freeze(copyPersonalSlots(entity,p?.persons?.personB))},notes:Object.freeze({personA:nonEmptyString(p?.notes?.personA),personB:nonEmptyString(p?.notes?.personB)})};Object.freeze(result.persons);Object.freeze(result);personalPracticeCache.set(v2Id,result);return result;}
+  function getPersonalSlotState(v2Id,person,slot){if(!isPerson(person))return{};const entity=entityByV2.get(v2Id);if(!entity||!INTERACTION.slotsForEntity(entity).includes(slot))return{};return normalizeParticipant(personalResponsesStore()?.practices?.[v2Id]?.persons?.[person]?.[slot]);}
+  function setPersonalSlotState(v2Id,person,slot,state){if(!isPerson(person))return false;const entity=entityByV2.get(v2Id);if(!entity||!INTERACTION.slotsForEntity(entity).includes(slot))return false;const store=personalResponsesStore(),p=store.practices[v2Id]||{persons:{personA:{},personB:{}},notes:{}},normalized=normalizeParticipant(state);p.notes=p.notes||{};if(Object.keys(normalized).length)p.persons[person][slot]=normalized;else delete p.persons[person][slot];if(Object.keys(p.persons.personA).length||Object.keys(p.persons.personB).length)store.practices[v2Id]=p;else delete store.practices[v2Id];invalidatePersonalDerived(v2Id);persistPersonalResponses();touchPerson(person);return true;}
+  function getPersonalSlotNote(v2Id,person,slot){return nonEmptyString(getPersonalSlotState(v2Id,person,slot)?.note);}
+  function setPersonalSlotNote(v2Id,person,slot,value){const state=getPersonalSlotState(v2Id,person,slot);const note=nonEmptyString(value);if(note)state.note=note;else delete state.note;return setPersonalSlotState(v2Id,person,slot,state);}
+  function getPersonalPracticeNote(v2Id,person){
+    if(!isPerson(person))return"";const entity=entityByV2.get(v2Id);if(!entity)return"";
+    return joinUniqueNotes(INTERACTION.slotsForEntity(entity).map(slot=>getPersonalSlotNote(v2Id,person,slot)));
+  }
+  function setPersonalPracticeNote(v2Id,person,value){
+    if(!isPerson(person))return false;const entity=entityByV2.get(v2Id);if(!entity)return false;
+    let changed=false;for(const slot of INTERACTION.slotsForEntity(entity)) changed=setPersonalSlotNote(v2Id,person,slot,value)||changed;return changed;
+  }
+  function copyPersonalSlots(entity, raw){const out={};for(const slot of INTERACTION.slotsForEntity(entity)){const state=normalizeParticipant(raw?.[slot]);if(Object.keys(state).length)out[slot]=state;}return out;}
+  function getPersonalPractice(v2Id){if(personalPracticeCache.has(v2Id))return personalPracticeCache.get(v2Id);const entity=entityByV2.get(v2Id);if(!entity)return null;const p=personalResponsesStore().practices?.[v2Id],result={persons:{personA:Object.freeze(copyPersonalSlots(entity,p?.persons?.personA)),personB:Object.freeze(copyPersonalSlots(entity,p?.persons?.personB))},notes:Object.freeze({personA:getPersonalPracticeNote(v2Id,'personA'),personB:getPersonalPracticeNote(v2Id,'personB')})};Object.freeze(result.persons);Object.freeze(result);personalPracticeCache.set(v2Id,result);return result;}
   function getReaderPractice(v2Id){
     if(readerPracticeCache.has(v2Id)) return readerPracticeCache.get(v2Id);
     const entity=entityByV2.get(v2Id);if(!entity)return null;
@@ -265,12 +282,12 @@
     if(!isPerson(person))return{person,totalSlots:0,touchedSlots:0,ratedSlots:0,practicesTouched:0};
     if(personalSummaryCache.has(person)) return personalSummaryCache.get(person);
     const store=personalResponsesStore();let totalSlots=0,touchedSlots=0,ratedSlots=0,practicesTouched=0;
-    for(const entity of CATALOG.entities||[]){let touched=!!nonEmptyString(store.practices?.[entity.id]?.notes?.[person]);for(const slot of INTERACTION.slotsForEntity(entity)){totalSlots++;const s=normalizeParticipant(store.practices?.[entity.id]?.persons?.[person]?.[slot]);delete s.note;if(Object.keys(s).length){touchedSlots++;touched=true;}if(Number.isInteger(s.after)||Number.isInteger(s.preference))ratedSlots++;}if(touched)practicesTouched++;}
+    for(const entity of CATALOG.entities||[]){let touched=false;for(const slot of INTERACTION.slotsForEntity(entity)){totalSlots++;const s=normalizeParticipant(store.practices?.[entity.id]?.persons?.[person]?.[slot]);if(Object.keys(s).length){touchedSlots++;touched=true;}if(Number.isInteger(s.after)||Number.isInteger(s.preference))ratedSlots++;}if(touched)practicesTouched++;}
     const result=Object.freeze({person,totalSlots,touchedSlots,ratedSlots,practicesTouched});personalSummaryCache.set(person,result);return result;
   }
 
   // Compatibility adapter for the pre-1.1.62 runtime. It synthesizes the former scenario rows from personal slots + couple variants.
-  function getScenarioItems(scenario){const personal=loadPersonalResponses(),couple=loadCoupleState(),out=[];for(const entity of CATALOG.entities||[]){const key=scenario==='b-dom'?'bDom':'aDom',block=entity?.scenarios?.[key];if(!block)continue;const row={id:Number(block.legacyId)};for(const person of PERSON_KEYS){const slot=INTERACTION.slotForLegacyPerson(entity,scenario,person);if(!slot)continue;const src=normalizeParticipant(personal.practices?.[entity.id]?.persons?.[person]?.[slot]);const fields=legacyFieldsForRole(roleForPerson(scenario,person));const pref=validScore(src.preference);if(pref!==null)row[fields.want]=pref;if(src.prior===true)row[fields.prior]=true;const after=validScore(src.after);if(after!==null)row[fields.after]=after;const note=nonEmptyString(personal.practices?.[entity.id]?.notes?.[person]);if(note)row[runtimeNoteFieldForPerson(person)]=note;}const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant&&couple.practices?.[entity.id]?.variants?.[variant]?.doneTogether===true)row.doneTogether=true;if(Object.keys(row).length>1)out.push(row);}return out;}
+  function getScenarioItems(scenario){const personal=loadPersonalResponses(),couple=loadCoupleState(),out=[];for(const entity of CATALOG.entities||[]){const key=scenario==='b-dom'?'bDom':'aDom',block=entity?.scenarios?.[key];if(!block)continue;const row={id:Number(block.legacyId)};for(const person of PERSON_KEYS){const slot=INTERACTION.slotForLegacyPerson(entity,scenario,person);if(!slot)continue;const src=normalizeParticipant(personal.practices?.[entity.id]?.persons?.[person]?.[slot]);const fields=legacyFieldsForRole(roleForPerson(scenario,person));const pref=validScore(src.preference);if(pref!==null)row[fields.want]=pref;if(src.prior===true)row[fields.prior]=true;const after=validScore(src.after);if(after!==null)row[fields.after]=after;const note=nonEmptyString(src.note)||getPersonalPracticeNote(entity.id,person);if(note)row[runtimeNoteFieldForPerson(person)]=note;}const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant&&couple.practices?.[entity.id]?.variants?.[variant]?.doneTogether===true)row.doneTogether=true;if(Object.keys(row).length>1)out.push(row);}return out;}
   function saveScenarioItems(scenario,rawItems){for(const raw of Array.isArray(rawItems)?rawItems:[]){const v2Id=v2ByScenarioLegacy.get(`${scenario}:${Number(raw?.id)}`),entity=entityByV2.get(v2Id);if(!entity)continue;for(const person of PERSON_KEYS){const slot=INTERACTION.slotForLegacyPerson(entity,scenario,person);if(!slot)continue;const role=roleForPerson(scenario,person),fields=legacyFieldsForRole(role),state={};const pref=validScore(raw?.[fields.want]);if(pref!==null)state.preference=pref;if(raw?.[fields.prior]===true)state.prior=true;const after=validScore(raw?.[fields.after]);if(after!==null)state.after=after;setPersonalSlotState(v2Id,person,slot,state);const note=nonEmptyString(raw?.[runtimeNoteFieldForPerson(person)]);if(note)setPersonalPracticeNote(v2Id,person,note);}const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant)setVariantCommonState(v2Id,variant,{doneTogether:raw?.doneTogether===true});}}
 
   function scenarioVariantKeySet(scenario){const out=new Set();for(const entity of CATALOG.entities||[]){const key=scenario==='b-dom'?'bDom':'aDom';if(!entity?.scenarios?.[key])continue;const variant=INTERACTION.variantForLegacyScenario(entity,scenario);if(variant)out.add(`${entity.id}|${variant}`);}return out;}
@@ -366,7 +383,7 @@
   function validateLegacyBackup(payload){if(!payload||typeof payload!=='object'||Array.isArray(payload)||payload.version!==LEGACY_BACKUP_VERSION||payload.siteBackupId!==LEGACY_SITE_BACKUP_ID)return null;const type=['full','male','female'].includes(payload.backupType)?payload.backupType:null;if(!type||!payload.variants||typeof payload.variants!=='object')throw new Error('Invalid V1.1.55 backup.');for(const id of Object.keys(LEGACY_VARIANT_FORMATS)){const block=payload.variants[id];if(!block||typeof block!=='object'||!Array.isArray(block.items))throw new Error('Invalid V1.1.55 backup.');}return{format:'legacy-v2',type,hasCoupleConfiguration:false};}
   function inspectBackup(payload){return validateCurrentBackup(payload)||validateV4Backup(payload)||validateV3Backup(payload)||validateLegacyBackup(payload)||(()=>{throw new Error('Sauvegarde incompatible / incompatible backup.');})();}
 
-  function buildPersonalModelForPerson(person){const src=loadPersonalResponses(),out=emptyPersonalResponses();for(const [id,p] of Object.entries(src.practices||{})){const kept={};for(const [slot,state] of Object.entries(p?.persons?.[person]||{})){const normalized=normalizeParticipant(state);delete normalized.note;if(Object.keys(normalized).length)kept[slot]=normalized;}const note=nonEmptyString(p?.notes?.[person]);if(Object.keys(kept).length||note){out.practices[id]={persons:{personA:{},personB:{}},notes:{}};out.practices[id].persons[person]=kept;if(note)out.practices[id].notes[person]=note;}}return out;}
+  function buildPersonalModelForPerson(person){const src=loadPersonalResponses(),out=emptyPersonalResponses();for(const [id,p] of Object.entries(src.practices||{})){const kept={};for(const [slot,state] of Object.entries(p?.persons?.[person]||{})){const normalized=normalizeParticipant(state);if(Object.keys(normalized).length)kept[slot]=normalized;}if(Object.keys(kept).length){out.practices[id]={persons:{personA:{},personB:{}},notes:{}};out.practices[id].persons[person]=kept;}}return out;}
   function buildLegacyArchiveForPerson(person){const src=normalizeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive())),out=emptyLegacyArchive();for(const entry of src.entries){const next={source:entry.source,at:entry.at,personOnly:person,responses:normalizeLegacyResponses(entry.responses||emptyLegacyResponses())};for(const p of Object.values(next.responses.practices||{}))for(const state of Object.values(p.scenarios||{}))for(const other of PERSON_KEYS)if(other!==person)state.participants[other]={};out.entries.push(next);}return out;}
   function buildBackup(type,appVersion){
     const backupType=type==='full'?'full':type==='male'||type==='person-a'?'person-a':'person-b',exportedAt=nowIso(),meta=getMeta(),profile=currentProfile();
@@ -383,7 +400,7 @@
     return window.CHECKLIST_PROFILE_API.compareCoupleConfiguration(payload.coupleConfiguration,currentProfile());
   }
 
-  function mergePersonalActive(data,person,exportedAt){const local=loadPersonalResponses(),incoming=normalizePersonalResponses(data?.personalResponses);for(const p of Object.values(local.practices||{})){if(p?.persons)p.persons[person]={};if(p?.notes)delete p.notes[person];}for(const [id,p] of Object.entries(incoming.practices||{})){const slots=p?.persons?.[person]||{},note=nonEmptyString(p?.notes?.[person]);if(!Object.keys(slots).length&&!note)continue;const dst=local.practices[id]||{persons:{personA:{},personB:{}},notes:{}};dst.notes=dst.notes||{};dst.persons[person]=clone(slots);if(note)dst.notes[person]=note;local.practices[id]=dst;}for(const [id,p] of Object.entries(local.practices||{}))if(!Object.keys(p.persons?.personA||{}).length&&!Object.keys(p.persons?.personB||{}).length&&!Object.keys(p.notes||{}).length)delete local.practices[id];savePersonalResponses(local);saveCoupleState(mergeCoupleAdditive(loadCoupleState(),data?.coupleState));if(data?.legacyArchive)writeJson(KEYS.legacyArchive,mergeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive()),data.legacyArchive));const localSafety=clone(safetyStore()),incomingSafety=data?.safety||emptySafety(),merged=mergeSafetyPrudent(localSafety.values||{},incomingSafety.values||{});localSafety.values=merged.merged;localSafety.conflicts=[...(localSafety.conflicts||[]),...merged.conflicts];safetyCache=localSafety;writeJson(KEYS.safety,localSafety);const meta=getMeta();meta.modifiedAt[person]=data?.modifiedAt?.person||exportedAt||nowIso();meta.modifiedAt.common=data?.modifiedAt?.common||meta.modifiedAt.common||nowIso();meta.lastModifiedAt=nowIso();meta.initialized=true;setMeta(meta);return{conflicts:merged.conflicts};}
+  function mergePersonalActive(data,person,exportedAt){const local=loadPersonalResponses(),incoming=normalizePersonalResponses(data?.personalResponses);for(const p of Object.values(local.practices||{})){if(p?.persons)p.persons[person]={};if(p?.notes)delete p.notes[person];}for(const [id,p] of Object.entries(incoming.practices||{})){const slots=p?.persons?.[person]||{};if(!Object.keys(slots).length)continue;const dst=local.practices[id]||{persons:{personA:{},personB:{}},notes:{}};dst.notes=dst.notes||{};dst.persons[person]=clone(slots);local.practices[id]=dst;}for(const [id,p] of Object.entries(local.practices||{}))if(!Object.keys(p.persons?.personA||{}).length&&!Object.keys(p.persons?.personB||{}).length)delete local.practices[id];savePersonalResponses(local);saveCoupleState(mergeCoupleAdditive(loadCoupleState(),data?.coupleState));if(data?.legacyArchive)writeJson(KEYS.legacyArchive,mergeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive()),data.legacyArchive));const localSafety=clone(safetyStore()),incomingSafety=data?.safety||emptySafety(),merged=mergeSafetyPrudent(localSafety.values||{},incomingSafety.values||{});localSafety.values=merged.merged;localSafety.conflicts=[...(localSafety.conflicts||[]),...merged.conflicts];safetyCache=localSafety;writeJson(KEYS.safety,localSafety);const meta=getMeta();meta.modifiedAt[person]=data?.modifiedAt?.person||exportedAt||nowIso();meta.modifiedAt.common=data?.modifiedAt?.common||meta.modifiedAt.common||nowIso();meta.lastModifiedAt=nowIso();meta.initialized=true;setMeta(meta);return{conflicts:merged.conflicts};}
 
   function convertV3Payload(payload){if(payload.backupType==='full')return convertScenarioDataToActive(payload.data||{},`V1.1.58–V1.1.61 backup (${payload.appVersion||'schema3'})`);const person=payload.backupType==='person-a'?'personA':'personB',legacyResponses=normalizeLegacyResponses(payload.data?.responses||emptyLegacyResponses()),personal=payload.data?.personalResponses?normalizePersonalResponses(payload.data.personalResponses):projectLegacyResponsesToPersonal(legacyResponses);return{personalResponses:personal,coupleState:projectLegacyResponsesToCouple(legacyResponses),safety:payload.data?.safety||emptySafety(),modifiedAt:payload.data?.modifiedAt||{},legacyArchive:archiveScenarioData(payload.data||{},`V1.1.58–V1.1.61 personal backup (${payload.appVersion||'schema3'})`,person),person};}
   function convertLegacyPersonal(payload,legacyType){const person=legacyTypeToPerson(legacyType),responses=emptyLegacyResponses();let mergedSafety={},conflicts=[];for(const [variantId,def] of Object.entries(LEGACY_VARIANT_FORMATS)){const block=payload.variants?.[variantId]||{};addLegacyVariantToResponses(responses,def.scenario,block.items,person);const m=mergeSafetyPrudent(mergedSafety,block.safety||{});mergedSafety=m.merged;conflicts.push(...m.conflicts.map(x=>({...x,scenario:def.scenario})));}return{person,personalResponses:projectLegacyResponsesToPersonal(responses),coupleState:projectLegacyResponsesToCouple(responses),safety:{schemaVersion:1,values:mergedSafety,legacySources:{},conflicts},modifiedAt:{person:payload.exportedAt||'',common:payload.exportedAt||''},legacyArchive:archiveScenarioData({responses},`V1.1.55 personal backup (${legacyType})`,person)};}
@@ -436,7 +453,7 @@
     getAllSessionEntries,setSessionEntries,
     getRandomHistoryEntries,setRandomHistoryEntries,getRandomPreferences,setRandomPreferences,
     getDisplay,setDisplay,getLastModified,getLastExchange,setLastExchange,
-    getPersonalSlotState,setPersonalSlotState,getPersonalPractice,getPersonalPracticeNote,setPersonalPracticeNote,getVariantCommonState,setVariantCommonState,getReaderPractice,getPersonalSummary,
+    getPersonalSlotState,setPersonalSlotState,getPersonalSlotNote,setPersonalSlotNote,getPersonalPractice,getPersonalPracticeNote,setPersonalPracticeNote,getVariantCommonState,setVariantCommonState,getReaderPractice,getPersonalSummary,
     buildBackup,inspectBackup,compareBackupCoupleConfiguration,importBackup,resetAllUserData,
     _legacy:{getScenarioItems,saveScenarioItems,getScenarioSessionLegacyIds,setScenarioSessionLegacyIds,getRandomHistoryLegacyIds,setRandomHistoryLegacyIds,getScenarioSummary},
     _debug:{loadPersonalResponses,loadCoupleState,loadSessions,loadRandom,projectLegacyResponsesToPersonal,projectLegacyResponsesToCouple,convertScenarioDataToActive,mergeLegacyFullSnapshots,v2ByScenarioLegacy,entityByV2,legacyActiveKeys:LEGACY_ACTIVE_KEYS,loadLegacyArchive:()=>normalizeLegacyArchive(readJson(KEYS.legacyArchive,emptyLegacyArchive()))}

@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.191";
+const APP_VERSION = "V1.1.192";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1524,6 +1524,10 @@ function editorPracticeVisualKey(slotStates){
   for(const key of ["limit","fantasy","excellent","strong","compatible","later"]){ if(keys.includes(key)) return key; }
   return "incomplete";
 }
+function editorSlotNoteLabel(slot) {
+  const role=editorSlotLabel(slot);
+  return currentLang==="fr"?`Note ${role}`:`${role} note`;
+}
 function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersonalSlotState(entity.id,person,slot)||{}) {
   const applicability=INTERACTION_MODEL.evaluateSlot(entity,person,slot,profile);
   const incompatible=applicability.status==="notApplicable";
@@ -1531,25 +1535,23 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
   const showAfter=state.prior===true||Number.isInteger(state.after);
   const visualKey=editorStateVisualKey(state);
   const afterKey=editorResultKeyFromScore(state.after);
+  const note=String(state.note||"");
+  const hasNote=note.trim().length>0;
+  const noteLabel=editorSlotNoteLabel(slot);
+  const noteTitle=currentLang==="fr"?(hasNote?`Ouvrir ${noteLabel.toLowerCase()}`:`Ajouter ${noteLabel.toLowerCase()}`):(hasNote?`Open ${noteLabel}`:`Add ${noteLabel}`);
+  const priorTitle=currentLang==="fr"?"Déjà fait":"Already done";
   return `<section class="individual-slot${incompatible?' is-incompatible':''}" data-editor-slot="${slot}" data-result-key="${visualKey}">
     <div class="individual-slot-main">
       <div class="individual-slot-label-wrap"><strong class="individual-slot-label">${esc(editorSlotLabel(slot))}</strong>${incompatible?`<span class="individual-applicability" title="${esc(incompatTitle)}" aria-label="${esc(incompatTitle)}">⚠</span>`:""}</div>
       <div class="individual-score-row">${editorScoreButtons(entity.id,slot,state)}</div>
       <div class="individual-slot-tools">
-        <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${currentLang==="fr"?"Déjà essayé":"Already tried"}"><span>${state.prior?'✓':'□'}</span><span class="individual-prior-text">${currentLang==="fr"?"Essayé":"Tried"}</span></button>
+        <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${esc(priorTitle)}"><span class="individual-prior-check" aria-hidden="true">${state.prior?'✓':''}</span><span class="individual-prior-text">${currentLang==="fr"?"Fait":"Done"}</span></button>
+        <button class="individual-note-toggle slot-note-toggle${hasNote?' has-note':''}" data-personal-note-toggle data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-expanded="false" aria-label="${esc(noteTitle)}" title="${esc(noteTitle)}"><span aria-hidden="true">📝</span>${hasNote?'<i aria-hidden="true"></i>':''}</button>
       </div>
     </div>
+    <label class="individual-slot-note-panel" hidden><span>${esc(noteLabel)}</span><textarea data-personal-note data-v2-id="${esc(entity.id)}" data-slot="${slot}" placeholder="${esc(currentLang==="fr"?`${noteLabel}…`:`${noteLabel}…`)}">${esc(note)}</textarea></label>
     ${showAfter?`<div class="individual-after" data-result-key="${afterKey}"><span class="individual-field-label">${currentLang==="fr"?"Après":"After"}</span><div class="individual-score-row">${editorAfterButtons(entity.id,slot,state)}</div></div>`:""}
   </section>`;
-}
-function renderEditorPracticeNote(entity,person,note="") {
-  const value=String(note||"");
-  const hasNote=value.trim().length>0;
-  const noteTitle=currentLang==="fr"?(hasNote?"Ouvrir la note":"Ajouter une note"):(hasNote?"Open note":"Add note");
-  return `<button class="individual-note-toggle practice-note-toggle${hasNote?' has-note':''}" data-personal-note-toggle data-v2-id="${esc(entity.id)}" type="button" aria-expanded="false" aria-label="${esc(noteTitle)}" title="${esc(noteTitle)}"><span aria-hidden="true">📝</span>${hasNote?'<i aria-hidden="true"></i>':''}</button>`;
-}
-function renderEditorPracticeNotePanel(entity,note="") {
-  return `<label class="individual-note-panel practice-note-panel" hidden><span>${currentLang==="fr"?"Note":"Note"}</span><textarea data-personal-note data-v2-id="${esc(entity.id)}" placeholder="${currentLang==="fr"?"Note…":"Note…"}">${esc(note||"")}</textarea></label>`;
 }
 
 function configureEditorStatusOptions() {
@@ -1560,7 +1562,7 @@ function configureEditorStatusOptions() {
   status.value=options.some(([value])=>value===previous)?previous:""; status.dataset.readerLang=langKey;
 }
 function editorEffectiveScore(state){return Number.isInteger(state?.after)?state.after:Number.isInteger(state?.preference)?state.preference:null;}
-function editorSlotMatches(state,statusValue,minScore){const score=editorEffectiveScore(state);if(statusValue==="incomplete"&&Number.isInteger(state?.preference))return false;if(statusValue==="want"&&![3,4].includes(score))return false;if(statusValue==="favorite"&&score!==4)return false;if(statusValue==="fantasy"&&score!==5)return false;if(statusValue==="limit"&&score!==0)return false;if(statusValue==="tried"&&state?.prior!==true)return false;if(statusValue==="after"&&!Number.isInteger(state?.after))return false;if(minScore!==null&&(score===5||!Number.isInteger(score)||score<minScore))return false;return true;}
+function editorSlotMatches(state,statusValue,minScore){const score=editorEffectiveScore(state);if(statusValue==="incomplete"&&Number.isInteger(state?.preference))return false;if(statusValue==="want"&&![3,4].includes(score))return false;if(statusValue==="favorite"&&score!==4)return false;if(statusValue==="fantasy"&&score!==5)return false;if(statusValue==="limit"&&score!==0)return false;if(statusValue==="tried"&&state?.prior!==true)return false;if(statusValue==="after"&&!Number.isInteger(state?.after))return false;if(statusValue==="notes"&&!String(state?.note||"").trim())return false;if(minScore!==null&&(score===5||!Number.isInteger(score)||score<minScore))return false;return true;}
 
 function renderIndividualEditor() {
   if(!individualEditor||!individualEditorList) return;
@@ -1575,20 +1577,20 @@ function renderIndividualEditor() {
   const grouped=new Map(); let visible=0;
   for(const entity of CATALOG_ENTITIES) {
     const personalPractice=V2_STORAGE.getPersonalPractice(entity.id);
-    const practiceNote=V2_STORAGE.getPersonalPracticeNote(entity.id,person)||"";
     const slotStates=editorSlotsForEntity(entity,person,profile)
       .map(slot=>({slot,state:personalPractice?.persons?.[person]?.[slot]||{}}))
       .filter(({state})=>editorSlotMatches(state,statusValue,minScore));
-    if(!slotStates.length || (statusValue==="notes" && !practiceNote.trim())) continue;
+    if(!slotStates.length) continue;
     const slots=slotStates.map(({slot})=>slot), info=editorEntityInfo(entity,person,slots);
     if(info.level>maxLevel || (risk&&info.risk!==risk) || (cat&&info.category!==cat)) continue;
-    const hay=`${info.title} ${info.explanation} ${info.category} ${practiceNote}`.toLowerCase(); if(q&&!hay.includes(q)) continue;
-    if(!grouped.has(info.category)) grouped.set(info.category,[]); grouped.get(info.category).push({entity,slotStates,info,practiceNote}); visible++;
+    const slotNotes=slotStates.map(({state})=>String(state?.note||"")).join(" ");
+    const hay=`${info.title} ${info.explanation} ${info.category} ${slotNotes}`.toLowerCase(); if(q&&!hay.includes(q)) continue;
+    if(!grouped.has(info.category)) grouped.set(info.category,[]); grouped.get(info.category).push({entity,slotStates,info}); visible++;
   }
   const categories=[...grouped.keys()].sort((a,b)=>a.localeCompare(b,currentLang)); let html="";
   for(const catName of categories) {
     const rows=grouped.get(catName); const collapsed=collapsedCategories.has(catName);
-    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slotStates,info,practiceNote})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}" data-result-key="${editorPracticeVisualKey(slotStates)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-headmain"><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.explanation?`<p class="individual-practice-explanation">${esc(info.explanation)}</p>`:''}</div><div class="individual-practice-headtools">${info.risk==='normal'?'':riskBadge({risk:info.risk})}${renderEditorPracticeNote(entity,person,practiceNote)}</div></header><div class="individual-slots${slotStates.length>1?' has-multiple':''}">${slotStates.map(({slot,state})=>renderEditorSlot(entity,person,slot,profile,state)).join('')}</div>${renderEditorPracticeNotePanel(entity,practiceNote)}</article>`).join('')}</div>`}</section>`;
+    html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slotStates,info})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}" data-result-key="${editorPracticeVisualKey(slotStates)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-headmain"><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.explanation?`<p class="individual-practice-explanation">${esc(info.explanation)}</p>`:''}</div><div class="individual-practice-headtools">${info.risk==='normal'?'':riskBadge({risk:info.risk})}</div></header><div class="individual-slots${slotStates.length>1?' has-multiple':''}">${slotStates.map(({slot,state})=>renderEditorSlot(entity,person,slot,profile,state)).join('')}</div></article>`).join('')}</div>`}</section>`;
   }
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
   const summary=V2_STORAGE.getPersonalSummary(person);
@@ -1604,13 +1606,13 @@ let personalNoteSaveTimer = null;
 function flushPersonalNoteSaves() {
   if (personalNoteSaveTimer) { clearTimeout(personalNoteSaveTimer); personalNoteSaveTimer = null; }
   if (!pendingPersonalNotes.size) return;
-  for (const {id,person,value} of pendingPersonalNotes.values()) V2_STORAGE.setPersonalPracticeNote(id,person,value);
+  for (const {id,person,slot,value} of pendingPersonalNotes.values()) V2_STORAGE.setPersonalSlotNote(id,person,slot,value);
   pendingPersonalNotes.clear();
   invalidateDerivedData();
 }
-function queuePersonalNoteSave(id,person,value) {
-  const key=`${id}|${person}`;
-  pendingPersonalNotes.set(key,{id,person,value});
+function queuePersonalNoteSave(id,person,slot,value) {
+  const key=`${id}|${person}|${slot}`;
+  pendingPersonalNotes.set(key,{id,person,slot,value});
   if (personalNoteSaveTimer) clearTimeout(personalNoteSaveTimer);
   personalNoteSaveTimer=setTimeout(flushPersonalNoteSaves,180);
 }
@@ -1620,7 +1622,7 @@ if(individualEditorList) {
     const catBtn=e.target.closest("[data-editor-category-toggle]"); if(catBtn){const c=catBtn.dataset.editorCategoryToggle;if(collapsedCategories.has(c))collapsedCategories.delete(c);else collapsedCategories.add(c);saveCollapsedCategories();render();return;}
     const noteToggle=e.target.closest("button[data-personal-note-toggle]");
     if(noteToggle){
-      const card=noteToggle.closest(".individual-practice-card"),panel=card?.querySelector(".practice-note-panel");
+      const slotRow=noteToggle.closest(".individual-slot"),panel=slotRow?.querySelector(".individual-slot-note-panel");
       if(panel){const opening=panel.hidden;panel.hidden=!opening;noteToggle.setAttribute("aria-expanded",opening?"true":"false");noteToggle.classList.toggle("is-open",opening);if(opening)panel.querySelector("textarea")?.focus();}
       return;
     }
@@ -1630,7 +1632,7 @@ if(individualEditorList) {
     else {const value=btn.dataset.score==="unknown"?null:Number(btn.dataset.score);if(value===null)delete state[action];else state[action]=state[action]===value?undefined:value;if(state[action]===undefined)delete state[action];}
     V2_STORAGE.setPersonalSlotState(id,person,slot,state); invalidateDerivedData(); render();
   });
-  individualEditorList.addEventListener("input",e=>{const note=e.target.closest("textarea[data-personal-note]");if(!note)return;const person=modelPersonKey();queuePersonalNoteSave(note.dataset.v2Id,person,note.value);const toggle=note.closest(".individual-practice-card")?.querySelector("[data-personal-note-toggle]");if(toggle){const hasNote=note.value.trim().length>0;toggle.classList.toggle("has-note",hasNote);let dot=toggle.querySelector("i");if(hasNote&&!dot){dot=document.createElement("i");dot.setAttribute("aria-hidden","true");toggle.appendChild(dot);}else if(!hasNote&&dot)dot.remove();}});
+  individualEditorList.addEventListener("input",e=>{const note=e.target.closest("textarea[data-personal-note]");if(!note)return;const person=modelPersonKey(),slot=note.dataset.slot;queuePersonalNoteSave(note.dataset.v2Id,person,slot,note.value);const toggle=note.closest(".individual-slot")?.querySelector("[data-personal-note-toggle]");if(toggle){const hasNote=note.value.trim().length>0;toggle.classList.toggle("has-note",hasNote);let dot=toggle.querySelector("i");if(hasNote&&!dot){dot=document.createElement("i");dot.setAttribute("aria-hidden","true");toggle.appendChild(dot);}else if(!hasNote&&dot)dot.remove();}});
   individualEditorList.addEventListener("change",e=>{if(e.target.closest("textarea[data-personal-note]"))flushPersonalNoteSaves();});
 }
 
@@ -1694,13 +1696,14 @@ function readerCommonScoreEmoji(compatibility) {
 function readerTriedMark(state) {
   return state?.prior===true ? "✓" : "—";
 }
-function readerNotesHtml(entityId,names=readerNames()) {
+function readerNotesHtml(entityId,pair,names=readerNames()) {
   const notes=[
-    ['person-a',names.personA,String(V2_STORAGE.getPersonalPracticeNote(entityId,'personA')||"").trim()],
-    ['person-b',names.personB,String(V2_STORAGE.getPersonalPracticeNote(entityId,'personB')||"").trim()]
-  ].filter(([, ,note])=>note);
+    ['person-a','personA',names.personA,pair?.personA?.slot],
+    ['person-b','personB',names.personB,pair?.personB?.slot]
+  ].map(([cssPerson,storagePerson,name,slot])=>[cssPerson,name,slot,String(slot?V2_STORAGE.getPersonalSlotNote(entityId,storagePerson,slot):"").trim()])
+   .filter(([, , ,note])=>note);
   if(!notes.length) return "";
-  return `<div class="couple-reader-notes">${notes.map(([person,name,note])=>`<div class="couple-reader-note"><strong>${profileNameBadge(person,name,true)}</strong><span>${profileNamesInTextHtml(note,names)}</span></div>`).join("")}</div>`;
+  return `<div class="couple-reader-notes">${notes.map(([person,name,slot,note])=>`<div class="couple-reader-note"><strong>${profileNameBadge(person,name,true)} <small>${esc(readerSlotLabel(slot))}</small></strong><span>${profileNamesInTextHtml(note,names)}</span></div>`).join("")}</div>`;
 }
 function readerCellResultKey(score){
   return Number.isInteger(score) ? ({0:"limit",1:"later",2:"compatible",3:"strong",4:"excellent",5:"fantasy"}[score] || "incomplete") : "incomplete";
@@ -1952,7 +1955,7 @@ function renderCoupleReader() {
     const entries=grouped.get(categoryName), collapsed=collapsedCategories.has(categoryName), color=categoryColors[categoryName]||"#aaa";
     const practiceHtml=entries.map(({entity,variants})=>{
       if(readerCanGroupDirectionVariants(entity,variants)) {
-        const base=variants[0].info,notes=readerNotesHtml(entity.id,names);
+        const base=variants[0].info;
         const rows=variants.map(({pair,info},index)=>{
           const explanationHtml=readerContextualExplanationHtml(entity,pair,info,names);
           const copy=`<div class="couple-practice-copy" title="${esc((info.explanation||base.title||entity.id))}"><div class="couple-practice-title-line"><strong>${esc(base.title||entity.id)}</strong></div>${explanationHtml?`<div class="couple-practice-description">${explanationHtml}</div>`:""}</div>`;
@@ -1962,11 +1965,11 @@ function renderCoupleReader() {
               ${copy}
               ${readerResultPanel(entity,pair,names)}
             </div>
+            ${readerNotesHtml(entity.id,pair,names)}
           </div>`;
         }).join("");
-        return `<article class="couple-practice couple-practice-grouped" data-v2-id="${esc(entity.id)}" data-reader-grouped="true"><div class="couple-group-variants">${rows}</div>${notes}</article>`;
+        return `<article class="couple-practice couple-practice-grouped" data-v2-id="${esc(entity.id)}" data-reader-grouped="true"><div class="couple-group-variants">${rows}</div></article>`;
       }
-      const practiceNotes=readerNotesHtml(entity.id,names);
       return variants.map(({pair,info},index)=>{
         const explanationHtml=readerContextualExplanationHtml(entity,pair,info,names);
         return `<article class="couple-practice" data-v2-id="${esc(entity.id)}" data-reader-variant="${esc(pair.variant)}" data-result="${esc(pair.compatibility?.status||'incomplete')}">
@@ -1978,7 +1981,7 @@ function renderCoupleReader() {
             </div>
             ${readerResultPanel(entity,pair,names)}
           </div>
-          ${index===0?practiceNotes:""}
+          ${readerNotesHtml(entity.id,pair,names)}
         </article>`;
       }).join("");
     }).join("");

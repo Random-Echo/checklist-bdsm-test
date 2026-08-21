@@ -7614,3 +7614,190 @@ header .all-tools > summary:hover::after{
   content:none !important;
   display:none !important;
 }
+
+/* ========================================================================== 
+   V1.1.192 — compact per-role actions and per-role notes
+   Each DOM/SUB (or Give/Receive) row owns its Done state and its note.
+   ========================================================================== */
+body[data-view-mode="edit"] .individual-slot-main{
+  grid-template-columns:58px minmax(0,1fr) 78px !important;
+  gap:3px !important;
+}
+body[data-view-mode="edit"] .individual-slot-tools{
+  display:grid !important;
+  grid-template-columns:46px 29px !important;
+  align-items:center !important;
+  gap:3px !important;
+  width:78px !important;
+  min-width:78px !important;
+}
+body[data-view-mode="edit"] .individual-prior{
+  width:46px !important;
+  min-width:46px !important;
+  height:29px !important;
+  min-height:29px !important;
+  padding:0 4px !important;
+  gap:2px !important;
+  border-radius:6px !important;
+  font-size:.58rem !important;
+  line-height:1 !important;
+}
+body[data-view-mode="edit"] .individual-prior-check{
+  display:inline-block !important;
+  width:8px !important;
+  min-width:8px !important;
+  text-align:center !important;
+  font-size:.66rem !important;
+  font-weight:950 !important;
+}
+body[data-view-mode="edit"] .individual-prior-text{
+  display:inline !important;
+  font-size:.58rem !important;
+  font-weight:850 !important;
+  line-height:1 !important;
+}
+body[data-view-mode="edit"] .slot-note-toggle{
+  width:29px !important;
+  min-width:29px !important;
+  height:29px !important;
+  min-height:29px !important;
+  border-radius:6px !important;
+  font-size:.68rem !important;
+}
+body[data-view-mode="edit"] .individual-slot-note-panel[hidden]{
+  display:none !important;
+}
+body[data-view-mode="edit"] .individual-slot-note-panel{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:start;
+  gap:5px;
+  margin:3px 4px 0;
+  padding:4px 5px;
+  border:1px solid color-mix(in srgb,var(--editor-person-color,#b9a47b) 20%,#ded5ca 80%);
+  border-radius:7px;
+  background:rgba(255,252,247,.72);
+}
+body[data-view-mode="edit"] .individual-slot-note-panel > span{
+  padding-top:5px;
+  color:var(--edit-theme-ink,#342b30);
+  font-size:.58rem;
+  font-weight:850;
+  line-height:1.1;
+  white-space:nowrap;
+}
+body[data-view-mode="edit"] .individual-slot-note-panel textarea{
+  width:100%;
+  min-width:0;
+  min-height:34px;
+  height:34px;
+  max-height:110px;
+  resize:vertical;
+  box-sizing:border-box;
+  padding:5px 7px;
+  border:1px solid color-mix(in srgb,var(--editor-person-color,#b9a47b) 22%,#d9d2ca 78%);
+  border-radius:6px;
+  background:rgba(255,255,255,.86);
+  color:var(--edit-theme-ink,#342b30);
+  font:inherit;
+  font-size:.66rem;
+  line-height:1.25;
+}
+body[data-view-mode="edit"] .individual-practice-headtools:empty{
+  display:none !important;
+}
+body[data-view-mode="read"] .couple-reader-note strong small{
+  margin-left:4px;
+  color:inherit;
+  opacity:.72;
+  font-size:.82em;
+  font-weight:800;
+}
+
+@media (max-width:650px){
+  body[data-view-mode="edit"] .individual-slot-main{
+    grid-template-columns:42px minmax(0,1fr) 72px !important;
+    gap:2px !important;
+  }
+  body[data-view-mode="edit"] .individual-score-row{
+    gap:1px !important;
+  }
+  body[data-view-mode="edit"] .individual-score-row .score-btn,
+  body[data-view-mode="edit"] .individual-score-row .score-btn.semantic-score-btn,
+  body[data-view-mode="edit"] .individual-score-row .score-btn.semantic-score-btn[data-score]{
+    min-width:0 !important;
+    height:29px !important;
+    min-height:29px !important;
+    padding:0 !important;
+    font-size:9.8px !important;
+  }
+  body[data-view-mode="edit"] .individual-slot-tools{
+    grid-template-columns:41px 29px !important;
+    gap:2px !important;
+    width:72px !important;
+    min-width:72px !important;
+  }
+  body[data-view-mode="edit"] .individual-prior{
+    width:41px !important;
+    min-width:41px !important;
+    height:29px !important;
+    min-height:29px !important;
+    padding:0 2px !important;
+  }
+  body[data-view-mode="edit"] .individual-prior-check{
+    width:7px !important;
+    min-width:7px !important;
+    font-size:.6rem !important;
+  }
+  body[data-view-mode="edit"] .individual-prior-text{
+    display:inline !important;
+    font-size:8px !important;
+  }
+  body[data-view-mode="edit"] .slot-note-toggle{
+    width:29px !important;
+    min-width:29px !important;
+    height:29px !important;
+  }
+  body[data-view-mode="edit"] .individual-slot-note-panel{
+    grid-template-columns:45px minmax(0,1fr);
+    margin:2px 4px 0;
+    padding:3px 4px;
+    gap:4px;
+  }
+  body[data-view-mode="edit"] .individual-slot-note-panel > span{
+    padding-top:5px;
+    font-size:8px;
+  }
+  body[data-view-mode="edit"] .individual-slot-note-panel textarea{
+    min-height:31px;
+    height:31px;
+    padding:4px 6px;
+    font-size:9px;
+  }
+}
+
+@media (max-width:380px){
+  body[data-view-mode="edit"] .individual-slot-main{
+    grid-template-columns:38px minmax(0,1fr) 66px !important;
+  }
+  body[data-view-mode="edit"] .individual-slot-tools{
+    grid-template-columns:37px 27px !important;
+    width:66px !important;
+    min-width:66px !important;
+  }
+  body[data-view-mode="edit"] .individual-prior{
+    width:37px !important;
+    min-width:37px !important;
+    padding:0 1px !important;
+  }
+  body[data-view-mode="edit"] .individual-prior-text{font-size:7.3px !important;}
+  body[data-view-mode="edit"] .slot-note-toggle{
+    width:27px !important;
+    min-width:27px !important;
+  }
+  body[data-view-mode="edit"] .individual-score-row .score-btn,
+  body[data-view-mode="edit"] .individual-score-row .score-btn.semantic-score-btn,
+  body[data-view-mode="edit"] .individual-score-row .score-btn.semantic-score-btn[data-score]{
+    font-size:9px !important;
+  }
+}
