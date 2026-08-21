@@ -3028,17 +3028,22 @@ button.couple-result-tick:disabled{cursor:not-allowed;opacity:.52}
   max-height:15px;
   padding:0 3px;
   gap:2px;
-  border-color:rgba(44,34,42,.34);
-  background:rgba(255,252,248,.92);
-  color:#453a41;
+  border-color:rgba(50,42,47,.48);
+  background:rgba(255,255,255,.90);
+  color:#4d454a;
   font-size:.47rem;
   font-weight:950;
   white-space:nowrap;
   box-sizing:border-box;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.72),0 1px 2px rgba(37,24,31,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.86),0 1px 2px rgba(37,24,31,.10);
 }
-.couple-together-tick:not(:disabled):hover{border-color:rgba(44,34,42,.52);background:#fff}
-.couple-together-tick.is-done{color:#2f633c;border-color:rgba(48,105,61,.48);background:rgba(238,249,239,.92)}
+.couple-together-tick:not(:disabled):hover{border-color:rgba(44,34,42,.68);background:#fff}
+.couple-together-tick.is-done{
+  color:#fff;
+  border-color:#315f39;
+  background:linear-gradient(180deg,#4f8157 0%,#386b42 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 1px rgba(29,73,38,.22),0 1px 2px rgba(32,72,39,.22);
+}
 .couple-reader-notes{margin:-1px 7px 6px calc(var(--reader-rail-width) + 13px);padding:4px 7px;border-radius:7px;background:rgba(255,250,243,.72);color:#4d4a46;display:flex;flex-direction:column;gap:3px;border:1px solid rgba(110,90,58,.10)}
 .couple-reader-note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px;align-items:start;font-size:.58rem;line-height:1.22}
 .couple-reader-note strong{white-space:nowrap;color:#444}
@@ -7503,7 +7508,7 @@ header .all-tools > summary:hover::after{
 }
 
 /* ========================================================================== 
-   V1.1.194 — compact per-role actions and per-role notes
+   V1.1.195 — compact per-role actions and per-role notes
    Each DOM/SUB (or Give/Receive) row owns its Done state and its note.
    ========================================================================== */
 body[data-view-mode="edit"] .individual-slot-main{
@@ -7525,9 +7530,23 @@ body[data-view-mode="edit"] .individual-prior{
   min-height:29px !important;
   padding:0 4px !important;
   gap:2px !important;
+  border:1px solid rgba(72,62,67,.42) !important;
   border-radius:6px !important;
+  background:rgba(255,255,255,.88) !important;
+  color:#5b5357 !important;
   font-size:.58rem !important;
   line-height:1 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 1px 2px rgba(34,25,30,.08) !important;
+}
+body[data-view-mode="edit"] .individual-prior.checked{
+  border-color:#315f39 !important;
+  background:linear-gradient(180deg,#4f8157 0%,#386b42 100%) !important;
+  color:#fff !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 1px rgba(29,73,38,.22),0 1px 2px rgba(32,72,39,.22) !important;
+}
+body[data-view-mode="edit"] .individual-prior:not(.checked):hover{
+  border-color:rgba(72,62,67,.62) !important;
+  background:#fff !important;
 }
 body[data-view-mode="edit"] .individual-prior-check{
   display:inline-block !important;
@@ -7539,10 +7558,12 @@ body[data-view-mode="edit"] .individual-prior-check{
 }
 body[data-view-mode="edit"] .individual-prior-text{
   display:inline !important;
+  color:inherit !important;
   font-size:.58rem !important;
   font-weight:850 !important;
   line-height:1 !important;
 }
+body[data-view-mode="edit"] .individual-prior-check{color:inherit !important;}
 body[data-view-mode="edit"] .slot-note-toggle{
   width:29px !important;
   min-width:29px !important;

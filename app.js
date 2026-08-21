@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.194";
+const APP_VERSION = "V1.1.195";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1537,7 +1537,7 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
       <div class="individual-slot-label-wrap"><strong class="individual-slot-label">${esc(editorSlotLabel(slot))}</strong>${incompatible?`<span class="individual-applicability" title="${esc(incompatTitle)}" aria-label="${esc(incompatTitle)}">⚠</span>`:""}</div>
       <div class="individual-score-row">${editorScoreButtons(entity.id,slot,state)}</div>
       <div class="individual-slot-tools">
-        <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${esc(priorTitle)}"><span class="individual-prior-check" aria-hidden="true">${state.prior?'✓':''}</span><span class="individual-prior-text">${currentLang==="fr"?"Fait":"Done"}</span></button>
+        <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${esc(priorTitle)}"><span class="individual-prior-check" aria-hidden="true">${state.prior?'✓':'□'}</span><span class="individual-prior-text">${currentLang==="fr"?"Fait":"Done"}</span></button>
         <button class="individual-note-toggle slot-note-toggle${hasNote?' has-note':''}" data-personal-note-toggle data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-expanded="false" aria-label="${esc(noteTitle)}" title="${esc(noteTitle)}"><span aria-hidden="true">📝</span>${hasNote?'<i aria-hidden="true"></i>':''}</button>
       </div>
     </div>
