@@ -16,9 +16,14 @@
     d.shareCoupleConfig = fr ? '🔗 Partager la configuration' : '🔗 Share configuration';
     d.backupHint = fr ? 'Deux appareils : partagez d’abord le lien de configuration · Personne A/B = réponses personnelles + copie de la configuration utilisée · Complète = tout le couple.' : 'Two devices: share the configuration link first · Person A/B = personal answers + a copy of the configuration used · Full = the entire couple.';
     d.minFilterAria = fr ? 'Filtrer par niveau effectif minimal' : 'Filter by minimum effective level';
-    d.readingLegendResults = fr ? personAName + ' à gauche.\n' + personBName + ' à droite.\nRésultat du couple pour chaque variante.' : personAName + ' on the left.\n' + personBName + ' on the right.\nCouple result for each variant.';
-    d.readingLegendCheckPersonA = fr ? '✓ sous ' + personAName + ' : déjà essayé par cette personne.' : '✓ under ' + personAName + ': already tried by this person.';
-    d.readingLegendCheckPersonB = fr ? '✓ sous ' + personBName + ' : déjà essayé par cette personne.' : '✓ under ' + personBName + ': already tried by this person.';
+    d.readingLegendResultPersonA = fr ? personAName + ' : résultat de gauche.' : personAName + ': left result.';
+    d.readingLegendResultPersonB = fr ? personBName + ' : résultat du milieu.' : personBName + ': middle result.';
+    d.readingLegendResultCouple = fr ? '🔗 Couple : résultat de droite.' : '🔗 Couple: right result.';
+    d.readingLegendChecksIntro = fr ? 'Indicateurs sous les résultats :' : 'Indicators below the results:';
+    d.readingLegendCheckPersonA = fr ? '✓ ' + personAName + ' : déjà essayé.' : '✓ ' + personAName + ': already tried.';
+    d.readingLegendCheckPersonB = fr ? '✓ ' + personBName + ' : déjà essayé.' : '✓ ' + personBName + ': already tried.';
+    d.readingLegendCheckTogether = fr ? '✓ Couple : fait ensemble.' : '✓ Couple: done together.';
+    d.readingLegendCheckNo = fr ? '— = non.' : '— = no.';
     for (const key of Object.keys(d)) {
       if (typeof d[key] !== 'string') continue;
       d[key] = d[key].replaceAll('Personne A', personAName).replaceAll('Person A', personAName).replaceAll('Personne B', personBName).replaceAll('Person B', personBName);
