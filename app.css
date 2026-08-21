@@ -7359,3 +7359,557 @@ header .all-tools > summary:hover::after{
   header .mode-switch button{font-size:10.1px !important;padding:0 6px !important;}
   header .editor-top-dock{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 78px !important;}
 }
+
+
+/* ========================================================================== 
+   V1.1.184 — mobile header redesign
+   Goal: clearer hierarchy, less stacked bulk, tighter vertical rhythm.
+   -------------------------------------------------------------------------- */
+@media (max-width:650px){
+  :root{
+    --mobile-header-gap:4px;
+    --mobile-header-radius:12px;
+    --mobile-header-radius-sm:10px;
+    --mobile-header-control-h:28px;
+    --mobile-header-pill-h:30px;
+  }
+
+  body > header{
+    box-shadow:none !important;
+  }
+
+  header .top{
+    padding:6px 6px 5px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    gap:var(--mobile-header-gap) !important;
+  }
+
+  header .title-role-row{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:var(--mobile-header-gap) !important;
+    width:100% !important;
+  }
+
+  header .title-role-row > h1{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+    align-items:center !important;
+    column-gap:8px !important;
+    row-gap:2px !important;
+    width:100% !important;
+    margin:0 !important;
+    font-size:10.9px !important;
+    line-height:1.08 !important;
+  }
+
+  header .title-role-row > h1 > [data-i18n="appTitle"]{
+    min-width:0 !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+
+  header .title-role-row > h1 .version-badge{
+    justify-self:end !important;
+    align-self:center !important;
+    margin:0 !important;
+    padding:2px 7px !important;
+    font-size:10px !important;
+    line-height:1 !important;
+  }
+
+  header .title-role-row > h1 .title-extra{
+    display:none !important;
+  }
+
+  header .title-actions{
+    display:grid !important;
+    width:100% !important;
+    min-width:0 !important;
+    min-height:auto !important;
+    height:auto !important;
+    grid-template-columns:minmax(0,1fr) 66px 30px !important;
+    grid-template-rows:var(--mobile-header-control-h) var(--mobile-header-pill-h) !important;
+    gap:var(--mobile-header-gap) !important;
+    align-items:stretch !important;
+    justify-items:stretch !important;
+  }
+
+  header .title-actions > .role-switch,
+  header .title-actions > .reader-header-ds{
+    grid-column:1 !important;
+    grid-row:1 !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:var(--mobile-header-control-h) !important;
+    min-height:var(--mobile-header-control-h) !important;
+    border-radius:var(--mobile-header-radius-sm) !important;
+    overflow:hidden !important;
+  }
+
+  header .role-choice,
+  header .reader-header-ds-choice{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:2px !important;
+    min-height:100% !important;
+    padding:2px 5px !important;
+    border-radius:0 !important;
+    line-height:1 !important;
+  }
+
+  header .role-choice-name,
+  header .reader-header-ds-choice .profile-inline-name,
+  header .reader-header-ds-choice .profile-inline-text{
+    font-size:8.9px !important;
+    line-height:1 !important;
+  }
+
+  header .role-choice-ds,
+  header .reader-header-ds-choice .flow-arrow{
+    font-size:6px !important;
+    line-height:1 !important;
+  }
+
+  header .title-actions > .language-switch{
+    grid-column:2 !important;
+    grid-row:1 !important;
+    width:66px !important;
+    min-width:66px !important;
+    height:var(--mobile-header-control-h) !important;
+    min-height:var(--mobile-header-control-h) !important;
+    border-radius:var(--mobile-header-radius-sm) !important;
+    overflow:hidden !important;
+  }
+
+  header .language-choice{
+    min-height:100% !important;
+    padding:0 1px !important;
+  }
+
+  header .flag-svg{
+    width:16px !important;
+    height:11px !important;
+  }
+
+  header .title-actions > .help-button{
+    grid-column:3 !important;
+    grid-row:1 !important;
+    width:30px !important;
+    min-width:30px !important;
+    height:var(--mobile-header-control-h) !important;
+    min-height:var(--mobile-header-control-h) !important;
+    border-radius:var(--mobile-header-radius-sm) !important;
+    font-size:14px !important;
+    padding:0 !important;
+  }
+
+  header .title-actions > .mode-switch{
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:var(--mobile-header-pill-h) !important;
+    min-height:var(--mobile-header-pill-h) !important;
+    padding:2px !important;
+    gap:2px !important;
+    border-radius:13px !important;
+  }
+
+  header .mode-switch button{
+    min-height:26px !important;
+    height:26px !important;
+    padding:0 8px !important;
+    border-radius:10px !important;
+    font-size:10.8px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+  }
+
+  header .all-tools{
+    margin:2px 0 0 !important;
+    border-radius:var(--mobile-header-radius) !important;
+    overflow:hidden !important;
+  }
+
+  header .all-tools > summary{
+    min-height:31px !important;
+    padding:4px 10px !important;
+    gap:6px !important;
+    font-size:.72rem !important;
+    line-height:1.1 !important;
+    border-radius:var(--mobile-header-radius) !important;
+  }
+
+  header .all-tools > summary .editor-tools-progress{
+    padding:2px 7px !important;
+    font-size:.58rem !important;
+    line-height:1 !important;
+    border-radius:999px !important;
+  }
+
+  header .all-tools > summary::after{
+    width:22px !important;
+    min-width:22px !important;
+    height:22px !important;
+    border-radius:9px !important;
+    font-size:.68rem !important;
+  }
+
+  header .editor-top-dock,
+  header .reader-top-dock{
+    margin-top:4px !important;
+  }
+
+  header .editor-top-dock{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) 82px !important;
+    gap:4px !important;
+  }
+
+  header .editor-top-dock .individual-editor-bulk-btn,
+  header .editor-top-dock .profile-edit-button{
+    min-height:29px !important;
+    height:29px !important;
+    padding:0 7px !important;
+    border-radius:11px !important;
+    font-size:.68rem !important;
+    font-weight:800 !important;
+    box-shadow:none !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-dock{
+    margin:0 !important;
+    border-radius:12px !important;
+    box-shadow:none !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-row{
+    min-height:31px !important;
+    padding:4px 8px !important;
+    gap:6px !important;
+    border-radius:12px !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-title{
+    font-size:.72rem !important;
+    line-height:1 !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-value{
+    gap:5px !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-inline{
+    font-size:.58rem !important;
+    line-height:1 !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-count{
+    min-height:18px !important;
+    padding:0 7px !important;
+    font-size:.58rem !important;
+    line-height:1 !important;
+  }
+
+  /* Make the secondary header row clearly secondary and less bulky. */
+  header .editor-top-dock .individual-editor-bulk-btn,
+  header .editor-top-dock .profile-edit-button,
+  body[data-view-mode="read"] header .reader-filter-summary-row,
+  header .all-tools > summary{
+    box-shadow:0 1px 3px rgba(30,18,25,.04) !important;
+  }
+}
+
+@media (max-width:380px){
+  header .title-role-row > h1{
+    font-size:10.4px !important;
+  }
+  header .title-actions{
+    grid-template-columns:minmax(0,1fr) 62px 28px !important;
+    grid-template-rows:27px 29px !important;
+  }
+  header .title-actions > .language-switch{
+    width:62px !important;
+    min-width:62px !important;
+    height:27px !important;
+    min-height:27px !important;
+  }
+  header .title-actions > .help-button{
+    width:28px !important;
+    min-width:28px !important;
+    height:27px !important;
+    min-height:27px !important;
+  }
+  header .editor-top-dock{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) 76px !important;
+  }
+  header .mode-switch button{
+    font-size:10.1px !important;
+    padding:0 6px !important;
+  }
+}
+
+
+/* ========================================================================== 
+   V1.1.184 — mobile header composition pass
+   Tools + global category actions share one compact utility row.
+   ========================================================================== */
+@media (max-width:650px){
+  header .top{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+    gap:4px 5px !important;
+    padding:5px 6px 6px !important;
+  }
+
+  header .title-role-row{
+    grid-column:1 / -1 !important;
+    grid-row:1 !important;
+    gap:4px !important;
+  }
+
+  header .title-role-row > h1{
+    margin:0 !important;
+    min-height:17px !important;
+  }
+
+  header .title-actions{
+    grid-template-columns:minmax(0,1fr) 64px 28px !important;
+    grid-template-rows:27px 28px !important;
+    gap:3px !important;
+  }
+
+  header .title-actions > .role-switch,
+  header .title-actions > .reader-header-ds,
+  header .title-actions > .language-switch,
+  header .title-actions > .help-button{
+    min-height:27px !important;
+    height:27px !important;
+    border-radius:9px !important;
+  }
+
+  header .title-actions > .language-switch{
+    width:64px !important;
+    min-width:64px !important;
+  }
+
+  header .language-choice{
+    min-height:27px !important;
+    height:27px !important;
+  }
+
+  header .title-actions > .help-button{
+    width:28px !important;
+    min-width:28px !important;
+    font-size:13px !important;
+  }
+
+  header .role-choice,
+  header .reader-header-ds-choice{
+    min-height:27px !important;
+    height:27px !important;
+  }
+
+  header .role-choice-name,
+  header .reader-header-ds-choice .profile-inline-name,
+  header .reader-header-ds-choice .profile-inline-text{
+    font-size:8.5px !important;
+  }
+
+  header .title-actions > .mode-switch{
+    min-height:28px !important;
+    height:28px !important;
+    padding:2px !important;
+    border-radius:11px !important;
+    box-shadow:none !important;
+  }
+
+  header .mode-switch button{
+    min-height:24px !important;
+    height:24px !important;
+    border-radius:9px !important;
+    font-size:10.2px !important;
+    box-shadow:none !important;
+  }
+
+  /* Utility row: Tools on the left, compact category/profile actions on right. */
+  header .all-tools{
+    grid-column:1 !important;
+    grid-row:2 !important;
+    align-self:stretch !important;
+    width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    border-radius:10px !important;
+    overflow:hidden !important;
+    box-shadow:none !important;
+  }
+
+  header .all-tools:not([open]){
+    min-height:29px !important;
+  }
+
+  header .all-tools > summary{
+    min-height:29px !important;
+    height:29px !important;
+    padding:3px 7px 3px 9px !important;
+    border-radius:10px !important;
+    font-size:.68rem !important;
+    box-shadow:none !important;
+  }
+
+  header .all-tools > summary .editor-tools-progress{
+    margin-left:auto !important;
+    margin-right:5px !important;
+    padding:2px 6px !important;
+    font-size:.55rem !important;
+  }
+
+  header .all-tools > summary::after{
+    width:20px !important;
+    min-width:20px !important;
+    height:20px !important;
+    border-radius:7px !important;
+    font-size:.62rem !important;
+    box-shadow:none !important;
+  }
+
+  header .editor-top-dock{
+    grid-column:2 !important;
+    grid-row:2 !important;
+    align-self:stretch !important;
+    display:flex !important;
+    gap:3px !important;
+    width:auto !important;
+    margin:0 !important;
+  }
+
+  header .editor-top-dock .individual-editor-bulk-btn,
+  header .editor-top-dock .profile-edit-button{
+    position:relative !important;
+    flex:0 0 29px !important;
+    width:29px !important;
+    min-width:29px !important;
+    height:29px !important;
+    min-height:29px !important;
+    padding:0 !important;
+    border-radius:9px !important;
+    font-size:0 !important;
+    box-shadow:none !important;
+    overflow:hidden !important;
+  }
+
+  header .editor-top-dock .individual-editor-bulk-btn span,
+  header .editor-top-dock .profile-edit-button span{
+    font-size:0 !important;
+  }
+
+  header #individualEditorCollapseAll::before{
+    content:"▸";
+    font-size:14px;
+    font-weight:900;
+    line-height:1;
+  }
+  header #individualEditorExpandAll::before{
+    content:"▾";
+    font-size:14px;
+    font-weight:900;
+    line-height:1;
+  }
+  header #individualEditorProfile::before{
+    content:"⚙";
+    font-size:13px;
+    font-weight:900;
+    line-height:1;
+  }
+
+  /* When Tools is opened it takes the full row; actions move below it. */
+  header .all-tools[open]{
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    width:100% !important;
+  }
+  header .all-tools[open] + .editor-top-dock{
+    grid-column:1 / -1 !important;
+    grid-row:3 !important;
+    justify-content:flex-end !important;
+    margin-top:0 !important;
+  }
+
+  body[data-view-mode="read"] header .reader-top-dock{
+    grid-column:1 / -1 !important;
+    grid-row:auto !important;
+    width:100% !important;
+    margin:0 !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-dock{
+    margin:0 !important;
+    border-radius:10px !important;
+    box-shadow:none !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-row{
+    min-height:29px !important;
+    height:29px !important;
+    padding:3px 7px !important;
+    border-radius:10px !important;
+    box-shadow:none !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-title{
+    font-size:.66rem !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-title > span[aria-hidden="true"]{
+    width:15px !important;
+    height:15px !important;
+    font-size:.56rem !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-inline{
+    font-size:.54rem !important;
+  }
+
+  body[data-view-mode="read"] header .reader-filter-summary-count{
+    min-height:17px !important;
+    padding:0 5px !important;
+    font-size:.5rem !important;
+  }
+
+  header .language-switch,
+  header .help-button,
+  header .role-switch,
+  header .reader-header-ds,
+  header .mode-switch,
+  header .all-tools,
+  header .editor-top-dock button,
+  body[data-view-mode="read"] header .reader-filter-dock{
+    box-shadow:none !important;
+  }
+}
+
+@media (max-width:380px){
+  header .title-actions{
+    grid-template-columns:minmax(0,1fr) 60px 27px !important;
+    grid-template-rows:26px 27px !important;
+  }
+  header .title-actions > .language-switch{
+    width:60px !important;
+    min-width:60px !important;
+  }
+  header .title-actions > .help-button{
+    width:27px !important;
+    min-width:27px !important;
+  }
+  header .editor-top-dock .individual-editor-bulk-btn,
+  header .editor-top-dock .profile-edit-button{
+    flex-basis:27px !important;
+    width:27px !important;
+    min-width:27px !important;
+  }
+}
