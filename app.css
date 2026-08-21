@@ -7362,7 +7362,7 @@ header .all-tools > summary:hover::after{
 
 
 /* ========================================================================== 
-   V1.1.185 — mobile header redesign
+   V1.1.186 — mobile header redesign
    Goal: clearer hierarchy, less stacked bulk, tighter vertical rhythm.
    -------------------------------------------------------------------------- */
 @media (max-width:650px){
@@ -7655,7 +7655,7 @@ header .all-tools > summary:hover::after{
 
 
 /* ========================================================================== 
-   V1.1.185 — mobile header composition pass
+   V1.1.186 — mobile header composition pass
    Tools + global category actions share one compact utility row.
    ========================================================================== */
 @media (max-width:650px){
@@ -7916,7 +7916,7 @@ header .all-tools > summary:hover::after{
 
 
 /* ========================================================================== 
-   V1.1.185 — understandable, equal-height mobile header rows
+   V1.1.186 — understandable, equal-height mobile header rows
    ========================================================================== */
 @media (max-width:650px){
   :root{
@@ -8216,4 +8216,217 @@ header .all-tools > summary:hover::after{
   header #individualEditorCollapseAll .adult-lang-en::after,
   header #individualEditorExpandAll .adult-lang-en::after,
   header #individualEditorProfile .adult-lang-en::after{font-size:7.5px;}
+}
+
+
+/* ========================================================================== 
+   V1.1.186 — mobile header: readable utility row + equal control-row heights
+   ========================================================================== */
+@media (max-width:650px){
+  :root{
+    --mobile-header-row-h:34px;
+    --mobile-header-gap:4px;
+    --mobile-header-radius:10px;
+  }
+
+  /* The top shell owns a real four-column utility row. */
+  header .top{
+    display:grid !important;
+    grid-template-columns:minmax(0,2.15fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) !important;
+    grid-auto-flow:row !important;
+    grid-auto-rows:auto !important;
+    column-gap:3px !important;
+    row-gap:var(--mobile-header-gap) !important;
+    padding:5px 6px 6px !important;
+  }
+
+  header .title-role-row{
+    grid-column:1 / -1 !important;
+    width:100% !important;
+    min-width:0 !important;
+    gap:var(--mobile-header-gap) !important;
+  }
+
+  /* First two interactive rows: identity and view mode. */
+  header .title-actions{
+    grid-template-columns:minmax(0,1fr) 66px 34px !important;
+    grid-template-rows:var(--mobile-header-row-h) var(--mobile-header-row-h) !important;
+    gap:var(--mobile-header-gap) !important;
+    min-height:calc(var(--mobile-header-row-h) * 2 + var(--mobile-header-gap)) !important;
+  }
+
+  header .title-actions > .role-switch,
+  header .title-actions > .reader-header-ds,
+  header .title-actions > .language-switch,
+  header .title-actions > .help-button,
+  header .title-actions > .mode-switch{
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+  }
+
+  header .role-choice,
+  header .reader-header-ds-choice,
+  header .language-choice{
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+  }
+
+  header .mode-switch{
+    padding:2px !important;
+  }
+  header .mode-switch button{
+    height:calc(var(--mobile-header-row-h) - 4px) !important;
+    min-height:calc(var(--mobile-header-row-h) - 4px) !important;
+  }
+
+  /* Utility line: Tools + 3 clearly labelled actions on ONE full-width row. */
+  header .all-tools{
+    grid-column:1 !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    margin:0 !important;
+    border-radius:var(--mobile-header-radius) !important;
+    overflow:hidden !important;
+  }
+  header .all-tools:not([open]) > summary,
+  header .all-tools > summary{
+    width:100% !important;
+    min-width:0 !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    padding:3px 5px 3px 9px !important;
+    gap:4px !important;
+    border-radius:var(--mobile-header-radius) !important;
+    font-size:.66rem !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+  }
+  header .all-tools > summary > span:first-child{
+    min-width:0 !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+  header .all-tools > summary::after{
+    flex:0 0 20px !important;
+    width:20px !important;
+    min-width:20px !important;
+    height:20px !important;
+    margin-left:auto !important;
+    border-radius:7px !important;
+    font-size:.6rem !important;
+  }
+  body[data-view-mode="read"] header .all-tools > summary .editor-tools-progress{
+    display:none !important;
+  }
+
+  /* display:contents lets the 3 actions participate in the same top-level row. */
+  header .editor-top-dock{
+    display:contents !important;
+  }
+  header .editor-top-dock .individual-editor-bulk-btn,
+  header .editor-top-dock .profile-edit-button{
+    position:static !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    margin:0 !important;
+    padding:0 3px !important;
+    border-radius:var(--mobile-header-radius) !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    overflow:hidden !important;
+    font-size:0 !important;
+    line-height:1 !important;
+    box-shadow:none !important;
+  }
+  header #individualEditorCollapseAll{grid-column:2 !important;}
+  header #individualEditorExpandAll{grid-column:3 !important;}
+  header #individualEditorProfile{grid-column:4 !important;}
+
+  /* Do NOT force display on language spans: hidden FR/EN state must remain authoritative. */
+  header .editor-top-dock .individual-editor-bulk-btn span,
+  header .editor-top-dock .profile-edit-button span{
+    min-width:0 !important;
+    max-width:100% !important;
+    font-size:0 !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  html[lang="fr"] header #individualEditorCollapseAll .adult-lang-fr::after{content:"▸ Replier";font-size:8.8px;}
+  html[lang="fr"] header #individualEditorExpandAll .adult-lang-fr::after{content:"▾ Déplier";font-size:8.8px;}
+  html[lang="fr"] header #individualEditorProfile .adult-lang-fr::after{content:"⚙ Profils";font-size:8.8px;}
+  html[lang="en"] header #individualEditorCollapseAll .adult-lang-en::after{content:"▸ Collapse";font-size:8.3px;}
+  html[lang="en"] header #individualEditorExpandAll .adult-lang-en::after{content:"▾ Expand";font-size:8.3px;}
+  html[lang="en"] header #individualEditorProfile .adult-lang-en::after{content:"⚙ Profiles";font-size:8.3px;}
+
+  /* When Tools opens, it takes the whole row; utility actions naturally move below. */
+  header .all-tools[open]{
+    grid-column:1 / -1 !important;
+    width:100% !important;
+    height:auto !important;
+    min-height:var(--mobile-header-row-h) !important;
+  }
+  header .all-tools[open] > summary{
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+  }
+
+  /* Exploration/session is the fourth interactive row and uses the SAME height. */
+  body[data-view-mode="read"] header .reader-top-dock{
+    grid-column:1 / -1 !important;
+    width:100% !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    margin:0 !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-dock{
+    width:100% !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    border-radius:var(--mobile-header-radius) !important;
+    overflow:hidden !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-row{
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    padding:3px 7px !important;
+    border-radius:var(--mobile-header-radius) !important;
+  }
+
+  /* Equal-height visual language, without fat shadows. */
+  header .role-switch,
+  header .reader-header-ds,
+  header .language-switch,
+  header .help-button,
+  header .mode-switch,
+  header .all-tools,
+  header .editor-top-dock button,
+  body[data-view-mode="read"] header .reader-filter-dock{
+    box-shadow:none !important;
+  }
+}
+
+@media (max-width:380px){
+  :root{--mobile-header-row-h:33px;}
+  header .top{
+    grid-template-columns:minmax(0,2fr) repeat(3,minmax(0,1fr)) !important;
+    column-gap:2px !important;
+  }
+  header .title-actions{grid-template-columns:minmax(0,1fr) 62px 33px !important;}
+  header .title-actions > .language-switch{width:62px !important;min-width:62px !important;}
+  header .title-actions > .help-button{width:33px !important;min-width:33px !important;}
+  html[lang="fr"] header #individualEditorCollapseAll .adult-lang-fr::after,
+  html[lang="fr"] header #individualEditorExpandAll .adult-lang-fr::after,
+  html[lang="fr"] header #individualEditorProfile .adult-lang-fr::after{font-size:8.1px;}
+  html[lang="en"] header #individualEditorCollapseAll .adult-lang-en::after,
+  html[lang="en"] header #individualEditorExpandAll .adult-lang-en::after,
+  html[lang="en"] header #individualEditorProfile .adult-lang-en::after{font-size:7.8px;}
 }
