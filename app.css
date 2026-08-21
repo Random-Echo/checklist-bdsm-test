@@ -7774,7 +7774,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important}
 
 
-/* V1.1.205 — Reading category list uses the same airy spacing/background spirit as Edit mode. */
+/* V1.1.206 — Reading category list uses the same airy spacing/background spirit as Edit mode. */
 body[data-view-mode="read"] .couple-reader{
   margin-top:8px !important;
 }
@@ -7814,7 +7814,7 @@ body[data-view-mode="read"] .couple-reader-category-body{
 }
 
 
-/* V1.1.205 — Reading collapsed categories now mirror Edit container and spacing. */
+/* V1.1.206 — Reading collapsed categories now mirror Edit container and spacing. */
 body[data-view-mode="read"] .couple-reader{
   box-sizing:border-box !important;
   padding:4px !important;
@@ -7864,7 +7864,7 @@ body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-r
 }
 
 
-/* V1.1.205 — Reading collapsed category list must match Edit DA exactly. */
+/* V1.1.206 — Reading collapsed category list must match Edit DA exactly. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
   margin:8px auto 20px !important;
@@ -7932,6 +7932,130 @@ body[data-view-mode="read"] .couple-result-head b{
 body[data-view-mode="read"] .couple-result-head small{
   margin-top:2px !important;
   font-size:.48rem !important;
+}
+body[data-view-mode="read"] .couple-reader-category-body{
+  border-left:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-right:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-bottom:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-radius:0 0 8px 8px !important;
+  background:color-mix(in srgb,var(--dominant-soft) 84%,var(--dominant-color) 16%) !important;
+  box-shadow:0 2px 8px rgba(26,15,20,.08) !important;
+}
+@media (max-width:760px){
+  body[data-view-mode="read"] .couple-reader{
+    width:calc(100% - 4px) !important;
+    margin:3px auto 10px !important;
+  }
+  body[data-view-mode="read"] .couple-reader-list{
+    gap:3px !important;
+  }
+  body[data-view-mode="read"] .couple-reader-category-head,
+  body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head,
+  body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head.is-stuck{
+    min-height:28px !important;
+    padding:4px 6px !important;
+    gap:5px !important;
+    border-radius:7px !important;
+  }
+  body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head{
+    border-radius:7px 7px 0 0 !important;
+  }
+  body[data-view-mode="read"] .couple-reader-category-head > strong{
+    font-size:.72rem !important;
+  }
+  body[data-view-mode="read"] .couple-reader-category-count{
+    min-width:22px !important;
+    min-height:18px !important;
+    font-size:.56rem !important;
+  }
+  body[data-view-mode="read"] .couple-reader-category-body{
+    border-radius:0 0 7px 7px !important;
+  }
+}
+
+
+/* V1.1.206 — Reading categories match Edit DA: white category cards, light dominant background. */
+body[data-view-mode="read"] .couple-reader{
+  width:min(1500px,calc(100% - 16px)) !important;
+  margin:8px auto 20px !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+body[data-view-mode="read"] .couple-reader-list{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:5px !important;
+}
+body[data-view-mode="read"] .couple-reader-category{
+  position:relative !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:9px !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  overflow:visible !important;
+}
+body[data-view-mode="read"] .couple-reader-category-head,
+body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head,
+body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head.is-stuck{
+  width:100% !important;
+  min-height:31px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:6px !important;
+  padding:5px 8px !important;
+  border:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-radius:8px !important;
+  background:linear-gradient(180deg,#ffffff 0%,#fbf9fd 100%) !important;
+  color:var(--read-dominant-ink) !important;
+  text-align:left !important;
+  box-shadow:0 2px 8px rgba(26,15,20,.08) !important;
+}
+body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head{
+  border-radius:8px 8px 0 0 !important;
+}
+body[data-view-mode="read"] .couple-reader-category-head > strong{
+  min-width:0 !important;
+  flex:1 !important;
+  font-size:.78rem !important;
+  line-height:1.1 !important;
+  color:var(--dominant-dark) !important;
+}
+body[data-view-mode="read"] .couple-reader-category-chevron{
+  color:color-mix(in srgb,var(--dominant-dark) 82%,#5f565b 18%) !important;
+  font-size:.72rem !important;
+}
+body[data-view-mode="read"] .couple-reader-category-count{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:24px !important;
+  min-height:20px !important;
+  padding:0 6px !important;
+  border-radius:999px !important;
+  background:rgba(255,252,248,.95) !important;
+  color:var(--read-dominant-ink) !important;
+  font-size:.62rem !important;
+  font-weight:800 !important;
+  line-height:1 !important;
+}
+body[data-view-mode="read"] .couple-result-head{
+  gap:3px !important;
+}
+body[data-view-mode="read"] .couple-result-head > span{
+  line-height:1.05 !important;
+}
+body[data-view-mode="read"] .couple-result-head b{
+  font-size:.58rem !important;
+}
+body[data-view-mode="read"] .couple-result-head small{
+  margin-top:2px !important;
+  color:color-mix(in srgb,var(--dominant-dark) 74%,#5f565b 26%) !important;
+  font-size:.48rem !important;
+  font-weight:800 !important;
 }
 body[data-view-mode="read"] .couple-reader-category-body{
   border-left:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
