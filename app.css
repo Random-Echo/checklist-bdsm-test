@@ -7362,7 +7362,7 @@ header .all-tools > summary:hover::after{
 
 
 /* ========================================================================== 
-   V1.1.184 — mobile header redesign
+   V1.1.185 — mobile header redesign
    Goal: clearer hierarchy, less stacked bulk, tighter vertical rhythm.
    -------------------------------------------------------------------------- */
 @media (max-width:650px){
@@ -7655,7 +7655,7 @@ header .all-tools > summary:hover::after{
 
 
 /* ========================================================================== 
-   V1.1.184 — mobile header composition pass
+   V1.1.185 — mobile header composition pass
    Tools + global category actions share one compact utility row.
    ========================================================================== */
 @media (max-width:650px){
@@ -7912,4 +7912,308 @@ header .all-tools > summary:hover::after{
     width:27px !important;
     min-width:27px !important;
   }
+}
+
+
+/* ========================================================================== 
+   V1.1.185 — understandable, equal-height mobile header rows
+   ========================================================================== */
+@media (max-width:650px){
+  :root{
+    --mobile-header-row-h:32px;
+    --mobile-header-gap:4px;
+    --mobile-header-radius:10px;
+  }
+
+  header .top{
+    display:grid !important;
+    grid-template-columns:minmax(0,1.55fr) minmax(0,1fr) !important;
+    gap:var(--mobile-header-gap) !important;
+    padding:5px 6px 6px !important;
+  }
+
+  /* Title stays visually separate; all interactive rows below share one height. */
+  header .title-role-row{
+    grid-column:1 / -1 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    gap:var(--mobile-header-gap) !important;
+    margin:0 !important;
+  }
+  header .title-role-row > h1{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+    align-items:center !important;
+    gap:6px !important;
+    min-height:20px !important;
+    margin:0 !important;
+    font-size:10.9px !important;
+    line-height:1.05 !important;
+  }
+  header .title-role-row > h1 > [data-i18n="appTitle"]{
+    min-width:0 !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+  }
+  header .version-badge{
+    margin:0 !important;
+    padding:2px 7px !important;
+    font-size:9.8px !important;
+    line-height:1 !important;
+  }
+
+  /* Row 1 + row 2: identity controls, then Edit / Reading. */
+  header .title-actions{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) 66px 32px !important;
+    grid-template-rows:var(--mobile-header-row-h) var(--mobile-header-row-h) !important;
+    gap:var(--mobile-header-gap) !important;
+    min-height:calc(var(--mobile-header-row-h) * 2 + var(--mobile-header-gap)) !important;
+    height:auto !important;
+  }
+
+  header .title-actions > .role-switch,
+  header .title-actions > .reader-header-ds{
+    grid-column:1 !important;
+    grid-row:1 !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    border-radius:var(--mobile-header-radius) !important;
+    overflow:hidden !important;
+  }
+  header .role-choice,
+  header .reader-header-ds-choice{
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    padding:2px 4px !important;
+  }
+  header .role-choice-name,
+  header .reader-header-ds-choice .profile-inline-name,
+  header .reader-header-ds-choice .profile-inline-text{
+    font-size:8.8px !important;
+    line-height:1 !important;
+  }
+  header .role-choice-ds,
+  header .reader-header-ds-choice .flow-arrow{
+    font-size:6px !important;
+    line-height:1 !important;
+  }
+
+  header .title-actions > .language-switch{
+    grid-column:2 !important;
+    grid-row:1 !important;
+    width:66px !important;
+    min-width:66px !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    border-radius:var(--mobile-header-radius) !important;
+    overflow:hidden !important;
+  }
+  header .language-choice{
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    padding:0 1px !important;
+  }
+  header .flag-svg{width:17px !important;height:11px !important;}
+
+  header .title-actions > .help-button{
+    grid-column:3 !important;
+    grid-row:1 !important;
+    width:32px !important;
+    min-width:32px !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    border-radius:var(--mobile-header-radius) !important;
+    padding:0 !important;
+    font-size:14px !important;
+  }
+
+  header .title-actions > .mode-switch{
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    width:100% !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    padding:2px !important;
+    gap:2px !important;
+    border-radius:var(--mobile-header-radius) !important;
+  }
+  header .mode-switch button{
+    height:calc(var(--mobile-header-row-h) - 4px) !important;
+    min-height:calc(var(--mobile-header-row-h) - 4px) !important;
+    padding:0 8px !important;
+    border-radius:8px !important;
+    font-size:10.5px !important;
+    line-height:1 !important;
+  }
+
+  /* Row 3: readable utility bar instead of three unexplained icons. */
+  header .all-tools{
+    grid-column:1 !important;
+    grid-row:2 !important;
+    width:100% !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    margin:0 !important;
+    border-radius:var(--mobile-header-radius) !important;
+    overflow:hidden !important;
+  }
+  header .all-tools:not([open]) > summary{
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+  }
+  header .all-tools > summary{
+    min-height:var(--mobile-header-row-h) !important;
+    padding:3px 6px 3px 9px !important;
+    gap:5px !important;
+    border-radius:var(--mobile-header-radius) !important;
+    font-size:.66rem !important;
+    line-height:1 !important;
+  }
+  header .all-tools > summary::after{
+    width:20px !important;
+    min-width:20px !important;
+    height:20px !important;
+    border-radius:7px !important;
+    font-size:.62rem !important;
+  }
+  header .all-tools > summary .editor-tools-progress{
+    margin-left:auto !important;
+    margin-right:4px !important;
+    padding:2px 5px !important;
+    font-size:.53rem !important;
+  }
+
+  header .editor-top-dock{
+    grid-column:2 !important;
+    grid-row:2 !important;
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:3px !important;
+    width:100% !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    margin:0 !important;
+  }
+  header .editor-top-dock .individual-editor-bulk-btn,
+  header .editor-top-dock .profile-edit-button{
+    position:static !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    min-width:0 !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    padding:0 3px !important;
+    border-radius:var(--mobile-header-radius) !important;
+    font-size:0 !important;
+    line-height:1 !important;
+    overflow:hidden !important;
+  }
+  header .editor-top-dock .individual-editor-bulk-btn::before,
+  header .editor-top-dock .profile-edit-button::before{
+    display:none !important;
+    content:none !important;
+  }
+  header .editor-top-dock .individual-editor-bulk-btn span,
+  header .editor-top-dock .profile-edit-button span{
+    display:inline !important;
+    font-size:0 !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+  }
+  header #individualEditorCollapseAll .adult-lang-fr::after{content:"▸ Replier";font-size:8.3px;}
+  header #individualEditorCollapseAll .adult-lang-en::after{content:"▸ Collapse";font-size:8px;}
+  header #individualEditorExpandAll .adult-lang-fr::after{content:"▾ Déplier";font-size:8.3px;}
+  header #individualEditorExpandAll .adult-lang-en::after{content:"▾ Expand";font-size:8px;}
+  header #individualEditorProfile .adult-lang-fr::after{content:"⚙ Profils";font-size:8.3px;}
+  header #individualEditorProfile .adult-lang-en::after{content:"⚙ Profiles";font-size:8px;}
+
+  /* Open tools keeps the same summary height and expands below. */
+  header .all-tools[open]{
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    width:100% !important;
+    height:auto !important;
+    min-height:var(--mobile-header-row-h) !important;
+  }
+  header .all-tools[open] + .editor-top-dock{
+    grid-column:1 / -1 !important;
+    grid-row:3 !important;
+    width:100% !important;
+    margin:0 !important;
+  }
+
+  /* Row 4 in Reading: exactly the same height as every other control row. */
+  body[data-view-mode="read"] header .reader-top-dock{
+    grid-column:1 / -1 !important;
+    grid-row:auto !important;
+    width:100% !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    margin:0 !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-dock{
+    width:100% !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    margin:0 !important;
+    border-radius:var(--mobile-header-radius) !important;
+    overflow:hidden !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-dock:not([open]) .reader-filter-summary-row,
+  body[data-view-mode="read"] header .reader-filter-summary-row{
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    padding:3px 7px !important;
+    gap:5px !important;
+    border-radius:var(--mobile-header-radius) !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-title{
+    font-size:.65rem !important;
+    line-height:1 !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-inline{
+    font-size:.53rem !important;
+    line-height:1 !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-count{
+    min-height:18px !important;
+    padding:0 5px !important;
+    font-size:.5rem !important;
+  }
+  body[data-view-mode="read"] header .reader-filter-summary-title > span[aria-hidden="true"]{
+    width:15px !important;
+    height:15px !important;
+    font-size:.56rem !important;
+  }
+
+  /* Keep the whole chrome flatter and more coherent. */
+  header .language-switch,
+  header .help-button,
+  header .role-switch,
+  header .reader-header-ds,
+  header .mode-switch,
+  header .all-tools,
+  header .editor-top-dock button,
+  body[data-view-mode="read"] header .reader-filter-dock{
+    box-shadow:none !important;
+  }
+}
+
+@media (max-width:380px){
+  :root{--mobile-header-row-h:31px;}
+  header .title-actions{grid-template-columns:minmax(0,1fr) 62px 31px !important;}
+  header .title-actions > .language-switch{width:62px !important;min-width:62px !important;}
+  header .title-actions > .help-button{width:31px !important;min-width:31px !important;}
+  header #individualEditorCollapseAll .adult-lang-fr::after,
+  header #individualEditorExpandAll .adult-lang-fr::after,
+  header #individualEditorProfile .adult-lang-fr::after{font-size:7.8px;}
+  header #individualEditorCollapseAll .adult-lang-en::after,
+  header #individualEditorExpandAll .adult-lang-en::after,
+  header #individualEditorProfile .adult-lang-en::after{font-size:7.5px;}
 }
