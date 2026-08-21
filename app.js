@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.193";
+const APP_VERSION = "V1.1.194";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1712,10 +1712,12 @@ function readerResultPanel(entity,pair,names=readerNames()) {
   const done=pair.common?.doneTogether===true;
   const blocked=c.status==="limit", fantasy=c.status==="fantasy";
   const togetherLabel=done?(currentLang==="fr"?"Déjà fait ensemble":"Already done together"):(currentLang==="fr"?"Marquer fait ensemble":"Mark done together");
+  const togetherShort=currentLang==="fr"?"Ens.":"Tog.";
+  const togetherMark=done?"✓":"□";
   return `<div class="couple-result-grid" data-result="${esc(c.status)}" aria-label="${esc(readerCompatibilityLabel(c.status))}">
     <span class="couple-result-cell person-a" data-result-key="${aResultKey}" title="${esc(`${names.personA} · ${readerSlotLabel(pair.personA.slot)} : ${aScore}`)}"><span class="couple-result-emoji">${aScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personA.state)}</span></span>
     <span class="couple-result-cell person-b" data-result-key="${bResultKey}" title="${esc(`${names.personB} · ${readerSlotLabel(pair.personB.slot)} : ${bScore}`)}"><span class="couple-result-emoji">${bScore}</span><span class="couple-result-tick">${readerTriedMark(pair.personB.state)}</span></span>
-    <span class="couple-result-cell couple-result-common-cell" data-result-key="${commonResultKey}" title="${esc(readerCompatibilityLabel(c.status))}"><span class="couple-result-emoji">${commonScore}</span><button class="couple-result-tick couple-together-tick${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} aria-label="${esc(togetherLabel)}" title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):togetherLabel)}">${done?'✓':'—'}</button></span>
+    <span class="couple-result-cell couple-result-common-cell" data-result-key="${commonResultKey}" title="${esc(readerCompatibilityLabel(c.status))}"><span class="couple-result-emoji">${commonScore}</span><button class="couple-result-tick couple-together-tick${done?' is-done':''}" data-couple-action="together" data-v2-id="${esc(entity.id)}" data-variant="${esc(pair.variant)}" type="button" ${blocked||fantasy?'disabled':''} aria-pressed="${done?'true':'false'}" aria-label="${esc(togetherLabel)}" title="${esc(blocked?(currentLang==='fr'?'Une limite est active.':'A limit is active.'):fantasy?t('fantasyTogetherDisabled'):togetherLabel)}"><span aria-hidden="true">${togetherMark}</span><span>${togetherShort}</span></button></span>
   </div>`;
 }
 function readerPinButton(entity,pair) {
@@ -1975,7 +1977,7 @@ function renderCoupleReader() {
         </article>`;
       }).join("");
     }).join("");
-    const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${profileNameBadge('person-a', names.personA, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>${profileNameBadge('person-b', names.personB, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b><span class="profile-inline-text">🔗</span></b><small>✓ ${esc(togetherShort)}</small></span></span>`;
+    const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${profileNameBadge('person-a', names.personA, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b>${profileNameBadge('person-b', names.personB, true)}</b><small>✓ ${esc(beforeShort)}</small></span><span><b><span class="profile-inline-text">🔗</span></b><small>${esc(togetherShort)}</small></span></span>`;
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span>${resultHead}</button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
   queueReaderStickyHeaderUpdate();

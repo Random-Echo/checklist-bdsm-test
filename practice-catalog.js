@@ -22,7 +22,7 @@
     d.readingLegendChecksIntro = fr ? 'Indicateurs sous les résultats :' : 'Indicators below the results:';
     d.readingLegendCheckPersonA = fr ? '✓ ' + personAName + ' : déjà essayé.' : '✓ ' + personAName + ': already tried.';
     d.readingLegendCheckPersonB = fr ? '✓ ' + personBName + ' : déjà essayé.' : '✓ ' + personBName + ': already tried.';
-    d.readingLegendCheckTogether = fr ? '✓ Couple : fait ensemble.' : '✓ Couple: done together.';
+    d.readingLegendCheckTogether = fr ? '□ / ✓ Ens. : bouton « Fait ensemble », modifiable en Lecture.' : '□ / ✓ Tog.: Done together button, editable in Reading.';
     d.readingLegendCheckNo = fr ? '— = non.' : '— = no.';
     for (const key of Object.keys(d)) {
       if (typeof d[key] !== 'string') continue;
