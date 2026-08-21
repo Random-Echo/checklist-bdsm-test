@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.190";
+const APP_VERSION = "V1.1.191";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -63,8 +63,16 @@ function applyProfileLabels() {
   const nameA = p.personA?.name || (currentLang === "fr" ? "Personne A" : "Person A");
   const nameB = p.personB?.name || (currentLang === "fr" ? "Personne B" : "Person B");
   const a = document.getElementById("exportPersonA"), b = document.getElementById("exportPersonB");
-  if (a) a.innerHTML = profileNameBadge('person-a', nameA, true);
-  if (b) b.innerHTML = profileNameBadge('person-b', nameB, true);
+  if (a) {
+    a.textContent = nameA;
+    a.setAttribute('aria-label', nameA);
+    a.title = nameA;
+  }
+  if (b) {
+    b.textContent = nameB;
+    b.setAttribute('aria-label', nameB);
+    b.title = nameB;
+  }
 }
 
 
