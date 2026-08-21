@@ -7462,7 +7462,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important;}
 
-/* Reading category DA — canonical block (V1.1.209).
+/* Reading category DA — canonical block (V1.1.211).
    The collapsed Reading list deliberately reuses the exact Edit surfaces. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
@@ -7601,4 +7601,66 @@ body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-
     height:9px !important;
   }
   body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head::after{font-size:.66rem !important;}
+}
+
+
+/* V1.1.211 — Mode switch matches the premium DA of the name buttons above. */
+:root{
+  --mode-edit-accent: var(--person-a-role-color);
+  --mode-edit-soft: var(--person-a-role-soft);
+  --mode-edit-dark: var(--person-a-role-dark);
+  --mode-read-accent: var(--person-b-role-color);
+  --mode-read-soft: var(--person-b-role-soft);
+  --mode-read-dark: var(--person-b-role-dark);
+}
+header .mode-switch{
+  background:#f8f4f0 !important;
+  border:1px solid color-mix(in srgb,var(--luxe-line) 78%,#fff 22%) !important;
+  border-radius:18px !important;
+  box-shadow:0 8px 18px rgba(42,28,35,.10), inset 0 1px 0 rgba(255,255,255,.30) !important;
+}
+header .mode-switch button{
+  border:1px solid transparent !important;
+  border-radius:14px !important;
+  font-weight:900 !important;
+  box-shadow:none !important;
+}
+header .mode-switch #modeEdit{
+  color:var(--mode-edit-dark) !important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-edit-soft) 88%,#fff 12%) 0%, color-mix(in srgb,var(--mode-edit-accent) 28%,#fff 72%) 100%) !important;
+  border-color:color-mix(in srgb,var(--mode-edit-accent) 36%,#d7d7d7) !important;
+}
+header .mode-switch #modeRead{
+  color:var(--mode-read-dark) !important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-read-soft) 86%,#fff 14%) 0%, color-mix(in srgb,var(--mode-read-accent) 22%,#fff 78%) 100%) !important;
+  border-color:color-mix(in srgb,var(--mode-read-accent) 36%,#d7d7d7) !important;
+}
+header .mode-switch #modeEdit:hover{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-edit-soft) 82%,#fff 18%) 0%, color-mix(in srgb,var(--mode-edit-accent) 34%,#fff 66%) 100%) !important;
+}
+header .mode-switch #modeRead:hover{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-read-soft) 80%,#fff 20%) 0%, color-mix(in srgb,var(--mode-read-accent) 30%,#fff 70%) 100%) !important;
+}
+header .mode-switch #modeEdit.active,
+header .mode-switch #modeEdit[aria-pressed="true"]{
+  color:var(--mode-edit-dark) !important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-edit-accent) 92%,#fff) 0%, var(--mode-edit-accent) 100%) !important;
+  border-color:var(--mode-edit-accent) !important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--mode-edit-accent) 24%,transparent), 0 4px 10px rgba(0,0,0,.12) !important;
+}
+header .mode-switch #modeRead.active,
+header .mode-switch #modeRead[aria-pressed="true"]{
+  color:var(--mode-read-dark) !important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-read-accent) 92%,#fff) 0%, var(--mode-read-accent) 100%) !important;
+  border-color:var(--mode-read-accent) !important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--mode-read-accent) 24%,transparent), 0 4px 10px rgba(0,0,0,.12) !important;
+}
+header .mode-switch button::before{display:none !important;}
+@media (max-width:760px){
+  header .mode-switch{
+    border-radius:16px !important;
+  }
+  header .mode-switch button{
+    border-radius:12px !important;
+  }
 }
