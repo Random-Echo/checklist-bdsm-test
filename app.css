@@ -3018,9 +3018,9 @@ header .role-switch{
 .couple-result-tick{display:flex;align-items:center;justify-content:center;margin-top:4px;min-width:23px;min-height:15px;padding:0 4px;border:1px solid rgba(24,20,24,.12);border-radius:999px;background:rgba(249,246,244,.78);color:#4d5558;font-size:.6rem;font-weight:950;line-height:1;box-shadow:inset 0 1px 0 rgba(255,255,255,.55)}
 .couple-result-icon{display:inline-flex;align-items:center;justify-content:center;position:relative;flex:0 0 auto}
 .couple-result-icon-check{font-weight:950;line-height:1}
-.couple-result-icon-cross{width:.66em;height:.66em}
+.couple-result-icon-cross{width:.72em;height:.72em}
 .couple-result-icon-cross::before,
-.couple-result-icon-cross::after{content:"";position:absolute;left:50%;top:50%;width:.82em;height:2.2px;border-radius:999px;background:currentColor;transform-origin:center}
+.couple-result-icon-cross::after{content:"";position:absolute;left:50%;top:50%;width:.88em;height:1.55px;border-radius:999px;background:currentColor;opacity:.96;transform-origin:center;box-shadow:0 .35px 0 rgba(255,255,255,.18)}
 .couple-result-icon-cross::before{transform:translate(-50%,-50%) rotate(45deg)}
 .couple-result-icon-cross::after{transform:translate(-50%,-50%) rotate(-45deg)}
 button.couple-result-tick{font-family:inherit;cursor:pointer}
@@ -7770,3 +7770,45 @@ body[data-view-mode="read"] .couple-before-tick.is-done{
 body[data-view-mode="read"] .couple-before-tick .couple-result-icon{margin-right:1px}
 body[data-view-mode="read"] .couple-before-tick.is-done .couple-result-icon-check{color:#fff!important}
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross{color:#171717!important}
+body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
+body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important}
+
+
+/* V1.1.203 — Reading category list uses the same airy spacing/background spirit as Edit mode. */
+body[data-view-mode="read"] .couple-reader{
+  margin-top:8px !important;
+}
+body[data-view-mode="read"] .couple-reader-list{
+  gap:8px !important;
+}
+body[data-view-mode="read"] .couple-reader-category{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+body[data-view-mode="read"] .couple-reader-category-head{
+  min-height:32px !important;
+  padding:5px 8px !important;
+  border:1px solid var(--read-dominant-line) !important;
+  border-radius:9px !important;
+  background:var(--read-dominant-panel-2) !important;
+  box-shadow:0 2px 8px rgba(26,15,20,.08) !important;
+}
+body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head{
+  border-radius:9px 9px 0 0 !important;
+}
+body[data-view-mode="read"] .couple-reader-category-body{
+  background:var(--read-dominant-panel) !important;
+}
+@media (max-width:760px){
+  body[data-view-mode="read"] .couple-reader{
+    margin-top:6px !important;
+  }
+  body[data-view-mode="read"] .couple-reader-list{
+    gap:7px !important;
+  }
+  body[data-view-mode="read"] .couple-reader-category-head{
+    min-height:30px !important;
+    padding:4px 7px !important;
+  }
+}
