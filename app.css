@@ -7205,7 +7205,7 @@ header .all-tools > summary:hover::after{
 }
 
 /* ========================================================================== 
-   V1.1.187 — canonical mobile header
+   V1.1.188 — canonical mobile header
    One structure, one row height, no pseudo-label hacks.
    ========================================================================== */
 .header-utility-row{display:contents;}

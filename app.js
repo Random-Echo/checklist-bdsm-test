@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.187";
+const APP_VERSION = "V1.1.188";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1583,7 +1583,8 @@ function renderIndividualEditor() {
     html+=`<section class="individual-category" data-category="${esc(catName)}"><button class="individual-category-head" data-editor-category-toggle="${esc(catName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="section-dot" style="background:${categoryColors[catName]||'#999'}"></span><strong>${esc(currentLang==="en"?(CATEGORY_EN[catName]||catName):catName)}</strong><span>${rows.length}</span><b>${collapsed?'▸':'▾'}</b></button>${collapsed?'':`<div class="individual-category-cards">${rows.map(({entity,slotStates,info,practiceNote})=>`<article class="individual-practice-card" data-v2-id="${esc(entity.id)}" data-result-key="${editorPracticeVisualKey(slotStates)}"><header${info.explanation?` title="${esc(info.explanation)}"`:''}><div class="individual-practice-headmain"><div class="individual-practice-titleline"><span class="individual-practice-category">${esc(currentLang==='fr'?`N${info.level}`:`L${info.level}`)}</span><h3>${esc(info.title)}</h3></div>${info.explanation?`<p class="individual-practice-explanation">${esc(info.explanation)}</p>`:''}</div><div class="individual-practice-headtools">${info.risk==='normal'?'':riskBadge({risk:info.risk})}${renderEditorPracticeNote(entity,person,practiceNote)}</div></header><div class="individual-slots${slotStates.length>1?' has-multiple':''}">${slotStates.map(({slot,state})=>renderEditorSlot(entity,person,slot,profile,state)).join('')}</div>${renderEditorPracticeNotePanel(entity,practiceNote)}</article>`).join('')}</div>`}</section>`;
   }
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
-  const summary=V2_STORAGE.getPersonalSummary(person); individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
+  const summary=V2_STORAGE.getPersonalSummary(person);
+  if(individualEditorProgress) individualEditorProgress.textContent=currentLang==="fr"?`${summary.ratedSlots}/${summary.totalSlots} choix renseignés`:`${summary.ratedSlots}/${summary.totalSlots} choices filled`;
   updateStats();
   window.requestAnimationFrame(updateStickyCategoryOffsets);
 }
