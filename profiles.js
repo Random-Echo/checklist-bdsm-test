@@ -27,7 +27,8 @@
 
   const clone = value => JSON.parse(JSON.stringify(value));
   const colorById = id => PROFILE_COLORS.find(color => color.id === id) || null;
-  const safeName = (value, fallback) => String(value || '').trim().slice(0, 40) || fallback;
+  const PROFILE_NAME_MAX_LENGTH = 12;
+  const safeName = (value, fallback) => Array.from(String(value || '').trim()).slice(0, PROFILE_NAME_MAX_LENGTH).join('') || fallback;
   const safeIdentityId = value => String(value || '').trim().slice(0, 120);
   const makeIdentityId = () => {
     try { if (crypto?.randomUUID) return crypto.randomUUID(); } catch (_) {}

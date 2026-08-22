@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.235";
+const APP_VERSION = "V1.1.240";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1574,7 +1574,7 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
       <div class="individual-slot-label-wrap"><strong class="individual-slot-label">${esc(editorSlotLabel(slot))}</strong>${incompatible?`<span class="individual-applicability" title="${esc(incompatTitle)}" aria-label="${esc(incompatTitle)}">⚠</span>`:""}</div>
       <div class="individual-score-row">${editorScoreButtons(entity.id,slot,state)}</div>
       <div class="individual-slot-tools">
-        <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${esc(priorTitle)}"><span class="individual-prior-check" aria-hidden="true">${state.prior?'✓':'□'}</span><span class="individual-prior-text">${currentLang==="fr"?"Av.":"Before"}</span></button>
+        <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${esc(priorTitle)}"><span class="individual-prior-check" aria-hidden="true">${state.prior?'✓':'□'}</span><span class="individual-prior-text">${currentLang==="fr"?"Avant":"Before"}</span></button>
         <button class="individual-note-toggle slot-note-toggle${hasNote?' has-note':''}" data-personal-note-toggle data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-expanded="false" aria-label="${esc(noteTitle)}" title="${esc(noteTitle)}"><span aria-hidden="true">📝</span>${hasNote?'<i aria-hidden="true"></i>':''}</button>
       </div>
     </div>
@@ -1585,7 +1585,7 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
 function configureEditorStatusOptions() {
   const langKey=`edit-${currentLang}`; if(status.dataset.readerLang===langKey) return;
   const previous=status.value;
-  const options=currentLang==="fr"?[["","Tous mes choix"],["incomplete","? À compléter"],["want","🔥 Envie ou favori"],["favorite","👑 Favoris"],["fantasy","💭 Fantasmes"],["limit","🚫 Limites"],["tried","✓ Av."],["notes","Avec une note"]]:[["","All my choices"],["incomplete","? To complete"],["want","🔥 Want or favorite"],["favorite","👑 Favorites"],["fantasy","💭 Fantasies"],["limit","🚫 Limits"],["tried","✓ Before"],["notes","With a note"]];
+  const options=currentLang==="fr"?[["","Tous mes choix"],["incomplete","? À compléter"],["want","🔥 Envie ou favori"],["favorite","👑 Favoris"],["fantasy","💭 Fantasmes"],["limit","🚫 Limites"],["tried","✓ Avant"],["notes","Avec une note"]]:[["","All my choices"],["incomplete","? To complete"],["want","🔥 Want or favorite"],["favorite","👑 Favorites"],["fantasy","💭 Fantasies"],["limit","🚫 Limits"],["tried","✓ Before"],["notes","With a note"]];
   status.innerHTML=options.map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join("");
   status.value=options.some(([value])=>value===previous)?previous:""; status.dataset.readerLang=langKey;
 }
@@ -1722,7 +1722,7 @@ function readerCommonScoreEmoji(compatibility) {
 }
 function readerTriedMark(state) {
   const done=state?.prior===true;
-  const label=currentLang==="fr"?"Av.":"Before";
+  const label=currentLang==="fr"?"Av.":"Bef.";
   const icon=done
     ? `<span class="couple-result-icon couple-result-icon-check" aria-hidden="true">✓</span>`
     : `<span class="couple-result-icon couple-result-icon-cross" aria-hidden="true"></span>`;
@@ -2026,7 +2026,9 @@ function renderCoupleReader() {
         </article>`;
       }).join("");
     }).join("");
-    const resultHead=`<span class="couple-result-head" aria-hidden="true"><span><b>${profileNameBadge('person-a', names.personA, true)}</b></span><span><b>${profileNameBadge('person-b', names.personB, true)}</b></span><span><b><span class="profile-inline-text">🔗</span></b><small>${esc(togetherShort)}</small></span></span>`;
+    const initialA=Array.from(String(names.personA||"A").trim())[0]?.toLocaleUpperCase(currentLang==="fr"?"fr-FR":"en-US")||"A";
+    const initialB=Array.from(String(names.personB||"B").trim())[0]?.toLocaleUpperCase(currentLang==="fr"?"fr-FR":"en-US")||"B";
+    const resultHead=`<span class="couple-result-head"><span><i class="reader-person-dot person-a" title="${esc(names.personA)}" aria-label="${esc(names.personA)}">${esc(initialA)}</i></span><span><i class="reader-person-dot person-b" title="${esc(names.personB)}" aria-label="${esc(names.personB)}">${esc(initialB)}</i></span><span><b><span class="profile-inline-text">🔗</span></b><small>${esc(togetherShort)}</small></span></span>`;
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span>${resultHead}</button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
   queueReaderStickyHeaderUpdate();

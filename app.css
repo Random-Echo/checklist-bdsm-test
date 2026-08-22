@@ -7013,7 +7013,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important;}
 
-/* Reading category DA — canonical block (V1.1.235).
+/* Reading category DA — canonical block (V1.1.240).
    The collapsed Reading list deliberately reuses the exact Edit surfaces. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
@@ -7191,7 +7191,7 @@ body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-
   body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head::after{font-size:.66rem !important;}
 }
 
-/* V1.1.235 — Canonical navigation + Edit categories aligned to Reading. */
+/* V1.1.240 — Canonical navigation + Edit categories aligned to Reading. */
 
 /* Édition / Lecture: exact visual grammar of the person selector above. */
 header .title-actions > .mode-switch,
@@ -7457,7 +7457,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 
 
 
-/* V1.1.235 — Two-line text for the reading dominant selector. */
+/* V1.1.240 — Two-line text for the reading dominant selector. */
 .reader-header-ds-choice{
   display:flex !important;
   flex-direction:column !important;
@@ -7493,7 +7493,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 }
 
 
-/* V1.1.235 — Final premium visual pass. */
+/* V1.1.240 — Final premium visual pass. */
 :root{
   --premium-control-bg:rgba(255,251,247,.96);
   --premium-control-bg-soft:rgba(255,251,247,.76);
@@ -7714,7 +7714,7 @@ body[data-view-mode="edit"] .individual-category-head[aria-expanded="false"] > b
 }
 
 
-/* V1.1.235 — Ensure the selected language is visibly colored in the premium header. */
+/* V1.1.240 — Ensure the selected language is visibly colored in the premium header. */
 header .language-choice.active,
 header .language-choice[aria-pressed="true"]{
   background:linear-gradient(180deg,color-mix(in srgb,var(--dominant-soft) 68%,#fff 32%) 0%,color-mix(in srgb,var(--dominant-color) 18%,#fff 82%) 100%) !important;
@@ -7727,7 +7727,7 @@ header .language-choice[aria-pressed="true"] .flag-svg{
 }
 
 
-/* V1.1.235 — Selected language must read as an actual selected control. */
+/* V1.1.240 — Selected language must read as an actual selected control. */
 header .language-choice{
   background:rgba(255,251,247,.96) !important;
   color:var(--contrast-ink-strong) !important;
@@ -7744,7 +7744,7 @@ header .language-choice:not(.active):not([aria-pressed="true"]){
 }
 
 
-/* V1.1.235 — Clearer separation between practices in Edit mode. */
+/* V1.1.240 — Clearer separation between practices in Edit mode. */
 body[data-view-mode="edit"] .individual-category-cards{
   gap:6px !important;
 }
@@ -7767,7 +7767,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 }
 
 
-/* V1.1.235 — DOM/SUB row background follows each row result color in Edit mode. */
+/* V1.1.240 — DOM/SUB row background follows each row result color in Edit mode. */
 body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main{
   background:var(--edit-slot-bg) !important;
 }
@@ -7780,52 +7780,42 @@ body[data-view-mode="edit"] .individual-slot[data-result-key="limit"] .individua
 body[data-view-mode="edit"] .individual-slot[data-result-key="incomplete"] .individual-slot-main{background:rgba(246,242,237,.96) !important;}
 
 
-/* V1.1.235 — Premium separator between edit-mode practices. */
+/* V1.1.240 — Premium edit-practice grouping: breathing room, no white bar. */
 body[data-view-mode="edit"] .individual-category-cards{
-  gap:4px !important;
+  gap:5px !important;
 }
 body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card,
 body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card[data-result-key]{
   position:relative !important;
+  margin:0 !important;
 }
 body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card + .individual-practice-card,
 body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card[data-result-key] + .individual-practice-card[data-result-key]{
-  margin-top:3px !important;
+  margin-top:0 !important;
   border-top:0 !important;
+  box-shadow:0 -1px 0 rgba(255,255,255,.18) !important;
 }
 body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card + .individual-practice-card::before,
 body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card[data-result-key] + .individual-practice-card[data-result-key]::before{
-  content:"" !important;
-  position:absolute !important;
-  left:14px !important;
-  right:14px !important;
-  top:-5px !important;
-  height:8px !important;
-  border-top:1px solid color-mix(in srgb,var(--theme-line) 64%,#fff 36%) !important;
-  background:linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.16) 45%, transparent 100%) !important;
-  border-radius:999px !important;
-  pointer-events:none !important;
-  opacity:.95 !important;
+  content:none !important;
+  display:none !important;
+}
+/* Title/description and DOM/SUB belong to the same practice: only a subtle tone-on-tone seam. */
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] > header{
+  border-bottom:1px solid color-mix(in srgb,var(--edit-result-line) 24%,transparent) !important;
+  box-shadow:inset 0 -1px 0 rgba(255,255,255,.18) !important;
+}
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-slots,
+body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-slots.has-multiple{
+  border-top:0 !important;
 }
 @media (max-width:760px){
   body[data-view-mode="edit"] .individual-category-cards{
-    gap:3px !important;
-  }
-  body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card + .individual-practice-card,
-  body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card[data-result-key] + .individual-practice-card[data-result-key]{
-    margin-top:2px !important;
-  }
-  body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card + .individual-practice-card::before,
-  body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card[data-result-key] + .individual-practice-card[data-result-key]::before{
-    left:10px !important;
-    right:10px !important;
-    top:-4px !important;
-    height:7px !important;
+    gap:4px !important;
   }
 }
 
-
-/* V1.1.235 — Use the same result background palette on edit DOM/SUB rows as in Read mode. */
+/* V1.1.240 — Use the same result background palette on edit DOM/SUB rows as in Read mode. */
 body[data-view-mode="edit"] .individual-slot[data-result-key]{
   --edit-slot-bg:linear-gradient(180deg,rgba(255,252,248,.96) 0%,rgba(252,248,243,.96) 100%);
   --edit-slot-border:rgba(79,63,52,.10);
@@ -7864,7 +7854,7 @@ body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-m
 }
 
 
-/* V1.1.235 — Practice color = highest edit result, and the DOM/SUB frame follows the practice color. */
+/* V1.1.240 — Practice color = highest edit result, and the DOM/SUB frame follows the practice color. */
 body[data-view-mode="edit"] .individual-practice-card[data-result-key]{
   --edit-practice-frame-bg:linear-gradient(180deg,color-mix(in srgb,var(--edit-result-panel) 88%,#fff 12%) 0%,color-mix(in srgb,var(--edit-result-panel-strong) 82%,#fff 18%) 100%);
   --edit-practice-frame-border:color-mix(in srgb,var(--edit-result-line) 72%,#fff 28%);
@@ -7877,4 +7867,52 @@ body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individu
 }
 body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individual-slot{
   background:transparent !important;
+}
+
+
+/* V1.1.240 — Reading category header: compact person color dots instead of names. */
+body[data-view-mode="read"] .couple-result-head .reader-person-dot{
+  display:block !important;
+  width:10px !important;
+  height:10px !important;
+  border-radius:50% !important;
+  border:1px solid rgba(255,255,255,.72) !important;
+  box-shadow:0 0 0 1px rgba(58,43,51,.20), inset 0 1px 0 rgba(255,255,255,.30) !important;
+}
+body[data-view-mode="read"] .couple-result-head .reader-person-dot.person-a{
+  background:var(--person-a-role-color) !important;
+}
+body[data-view-mode="read"] .couple-result-head .reader-person-dot.person-b{
+  background:var(--person-b-role-color) !important;
+}
+@media (max-width:760px){
+  body[data-view-mode="read"] .couple-result-head .reader-person-dot{
+    width:9px !important;
+    height:9px !important;
+  }
+}
+
+
+/* V1.1.240 — Reading header person badges use the profile initial. */
+body[data-view-mode="read"] .couple-result-head .reader-person-dot{
+  display:grid !important;
+  place-items:center !important;
+  width:15px !important;
+  height:15px !important;
+  border-radius:50% !important;
+  border:1px solid rgba(255,255,255,.78) !important;
+  color:#fff !important;
+  font-size:8px !important;
+  font-style:normal !important;
+  font-weight:950 !important;
+  line-height:1 !important;
+  text-shadow:0 1px 1px rgba(0,0,0,.22) !important;
+  box-shadow:0 0 0 1px rgba(58,43,51,.20),inset 0 1px 0 rgba(255,255,255,.32) !important;
+}
+@media (max-width:760px){
+  body[data-view-mode="read"] .couple-result-head .reader-person-dot{
+    width:14px !important;
+    height:14px !important;
+    font-size:7.5px !important;
+  }
 }
