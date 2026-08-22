@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.234";
+const APP_VERSION = "V1.1.235";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1574,7 +1574,7 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
       <div class="individual-slot-label-wrap"><strong class="individual-slot-label">${esc(editorSlotLabel(slot))}</strong>${incompatible?`<span class="individual-applicability" title="${esc(incompatTitle)}" aria-label="${esc(incompatTitle)}">⚠</span>`:""}</div>
       <div class="individual-score-row">${editorScoreButtons(entity.id,slot,state)}</div>
       <div class="individual-slot-tools">
-        <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${esc(priorTitle)}"><span class="individual-prior-check" aria-hidden="true">${state.prior?'✓':'□'}</span><span class="individual-prior-text">${currentLang==="fr"?"Fait":"Done"}</span></button>
+        <button class="individual-prior${state.prior?' checked':''}" data-personal-action="prior" data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-pressed="${state.prior?'true':'false'}" title="${esc(priorTitle)}"><span class="individual-prior-check" aria-hidden="true">${state.prior?'✓':'□'}</span><span class="individual-prior-text">${currentLang==="fr"?"Av.":"Before"}</span></button>
         <button class="individual-note-toggle slot-note-toggle${hasNote?' has-note':''}" data-personal-note-toggle data-v2-id="${esc(entity.id)}" data-slot="${slot}" type="button" aria-expanded="false" aria-label="${esc(noteTitle)}" title="${esc(noteTitle)}"><span aria-hidden="true">📝</span>${hasNote?'<i aria-hidden="true"></i>':''}</button>
       </div>
     </div>
@@ -1585,7 +1585,7 @@ function renderEditorSlot(entity,person,slot,profile,state=V2_STORAGE.getPersona
 function configureEditorStatusOptions() {
   const langKey=`edit-${currentLang}`; if(status.dataset.readerLang===langKey) return;
   const previous=status.value;
-  const options=currentLang==="fr"?[["","Tous mes choix"],["incomplete","? À compléter"],["want","🔥 Envie ou favori"],["favorite","👑 Favoris"],["fantasy","💭 Fantasmes"],["limit","🚫 Limites"],["tried","✓ Déjà fait"],["notes","Avec une note"]]:[["","All my choices"],["incomplete","? To complete"],["want","🔥 Want or favorite"],["favorite","👑 Favorites"],["fantasy","💭 Fantasies"],["limit","🚫 Limits"],["tried","✓ Done before"],["notes","With a note"]];
+  const options=currentLang==="fr"?[["","Tous mes choix"],["incomplete","? À compléter"],["want","🔥 Envie ou favori"],["favorite","👑 Favoris"],["fantasy","💭 Fantasmes"],["limit","🚫 Limites"],["tried","✓ Av."],["notes","Avec une note"]]:[["","All my choices"],["incomplete","? To complete"],["want","🔥 Want or favorite"],["favorite","👑 Favorites"],["fantasy","💭 Fantasies"],["limit","🚫 Limits"],["tried","✓ Before"],["notes","With a note"]];
   status.innerHTML=options.map(([value,label])=>`<option value="${value}">${esc(label)}</option>`).join("");
   status.value=options.some(([value])=>value===previous)?previous:""; status.dataset.readerLang=langKey;
 }
