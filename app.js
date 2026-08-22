@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.216";
+const APP_VERSION = "V1.1.217";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1388,8 +1388,12 @@ const coupleReaderList = document.getElementById("coupleReaderList");
 const coupleReaderEmpty = document.getElementById("coupleReaderEmpty");
 const appMainScrollport = document.querySelector("main");
 let readerStickyHeaderRaf = 0;
+let editStickyHeaderRaf = 0;
 function clearReaderStickyHeaderStates(){
   coupleReaderList?.querySelectorAll(".couple-reader-category-head.is-stuck").forEach(head=>head.classList.remove("is-stuck"));
+}
+function clearEditStickyHeaderStates(){
+  individualEditorList?.querySelectorAll(".individual-category-head.is-stuck").forEach(head=>head.classList.remove("is-stuck"));
 }
 function updateReaderStickyHeaderStates(){
   readerStickyHeaderRaf = 0;
@@ -1412,9 +1416,34 @@ function updateReaderStickyHeaderStates(){
     head.classList.toggle("is-stuck", stuck);
   }
 }
+function updateEditStickyHeaderStates(){
+  editStickyHeaderRaf = 0;
+  if(!appMainScrollport || document.body.dataset.viewMode!=="edit" || individualEditor?.hidden){
+    clearEditStickyHeaderStates();
+    return;
+  }
+  const mainTop = appMainScrollport.getBoundingClientRect().top;
+  for(const categoryNode of individualEditorList?.querySelectorAll(".individual-category") || []){
+    const head = categoryNode.querySelector(".individual-category-head");
+    if(!head) continue;
+    if(head.getAttribute("aria-expanded")!=="true"){
+      head.classList.remove("is-stuck");
+      continue;
+    }
+    const categoryRect = categoryNode.getBoundingClientRect();
+    const headRect = head.getBoundingClientRect();
+    const stillOwnsStickySpace = categoryRect.bottom > mainTop + headRect.height + 1;
+    const stuck = stillOwnsStickySpace && headRect.top <= mainTop + 1;
+    head.classList.toggle("is-stuck", stuck);
+  }
+}
 function queueReaderStickyHeaderUpdate(){
   if(readerStickyHeaderRaf) return;
   readerStickyHeaderRaf = requestAnimationFrame(updateReaderStickyHeaderStates);
+}
+function queueEditStickyHeaderUpdate(){
+  if(editStickyHeaderRaf) return;
+  editStickyHeaderRaf = requestAnimationFrame(updateEditStickyHeaderStates);
 }
 function updateStickyCategoryOffsets(){
   const root=document.documentElement;
@@ -1422,10 +1451,14 @@ function updateStickyCategoryOffsets(){
   root.style.setProperty("--edit-category-sticky-top","0px");
   root.style.setProperty("--read-category-sticky-top","0px");
   queueReaderStickyHeaderUpdate();
+  queueEditStickyHeaderUpdate();
 }
 appMainScrollport?.addEventListener("scroll", queueReaderStickyHeaderUpdate, {passive:true});
+appMainScrollport?.addEventListener("scroll", queueEditStickyHeaderUpdate, {passive:true});
 window.addEventListener("resize", queueReaderStickyHeaderUpdate, {passive:true});
+window.addEventListener("resize", queueEditStickyHeaderUpdate, {passive:true});
 window.addEventListener("orientationchange", queueReaderStickyHeaderUpdate, {passive:true});
+window.addEventListener("orientationchange", queueEditStickyHeaderUpdate, {passive:true});
 if (individualEditorProfile) individualEditorProfile.addEventListener("click", () => PROFILE_API?.open?.());
 function setAllCategoriesCollapsed(shouldCollapse) {
   collapsedCategories = shouldCollapse ? new Set(allCatalogCategories) : new Set();
@@ -1580,6 +1613,7 @@ function renderIndividualEditor() {
   individualEditorList.innerHTML=html; individualEditorEmpty.hidden=visible!==0;
   const summary=V2_STORAGE.getPersonalSummary(person);
   updateStats();
+  queueEditStickyHeaderUpdate();
   window.requestAnimationFrame(updateStickyCategoryOffsets);
 }
 function hideIndividualEditor() {
