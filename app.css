@@ -7013,7 +7013,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important;}
 
-/* Reading category DA — canonical block (V1.1.225).
+/* Reading category DA — canonical block (V1.1.226).
    The collapsed Reading list deliberately reuses the exact Edit surfaces. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
@@ -7191,7 +7191,7 @@ body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-
   body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head::after{font-size:.66rem !important;}
 }
 
-/* V1.1.225 — Canonical navigation + Edit categories aligned to Reading. */
+/* V1.1.226 — Canonical navigation + Edit categories aligned to Reading. */
 
 /* Édition / Lecture: exact visual grammar of the person selector above. */
 header .title-actions > .mode-switch,
@@ -7457,7 +7457,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 
 
 
-/* V1.1.225 — Clean center seam in the Edit/Read switch. */
+/* V1.1.226 — Clean center seam in the Edit/Read switch. */
 header .title-actions > .mode-switch,
 header .mode-switch{
   position:relative !important;
@@ -7494,7 +7494,7 @@ header .mode-switch #modeRead[aria-pressed="true"]{
 }
 
 
-/* V1.1.225 — Remove the visible center rectangle in the Edit/Read switch. */
+/* V1.1.226 — Remove the visible center rectangle in the Edit/Read switch. */
 header .mode-switch::after{display:none !important;}
 header .mode-switch button + button,
 header .mode-switch #modeRead{border-left:0 !important;}
@@ -7507,3 +7507,39 @@ header .mode-switch #modeEdit.active,
 header .mode-switch #modeEdit[aria-pressed="true"],
 header .mode-switch #modeRead.active,
 header .mode-switch #modeRead[aria-pressed="true"]{z-index:2 !important;}
+
+
+/* V1.1.226 — Two-line text for the reading dominant selector. */
+.reader-header-ds-choice{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:1px !important;
+  text-align:center !important;
+}
+.reader-header-ds-choice .reader-ds-line{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  min-width:0 !important;
+  line-height:1 !important;
+}
+.reader-header-ds-choice .reader-ds-line-name .profile-inline-name{
+  max-width:100% !important;
+}
+.reader-header-ds-choice .reader-ds-line-verb .profile-inline-text{
+  font-size:7px !important;
+  font-weight:800 !important;
+  letter-spacing:.03em !important;
+  text-transform:uppercase !important;
+}
+@media (max-width:760px){
+  .reader-header-ds-choice{
+    gap:1px !important;
+  }
+  .reader-header-ds-choice .reader-ds-line-verb .profile-inline-text{
+    font-size:5.8px !important;
+  }
+}

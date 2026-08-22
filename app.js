@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.225";
+const APP_VERSION = "V1.1.226";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1021,7 +1021,7 @@ function profileNamesInTextHtml(text,names=readerNames()){
 function readerDsChipHtml(value, names = readerNames()) {
   const person = value === 'b-dominant' ? 'person-b' : 'person-a';
   const verb = currentLang === 'fr' ? 'domine' : 'dominant';
-  return `${profileNameBadge(person, profilePersonName(person, names), true)} <span class="profile-inline-text">${esc(verb)}</span>`;
+  return `<span class="reader-ds-line reader-ds-line-name">${profileNameBadge(person, profilePersonName(person, names), true)}</span><span class="reader-ds-line reader-ds-line-verb"><span class="profile-inline-text">${esc(verb)}</span></span>`;
 }
 function readerVariantPeople(entity, variant, names = readerNames()) {
   if (variant === INTERACTION_MODEL.VARIANT.A_TO_B || variant === INTERACTION_MODEL.VARIANT.A_DOMINANT) {
