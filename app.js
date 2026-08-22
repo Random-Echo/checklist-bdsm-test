@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.233";
+const APP_VERSION = "V1.1.234";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1549,9 +1549,11 @@ function editorStateVisualKey(state){
   return "incomplete";
 }
 function editorPracticeVisualKey(slotStates){
-  const keys=slotStates.map(({state})=>editorStateVisualKey(state));
-  for(const key of ["limit","fantasy","excellent","strong","compatible","later"]){ if(keys.includes(key)) return key; }
-  return "incomplete";
+  const scores=slotStates
+    .map(({state})=>Number.isInteger(state?.preference)?state.preference:null)
+    .filter(score=>Number.isInteger(score));
+  if(!scores.length) return "incomplete";
+  return editorResultKeyFromScore(Math.max(...scores));
 }
 function editorSlotNoteLabel(slot) {
   const role=editorSlotLabel(slot);
