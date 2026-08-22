@@ -7013,7 +7013,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important;}
 
-/* Reading category DA — canonical block (V1.1.226).
+/* Reading category DA — canonical block (V1.1.227).
    The collapsed Reading list deliberately reuses the exact Edit surfaces. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
@@ -7191,7 +7191,7 @@ body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-
   body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head::after{font-size:.66rem !important;}
 }
 
-/* V1.1.226 — Canonical navigation + Edit categories aligned to Reading. */
+/* V1.1.227 — Canonical navigation + Edit categories aligned to Reading. */
 
 /* Édition / Lecture: exact visual grammar of the person selector above. */
 header .title-actions > .mode-switch,
@@ -7457,59 +7457,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 
 
 
-/* V1.1.226 — Clean center seam in the Edit/Read switch. */
-header .title-actions > .mode-switch,
-header .mode-switch{
-  position:relative !important;
-}
-header .mode-switch::after{
-  content:"" !important;
-  position:absolute !important;
-  left:50% !important;
-  top:5px !important;
-  bottom:5px !important;
-  width:1px !important;
-  background:var(--border) !important;
-  transform:translateX(-.5px) !important;
-  pointer-events:none !important;
-  z-index:2 !important;
-}
-header .mode-switch #modeRead{
-  border-left:0 !important;
-}
-header .mode-switch button,
-header .mode-switch #modeEdit,
-header .mode-switch #modeRead{
-  position:relative !important;
-  z-index:1 !important;
-}
-header .mode-switch button.active,
-header .mode-switch button[aria-pressed="true"],
-header .mode-switch #modeEdit.active,
-header .mode-switch #modeEdit[aria-pressed="true"],
-header .mode-switch #modeRead.active,
-header .mode-switch #modeRead[aria-pressed="true"]{
-  z-index:3 !important;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10) !important;
-}
-
-
-/* V1.1.226 — Remove the visible center rectangle in the Edit/Read switch. */
-header .mode-switch::after{display:none !important;}
-header .mode-switch button + button,
-header .mode-switch #modeRead{border-left:0 !important;}
-header .mode-switch button,
-header .mode-switch #modeEdit,
-header .mode-switch #modeRead{z-index:1 !important;}
-header .mode-switch button.active,
-header .mode-switch button[aria-pressed="true"],
-header .mode-switch #modeEdit.active,
-header .mode-switch #modeEdit[aria-pressed="true"],
-header .mode-switch #modeRead.active,
-header .mode-switch #modeRead[aria-pressed="true"]{z-index:2 !important;}
-
-
-/* V1.1.226 — Two-line text for the reading dominant selector. */
+/* V1.1.227 — Two-line text for the reading dominant selector. */
 .reader-header-ds-choice{
   display:flex !important;
   flex-direction:column !important;
@@ -7542,4 +7490,225 @@ header .mode-switch #modeRead[aria-pressed="true"]{z-index:2 !important;}
   .reader-header-ds-choice .reader-ds-line-verb .profile-inline-text{
     font-size:5.8px !important;
   }
+}
+
+
+/* V1.1.227 — Final premium visual pass. */
+:root{
+  --premium-control-bg:rgba(255,251,247,.96);
+  --premium-control-bg-soft:rgba(255,251,247,.76);
+  --premium-control-border:color-mix(in srgb,var(--luxe-line) 72%,#fff 28%);
+  --premium-control-shadow:0 1px 3px rgba(52,35,41,.055);
+  --premium-control-radius:10px;
+}
+
+/* Version is metadata, not a primary action. */
+header .version-badge{
+  margin-left:6px !important;
+  padding:2px 6px !important;
+  border:1px solid rgba(255,255,255,.38) !important;
+  border-radius:999px !important;
+  background:rgba(255,251,247,.88) !important;
+  color:color-mix(in srgb,var(--dominant-dark) 84%,#332c30 16%) !important;
+  font-size:9px !important;
+  font-weight:850 !important;
+  letter-spacing:.015em !important;
+  text-shadow:none !important;
+  box-shadow:0 1px 2px rgba(38,24,32,.10) !important;
+}
+
+/* Language + help use the same ivory control family as the rest of the header. */
+header .language-switch,
+header .help-button{
+  border-color:var(--premium-control-border) !important;
+  background:var(--premium-control-bg) !important;
+  color:var(--contrast-ink-strong) !important;
+  box-shadow:var(--premium-control-shadow) !important;
+}
+header .language-switch{border-radius:var(--premium-control-radius) !important;}
+header .language-choice{
+  background:transparent !important;
+  color:color-mix(in srgb,var(--contrast-ink-strong) 82%,#766b70 18%) !important;
+  transition:background .15s ease,color .15s ease,box-shadow .15s ease !important;
+}
+header .language-choice + .language-choice{
+  border-left:1px solid color-mix(in srgb,var(--luxe-line) 55%,#fff 45%) !important;
+  border-right:0 !important;
+}
+header .language-choice.active,
+header .language-choice[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--dominant-soft) 72%,#fff 28%) !important;
+  color:var(--dominant-dark) !important;
+  box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--dominant-color) 72%,transparent) !important;
+}
+header .help-button{
+  border-radius:var(--premium-control-radius) !important;
+  font-weight:850 !important;
+}
+header .help-button:hover,
+header .help-button:focus-visible{
+  border-color:color-mix(in srgb,var(--dominant-color) 35%,var(--luxe-line) 65%) !important;
+  background:#fffdfa !important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--dominant-soft) 62%,transparent),var(--premium-control-shadow) !important;
+}
+
+/* Mode switch: same shell as the name selector, with coherent monochrome icons. */
+header .title-actions > .mode-switch,
+header .mode-switch{
+  border:1px solid var(--premium-control-border) !important;
+  border-radius:var(--premium-control-radius) !important;
+  background:#f8f4f0 !important;
+  box-shadow:var(--premium-control-shadow) !important;
+  overflow:hidden !important;
+}
+header .mode-switch::before,
+header .mode-switch::after{display:none !important;}
+header .mode-switch button,
+header .mode-switch #modeEdit,
+header .mode-switch #modeRead{
+  gap:7px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:var(--premium-control-bg) !important;
+  color:var(--contrast-ink-strong) !important;
+  text-shadow:none !important;
+  box-shadow:none !important;
+}
+header .mode-switch button.active,
+header .mode-switch button[aria-pressed="true"],
+header .mode-switch #modeEdit.active,
+header .mode-switch #modeEdit[aria-pressed="true"],
+header .mode-switch #modeRead.active,
+header .mode-switch #modeRead[aria-pressed="true"]{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--dominant-color) 90%,#fff 10%) 0%,var(--dominant-color) 100%) !important;
+  color:#fff !important;
+  text-shadow:0 1px 1px rgba(0,0,0,.14) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10) !important;
+}
+header .mode-switch .mode-icon{
+  width:16px !important;
+  height:16px !important;
+  flex:0 0 16px !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  color:currentColor !important;
+}
+header .mode-switch .mode-icon svg{
+  width:15px !important;
+  height:15px !important;
+  fill:none !important;
+  stroke:currentColor !important;
+  stroke-width:1.75 !important;
+  stroke-linecap:round !important;
+  stroke-linejoin:round !important;
+}
+header .mode-switch .mode-label{
+  display:inline-block !important;
+  min-width:0 !important;
+  line-height:1 !important;
+}
+
+/* Utility hierarchy: Tools/Profile are primary utilities; collapse/expand are quieter. */
+header .all-tools > summary,
+header .editor-top-dock .profile-edit-button{
+  border-color:var(--premium-control-border) !important;
+  background:var(--premium-control-bg) !important;
+  color:var(--contrast-ink-strong) !important;
+  box-shadow:var(--premium-control-shadow) !important;
+}
+header .editor-top-dock .individual-editor-bulk-btn{
+  border-color:color-mix(in srgb,var(--luxe-line) 56%,#fff 44%) !important;
+  background:var(--premium-control-bg-soft) !important;
+  color:color-mix(in srgb,var(--contrast-ink-strong) 76%,#80757a 24%) !important;
+  box-shadow:none !important;
+  font-weight:800 !important;
+}
+header .editor-top-dock .individual-editor-bulk-btn:hover{
+  background:rgba(255,251,247,.91) !important;
+  color:var(--contrast-ink-strong) !important;
+}
+header .all-tools > summary::before{display:none !important;}
+header .all-tools > summary::after{
+  border:0 !important;
+  background:transparent !important;
+  color:color-mix(in srgb,var(--contrast-ink-strong) 68%,#867a80 32%) !important;
+  box-shadow:none !important;
+}
+
+/* Reading summary: clearer hierarchy, quieter metadata. */
+body[data-view-mode="read"] header .reader-filter-dock{
+  border-color:var(--premium-control-border) !important;
+  background:var(--premium-control-bg) !important;
+  box-shadow:var(--premium-control-shadow) !important;
+}
+body[data-view-mode="read"] header .reader-filter-summary-row{
+  background:linear-gradient(180deg,rgba(255,252,248,.97) 0%,rgba(249,244,240,.96) 100%) !important;
+}
+body[data-view-mode="read"] header .reader-filter-summary-title{
+  color:var(--dominant-dark) !important;
+  letter-spacing:.005em !important;
+}
+body[data-view-mode="read"] header .reader-filter-summary-title > span[aria-hidden="true"]{
+  width:15px !important;
+  height:15px !important;
+  border-color:color-mix(in srgb,var(--dominant-color) 24%,#d8cec7 76%) !important;
+  background:rgba(255,251,247,.72) !important;
+  color:color-mix(in srgb,var(--dominant-dark) 70%,#8b7c83 30%) !important;
+  font-size:.56rem !important;
+}
+body[data-view-mode="read"] header .reader-filter-summary-inline{
+  color:color-mix(in srgb,var(--dominant-dark) 68%,#756b70 32%) !important;
+  font-weight:750 !important;
+}
+body[data-view-mode="read"] header .reader-filter-summary-name{font-weight:900 !important;}
+body[data-view-mode="read"] header .reader-filter-chevron{
+  color:color-mix(in srgb,var(--dominant-dark) 58%,#92868b 42%) !important;
+  opacity:.82 !important;
+}
+
+/* Collapsed categories: retain hierarchy while reducing chrome. */
+body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head,
+body[data-view-mode="edit"] .individual-category-head[aria-expanded="false"]{
+  box-shadow:0 1px 4px rgba(26,15,20,.065) !important;
+}
+body[data-view-mode="read"] .couple-reader-category-count,
+body[data-view-mode="edit"] .individual-category-head > span:nth-of-type(2){
+  background:rgba(255,251,247,.72) !important;
+  color:color-mix(in srgb,var(--dominant-dark) 68%,#766b70 32%) !important;
+  font-weight:800 !important;
+}
+body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head::after,
+body[data-view-mode="edit"] .individual-category-head[aria-expanded="false"] > b{
+  color:color-mix(in srgb,var(--dominant-dark) 58%,#968a90 42%) !important;
+  opacity:.82 !important;
+}
+
+/* Footer: quieter and less visually abrupt against the purple application shell. */
+.site-footer{
+  min-height:23px !important;
+  gap:4px !important;
+  padding:2px 8px calc(2px + env(safe-area-inset-bottom)) !important;
+  border-top:1px solid color-mix(in srgb,var(--luxe-line) 62%,#fff 38%) !important;
+  background:rgba(250,247,244,.96) !important;
+  color:#6f656a !important;
+  font-size:9.5px !important;
+  box-shadow:0 -1px 4px rgba(36,23,30,.035) !important;
+}
+.site-footer > span[aria-hidden="true"]{opacity:.32 !important;}
+.site-footer button,
+.site-footer a{
+  color:inherit !important;
+  text-decoration-color:rgba(111,101,106,.48) !important;
+  text-decoration-thickness:.7px !important;
+  text-underline-offset:2px !important;
+}
+.site-footer button:hover,
+.site-footer button:focus-visible,
+.site-footer a:hover{color:var(--dominant-dark) !important;}
+
+@media (max-width:760px){
+  header .mode-switch .mode-icon{width:15px !important;height:15px !important;flex-basis:15px !important;}
+  header .mode-switch .mode-icon svg{width:14px !important;height:14px !important;}
+  header .editor-top-dock .individual-editor-bulk-btn{font-weight:780 !important;}
+  .site-footer{font-size:9px !important;gap:3px !important;}
 }

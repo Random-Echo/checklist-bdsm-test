@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.226";
+const APP_VERSION = "V1.1.227";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -823,6 +823,14 @@ function applyDominantViewTheme() {
   root.style.setProperty("--dominant-soft", themeToken("soft"));
 }
 
+
+function modeChoiceMarkup(kind, label) {
+  const icon = kind === "read"
+    ? '<span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3.8 5.8c3.3-1 6.1-.3 8.2 1.2v11.7c-2.1-1.5-4.9-2.2-8.2-1.2V5.8Z"></path><path d="M20.2 5.8c-3.3-1-6.1-.3-8.2 1.2v11.7c2.1-1.5 4.9-2.2 8.2-1.2V5.8Z"></path></svg></span>'
+    : '<span class="mode-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4.5 19.5h4l10.8-10.8-4-4L4.5 15.5v4Z"></path><path d="m13.9 6.1 4 4"></path><path d="M4.5 19.5 8 16"></path></svg></span>';
+  return `${icon}<span class="mode-label">${esc(label)}</span>`;
+}
+
 function renderRoleUI() {
 
   for (const btn of roleButtons) {
@@ -838,12 +846,12 @@ function renderRoleUI() {
   applyDominantViewTheme();
   if (!isReadingMode && readerHeaderDs) readerHeaderDs.hidden=true;
   if (modeEditBtn) {
-    modeEditBtn.textContent = currentLang === "fr" ? "✏️ Édition" : "✏️ Edit";
+    modeEditBtn.innerHTML = modeChoiceMarkup("edit", currentLang === "fr" ? "Édition" : "Edit");
     modeEditBtn.classList.toggle("active", !isReadingMode);
     modeEditBtn.setAttribute("aria-pressed", !isReadingMode ? "true" : "false");
   }
   if (modeReadBtn) {
-    modeReadBtn.textContent = currentLang === "fr" ? "📖 Lecture" : "📖 Reading";
+    modeReadBtn.innerHTML = modeChoiceMarkup("read", currentLang === "fr" ? "Lecture" : "Reading");
     modeReadBtn.classList.toggle("active", isReadingMode);
     modeReadBtn.setAttribute("aria-pressed", isReadingMode ? "true" : "false");
   }
