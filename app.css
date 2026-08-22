@@ -7013,7 +7013,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important;}
 
-/* Reading category DA — canonical block (V1.1.241).
+/* Reading category DA — canonical block (V1.1.243).
    The collapsed Reading list deliberately reuses the exact Edit surfaces. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
@@ -7191,7 +7191,7 @@ body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-
   body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head::after{font-size:.66rem !important;}
 }
 
-/* V1.1.241 — Canonical navigation + Edit categories aligned to Reading. */
+/* V1.1.243 — Canonical navigation + Edit categories aligned to Reading. */
 
 /* Édition / Lecture: exact visual grammar of the person selector above. */
 header .title-actions > .mode-switch,
@@ -7457,7 +7457,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 
 
 
-/* V1.1.241 — Two-line text for the reading dominant selector. */
+/* V1.1.243 — Two-line text for the reading dominant selector. */
 .reader-header-ds-choice{
   display:flex !important;
   flex-direction:column !important;
@@ -7493,7 +7493,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 }
 
 
-/* V1.1.241 — Final premium visual pass. */
+/* V1.1.243 — Final premium visual pass. */
 :root{
   --premium-control-bg:rgba(255,251,247,.96);
   --premium-control-bg-soft:rgba(255,251,247,.76);
@@ -7714,7 +7714,7 @@ body[data-view-mode="edit"] .individual-category-head[aria-expanded="false"] > b
 }
 
 
-/* V1.1.241 — Ensure the selected language is visibly colored in the premium header. */
+/* V1.1.243 — Ensure the selected language is visibly colored in the premium header. */
 header .language-choice.active,
 header .language-choice[aria-pressed="true"]{
   background:linear-gradient(180deg,color-mix(in srgb,var(--dominant-soft) 68%,#fff 32%) 0%,color-mix(in srgb,var(--dominant-color) 18%,#fff 82%) 100%) !important;
@@ -7727,7 +7727,7 @@ header .language-choice[aria-pressed="true"] .flag-svg{
 }
 
 
-/* V1.1.241 — Selected language must read as an actual selected control. */
+/* V1.1.243 — Selected language must read as an actual selected control. */
 header .language-choice{
   background:rgba(255,251,247,.96) !important;
   color:var(--contrast-ink-strong) !important;
@@ -7744,7 +7744,7 @@ header .language-choice:not(.active):not([aria-pressed="true"]){
 }
 
 
-/* V1.1.241 — Clearer separation between practices in Edit mode. */
+/* V1.1.243 — Clearer separation between practices in Edit mode. */
 body[data-view-mode="edit"] .individual-category-cards{
   gap:6px !important;
 }
@@ -7767,7 +7767,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 }
 
 
-/* V1.1.241 — DOM/SUB row background follows each row result color in Edit mode. */
+/* V1.1.243 — DOM/SUB row background follows each row result color in Edit mode. */
 body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main{
   background:var(--edit-slot-bg) !important;
 }
@@ -7780,7 +7780,7 @@ body[data-view-mode="edit"] .individual-slot[data-result-key="limit"] .individua
 body[data-view-mode="edit"] .individual-slot[data-result-key="incomplete"] .individual-slot-main{background:rgba(246,242,237,.96) !important;}
 
 
-/* V1.1.241 — Premium edit-practice grouping: breathing room, no white bar. */
+/* V1.1.243 — Premium edit-practice grouping: breathing room, no white bar. */
 body[data-view-mode="edit"] .individual-category-cards{
   gap:5px !important;
 }
@@ -7815,7 +7815,7 @@ body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individu
   }
 }
 
-/* V1.1.241 — Use the same result background palette on edit DOM/SUB rows as in Read mode. */
+/* V1.1.243 — Use the same result background palette on edit DOM/SUB rows as in Read mode. */
 body[data-view-mode="edit"] .individual-slot[data-result-key]{
   --edit-slot-bg:linear-gradient(180deg,rgba(255,252,248,.96) 0%,rgba(252,248,243,.96) 100%);
   --edit-slot-border:rgba(79,63,52,.10);
@@ -7854,7 +7854,7 @@ body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-m
 }
 
 
-/* V1.1.241 — Practice color = highest edit result, and the DOM/SUB frame follows the practice color. */
+/* V1.1.243 — Practice color = highest edit result, and the DOM/SUB frame follows the practice color. */
 body[data-view-mode="edit"] .individual-practice-card[data-result-key]{
   --edit-practice-frame-bg:linear-gradient(180deg,color-mix(in srgb,var(--edit-result-panel) 88%,#fff 12%) 0%,color-mix(in srgb,var(--edit-result-panel-strong) 82%,#fff 18%) 100%);
   --edit-practice-frame-border:color-mix(in srgb,var(--edit-result-line) 72%,#fff 28%);
@@ -7870,7 +7870,7 @@ body[data-view-mode="edit"] .individual-practice-card[data-result-key] .individu
 }
 
 
-/* V1.1.241 — Reading category header: compact person color dots instead of names. */
+/* V1.1.243 — Reading category header: compact person color dots instead of names. */
 body[data-view-mode="read"] .couple-result-head .reader-person-dot{
   display:block !important;
   width:10px !important;
@@ -7893,7 +7893,7 @@ body[data-view-mode="read"] .couple-result-head .reader-person-dot.person-b{
 }
 
 
-/* V1.1.241 — Reading header person badges use the profile initial. */
+/* V1.1.243 — Reading header person badges use the profile initial. */
 body[data-view-mode="read"] .couple-result-head .reader-person-dot{
   display:grid !important;
   place-items:center !important;
@@ -7918,7 +7918,7 @@ body[data-view-mode="read"] .couple-result-head .reader-person-dot{
 }
 
 
-/* V1.1.241 — Final micro-tuning: softer DOM/SUB borders, tighter Avant/Before, larger reading initials. */
+/* V1.1.243 — Final micro-tuning: softer DOM/SUB borders, tighter Avant/Before, larger reading initials. */
 body[data-view-mode="edit"] .individual-slot[data-result-key] .individual-slot-main{
   border-color:color-mix(in srgb,var(--edit-slot-border) 48%,#fff 52%) !important;
 }
@@ -7944,5 +7944,74 @@ body[data-view-mode="read"] .couple-result-head .reader-person-dot{
     width:16px !important;
     height:16px !important;
     font-size:8.5px !important;
+  }
+}
+
+
+/* V1.1.243 — Final micro-tuning validated from mobile screenshots. */
+/* Reading initials: slightly larger, lighter border/shadow. */
+body[data-view-mode="read"] .couple-result-head .reader-person-dot{
+  width:18px !important;
+  height:18px !important;
+  border-width:.75px !important;
+  border-color:rgba(255,255,255,.70) !important;
+  font-size:9.4px !important;
+  box-shadow:0 0 0 .75px rgba(58,43,51,.14), inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+/* Common-column icon: same optical weight and centered like the initials. */
+body[data-view-mode="read"] .couple-result-head > span:last-child{
+  display:grid !important;
+  place-items:center !important;
+}
+body[data-view-mode="read"] .couple-result-head > span:last-child b{
+  display:grid !important;
+  place-items:center !important;
+  width:18px !important;
+  height:18px !important;
+  margin:0 !important;
+  line-height:1 !important;
+}
+body[data-view-mode="read"] .couple-result-head > span:last-child .profile-inline-text{
+  display:block !important;
+  font-size:11px !important;
+  line-height:1 !important;
+  opacity:.76 !important;
+  transform:none !important;
+}
+/* Edit prior-state control: keep full word but reclaim a little horizontal room. */
+body[data-view-mode="edit"] .individual-slot-tools{
+  grid-template-columns:43px 29px !important;
+  width:75px !important;
+  min-width:75px !important;
+}
+body[data-view-mode="edit"] .individual-prior{
+  width:43px !important;
+  min-width:43px !important;
+  padding-inline:1px !important;
+  gap:1px !important;
+}
+body[data-view-mode="edit"] .individual-prior-text{
+  font-size:.55rem !important;
+  letter-spacing:-.015em !important;
+}
+/* Slightly tighter breathing room between practices, still clearly separated. */
+body[data-view-mode="edit"] .individual-category-cards{
+  gap:4px !important;
+}
+@media (max-width:760px){
+  body[data-view-mode="read"] .couple-result-head .reader-person-dot{
+    width:17px !important;
+    height:17px !important;
+    font-size:8.9px !important;
+  }
+  body[data-view-mode="read"] .couple-result-head > span:last-child b{
+    width:17px !important;
+    height:17px !important;
+  }
+  body[data-view-mode="read"] .couple-result-head > span:last-child .profile-inline-text{
+    font-size:10.5px !important;
+  }
+  body[data-view-mode="edit"] .individual-category-cards{
+    gap:3px !important;
   }
 }

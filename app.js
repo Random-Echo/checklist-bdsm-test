@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.241";
+const APP_VERSION = "V1.1.243";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -1991,7 +1991,6 @@ function renderCoupleReader() {
   configureReaderLogicControls(profile,names,{ds:dsCounters,minimumOne:minimumCounters.minimumOne,minimumTwo:minimumCounters.minimumTwo},{compatible});
 
   const categories=[...grouped.keys()].sort((a,b)=>localizedCategory(a).localeCompare(localizedCategory(b),currentLang));
-  const togetherShort=currentLang==="fr"?"Ens.":"Together";
   coupleReaderList.innerHTML=categories.map(categoryName=>{
     const entries=grouped.get(categoryName), collapsed=collapsedCategories.has(categoryName), color=categoryColors[categoryName]||"#aaa";
     const practiceHtml=entries.map(({entity,variants})=>{
@@ -2028,7 +2027,7 @@ function renderCoupleReader() {
     }).join("");
     const initialA=Array.from(String(names.personA||"A").trim())[0]?.toLocaleUpperCase(currentLang==="fr"?"fr-FR":"en-US")||"A";
     const initialB=Array.from(String(names.personB||"B").trim())[0]?.toLocaleUpperCase(currentLang==="fr"?"fr-FR":"en-US")||"B";
-    const resultHead=`<span class="couple-result-head"><span><i class="reader-person-dot person-a" title="${esc(names.personA)}" aria-label="${esc(names.personA)}">${esc(initialA)}</i></span><span><i class="reader-person-dot person-b" title="${esc(names.personB)}" aria-label="${esc(names.personB)}">${esc(initialB)}</i></span><span><b><span class="profile-inline-text">🔗</span></b><small>${esc(togetherShort)}</small></span></span>`;
+    const resultHead=`<span class="couple-result-head"><span><i class="reader-person-dot person-a" title="${esc(names.personA)}" aria-label="${esc(names.personA)}">${esc(initialA)}</i></span><span><i class="reader-person-dot person-b" title="${esc(names.personB)}" aria-label="${esc(names.personB)}">${esc(initialB)}</i></span><span><b><span class="profile-inline-text" title="${esc(currentLang==='fr'?'Ensemble':'Together')}" aria-label="${esc(currentLang==='fr'?'Ensemble':'Together')}">🔗</span></b></span></span>`;
     return `<section class="couple-reader-category${collapsed?' is-collapsed':''}" style="--reader-category-color:${color}"><button class="couple-reader-category-head" data-reader-category-toggle="${esc(categoryName)}" type="button" aria-expanded="${collapsed?'false':'true'}"><span class="couple-reader-category-chevron">${collapsed?'▸':'▾'}</span><strong>${esc(localizedCategory(categoryName))}</strong><span class="couple-reader-category-count">${entries.length}</span>${resultHead}</button><div class="couple-reader-category-body">${practiceHtml}</div></section>`;
   }).join("");
   queueReaderStickyHeaderUpdate();
