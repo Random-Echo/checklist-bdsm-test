@@ -7462,7 +7462,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important;}
 
-/* Reading category DA — canonical block (V1.1.211).
+/* Reading category DA — canonical block (V1.1.214).
    The collapsed Reading list deliberately reuses the exact Edit surfaces. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
@@ -7604,63 +7604,120 @@ body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-
 }
 
 
-/* V1.1.211 — Mode switch matches the premium DA of the name buttons above. */
-:root{
-  --mode-edit-accent: var(--person-a-role-color);
-  --mode-edit-soft: var(--person-a-role-soft);
-  --mode-edit-dark: var(--person-a-role-dark);
-  --mode-read-accent: var(--person-b-role-color);
-  --mode-read-soft: var(--person-b-role-soft);
-  --mode-read-dark: var(--person-b-role-dark);
-}
+/* V1.1.214 — Mode switch mirrors the name selector: white base, dominant-colour selection. */
 header .mode-switch{
-  background:#f8f4f0 !important;
-  border:1px solid color-mix(in srgb,var(--luxe-line) 78%,#fff 22%) !important;
+  background:#fff !important;
+  border:1px solid color-mix(in srgb,var(--dominant-color) 26%,#d7d7d7 74%) !important;
   border-radius:18px !important;
-  box-shadow:0 8px 18px rgba(42,28,35,.10), inset 0 1px 0 rgba(255,255,255,.30) !important;
+  box-shadow:0 1px 3px rgba(52,35,41,.045) !important;
 }
-header .mode-switch button{
+header .mode-switch button,
+header .mode-switch #modeEdit,
+header .mode-switch #modeRead{
   border:1px solid transparent !important;
   border-radius:14px !important;
+  background:#fff !important;
+  color:var(--contrast-ink-strong,#30272c) !important;
   font-weight:900 !important;
   box-shadow:none !important;
 }
-header .mode-switch #modeEdit{
-  color:var(--mode-edit-dark) !important;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-edit-soft) 88%,#fff 12%) 0%, color-mix(in srgb,var(--mode-edit-accent) 28%,#fff 72%) 100%) !important;
-  border-color:color-mix(in srgb,var(--mode-edit-accent) 36%,#d7d7d7) !important;
+header .mode-switch button:hover{
+  background:#fbf8f5 !important;
 }
-header .mode-switch #modeRead{
-  color:var(--mode-read-dark) !important;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-read-soft) 86%,#fff 14%) 0%, color-mix(in srgb,var(--mode-read-accent) 22%,#fff 78%) 100%) !important;
-  border-color:color-mix(in srgb,var(--mode-read-accent) 36%,#d7d7d7) !important;
-}
-header .mode-switch #modeEdit:hover{
-  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-edit-soft) 82%,#fff 18%) 0%, color-mix(in srgb,var(--mode-edit-accent) 34%,#fff 66%) 100%) !important;
-}
-header .mode-switch #modeRead:hover{
-  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-read-soft) 80%,#fff 20%) 0%, color-mix(in srgb,var(--mode-read-accent) 30%,#fff 70%) 100%) !important;
-}
+header .mode-switch button.active,
+header .mode-switch button[aria-pressed="true"],
 header .mode-switch #modeEdit.active,
-header .mode-switch #modeEdit[aria-pressed="true"]{
-  color:var(--mode-edit-dark) !important;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-edit-accent) 92%,#fff) 0%, var(--mode-edit-accent) 100%) !important;
-  border-color:var(--mode-edit-accent) !important;
-  box-shadow:0 0 0 2px color-mix(in srgb,var(--mode-edit-accent) 24%,transparent), 0 4px 10px rgba(0,0,0,.12) !important;
-}
+header .mode-switch #modeEdit[aria-pressed="true"],
 header .mode-switch #modeRead.active,
 header .mode-switch #modeRead[aria-pressed="true"]{
-  color:var(--mode-read-dark) !important;
-  background:linear-gradient(180deg,color-mix(in srgb,var(--mode-read-accent) 92%,#fff) 0%, var(--mode-read-accent) 100%) !important;
-  border-color:var(--mode-read-accent) !important;
-  box-shadow:0 0 0 2px color-mix(in srgb,var(--mode-read-accent) 24%,transparent), 0 4px 10px rgba(0,0,0,.12) !important;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--dominant-color) 92%,#fff 8%) 0%,var(--dominant-color) 100%) !important;
+  border-color:var(--dominant-color) !important;
+  color:#fff !important;
+  text-shadow:0 1px 1px rgba(0,0,0,.18) !important;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--dominant-color) 24%,transparent),0 4px 10px rgba(0,0,0,.12) !important;
 }
 header .mode-switch button::before{display:none !important;}
 @media (max-width:760px){
+  header .mode-switch{border-radius:16px !important;}
+  header .mode-switch button{border-radius:12px !important;}
+}
+
+
+/* V1.1.214 — Mode selector uses the exact visual grammar of the name selector. */
+header .mode-switch{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:0 !important;
+  padding:0 !important;
+  border:1px solid var(--luxe-line) !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+  background:#f8f4f0 !important;
+  box-shadow:0 1px 3px rgba(52,35,41,.045) !important;
+}
+header .mode-switch::before{display:none !important;}
+header .mode-switch button,
+header .mode-switch #modeEdit,
+header .mode-switch #modeRead{
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  margin:0 !important;
+  padding:0 13px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:rgba(255,251,247,.96) !important;
+  color:var(--contrast-ink-strong,#30272c) !important;
+  font-weight:900 !important;
+  text-shadow:none !important;
+  box-shadow:none !important;
+}
+header .mode-switch button + button{
+  border-left:1px solid var(--luxe-line) !important;
+}
+header .mode-switch button:hover{
+  background:#fbf8f5 !important;
+}
+header .mode-switch button.active,
+header .mode-switch button[aria-pressed="true"]{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--dominant-color) 92%,#fff) 0%,var(--dominant-color) 100%) !important;
+  color:#fff !important;
+  text-shadow:0 1px 1px rgba(0,0,0,.18) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12) !important;
+}
+@media (max-width:760px){
   header .mode-switch{
-    border-radius:16px !important;
+    border-radius:var(--mobile-header-radius) !important;
   }
   header .mode-switch button{
-    border-radius:12px !important;
+    height:var(--mobile-header-row-h) !important;
+    min-height:var(--mobile-header-row-h) !important;
+    padding:0 8px !important;
+    border-radius:0 !important;
+  }
+}
+
+
+/* V1.1.214 — Sticky reading headers have square top corners; Edit first card touches the category header. */
+body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head.is-stuck,
+body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head.is-stuck:hover,
+body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head.is-stuck:focus-visible{
+  border-top-left-radius:0 !important;
+  border-top-right-radius:0 !important;
+}
+@media (max-width:760px){
+  body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head.is-stuck,
+  body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head.is-stuck:hover,
+  body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head.is-stuck:focus-visible{
+    border-top-left-radius:0 !important;
+    border-top-right-radius:0 !important;
+  }
+}
+body[data-view-mode="edit"] .individual-category-cards{
+  padding-top:0 !important;
+}
+@media (max-width:760px){
+  body[data-view-mode="edit"] .individual-category-cards{
+    padding-top:0 !important;
   }
 }
