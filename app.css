@@ -7013,7 +7013,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important;}
 
-/* Reading category DA — canonical block (V1.1.227).
+/* Reading category DA — canonical block (V1.1.228).
    The collapsed Reading list deliberately reuses the exact Edit surfaces. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
@@ -7191,7 +7191,7 @@ body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-
   body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head::after{font-size:.66rem !important;}
 }
 
-/* V1.1.227 — Canonical navigation + Edit categories aligned to Reading. */
+/* V1.1.228 — Canonical navigation + Edit categories aligned to Reading. */
 
 /* Édition / Lecture: exact visual grammar of the person selector above. */
 header .title-actions > .mode-switch,
@@ -7457,7 +7457,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 
 
 
-/* V1.1.227 — Two-line text for the reading dominant selector. */
+/* V1.1.228 — Two-line text for the reading dominant selector. */
 .reader-header-ds-choice{
   display:flex !important;
   flex-direction:column !important;
@@ -7493,7 +7493,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 }
 
 
-/* V1.1.227 — Final premium visual pass. */
+/* V1.1.228 — Final premium visual pass. */
 :root{
   --premium-control-bg:rgba(255,251,247,.96);
   --premium-control-bg-soft:rgba(255,251,247,.76);
@@ -7711,4 +7711,17 @@ body[data-view-mode="edit"] .individual-category-head[aria-expanded="false"] > b
   header .mode-switch .mode-icon svg{width:14px !important;height:14px !important;}
   header .editor-top-dock .individual-editor-bulk-btn{font-weight:780 !important;}
   .site-footer{font-size:9px !important;gap:3px !important;}
+}
+
+
+/* V1.1.228 — Ensure the selected language is visibly colored in the premium header. */
+header .language-choice.active,
+header .language-choice[aria-pressed="true"]{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--dominant-soft) 68%,#fff 32%) 0%,color-mix(in srgb,var(--dominant-color) 18%,#fff 82%) 100%) !important;
+  color:var(--dominant-dark) !important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--dominant-color) 24%,#fff 76%), inset 0 -2px 0 color-mix(in srgb,var(--dominant-color) 72%,transparent) !important;
+}
+header .language-choice.active .flag-svg,
+header .language-choice[aria-pressed="true"] .flag-svg{
+  filter:saturate(1.02) contrast(1.02) !important;
 }
