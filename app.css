@@ -7013,7 +7013,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important;}
 
-/* Reading category DA — canonical block (V1.1.222).
+/* Reading category DA — canonical block (V1.1.224).
    The collapsed Reading list deliberately reuses the exact Edit surfaces. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
@@ -7191,7 +7191,7 @@ body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-
   body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-category-head::after{font-size:.66rem !important;}
 }
 
-/* V1.1.222 — Canonical navigation + Edit categories aligned to Reading. */
+/* V1.1.224 — Canonical navigation + Edit categories aligned to Reading. */
 
 /* Édition / Lecture: exact visual grammar of the person selector above. */
 header .title-actions > .mode-switch,
@@ -7455,3 +7455,40 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
   }
 }
 
+
+
+/* V1.1.224 — Clean center seam in the Edit/Read switch. */
+header .title-actions > .mode-switch,
+header .mode-switch{
+  position:relative !important;
+}
+header .mode-switch::after{
+  content:"" !important;
+  position:absolute !important;
+  left:50% !important;
+  top:5px !important;
+  bottom:5px !important;
+  width:1px !important;
+  background:var(--border) !important;
+  transform:translateX(-.5px) !important;
+  pointer-events:none !important;
+  z-index:2 !important;
+}
+header .mode-switch #modeRead{
+  border-left:0 !important;
+}
+header .mode-switch button,
+header .mode-switch #modeEdit,
+header .mode-switch #modeRead{
+  position:relative !important;
+  z-index:1 !important;
+}
+header .mode-switch button.active,
+header .mode-switch button[aria-pressed="true"],
+header .mode-switch #modeEdit.active,
+header .mode-switch #modeEdit[aria-pressed="true"],
+header .mode-switch #modeRead.active,
+header .mode-switch #modeRead[aria-pressed="true"]{
+  z-index:3 !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10) !important;
+}

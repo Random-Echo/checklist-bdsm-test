@@ -9,7 +9,7 @@ let runtimeProfileCache = null;
 function runtimeProfile(){ return runtimeProfileCache || (runtimeProfileCache = PROFILE_API?.get?.() || {}); }
 const CATALOG_ENTITIES = UNIFIED_CATALOG.entities || [];
 const categoryColors = CHECKLIST_DATA.categoryColors;
-const APP_VERSION = "V1.1.222";
+const APP_VERSION = "V1.1.224";
 const showIncompatiblePractices = document.getElementById("showIncompatiblePractices");
 const UNIFIED_ENTITY_BY_ID = new Map(CATALOG_ENTITIES.map(entity => [entity.id, entity]));
 
@@ -838,12 +838,12 @@ function renderRoleUI() {
   applyDominantViewTheme();
   if (!isReadingMode && readerHeaderDs) readerHeaderDs.hidden=true;
   if (modeEditBtn) {
-    modeEditBtn.textContent = currentLang === "fr" ? "✎ Édition" : "✎ Edit";
+    modeEditBtn.textContent = currentLang === "fr" ? "✏️ Édition" : "✏️ Edit";
     modeEditBtn.classList.toggle("active", !isReadingMode);
     modeEditBtn.setAttribute("aria-pressed", !isReadingMode ? "true" : "false");
   }
   if (modeReadBtn) {
-    modeReadBtn.textContent = currentLang === "fr" ? "◉ Lecture" : "◉ Reading";
+    modeReadBtn.textContent = currentLang === "fr" ? "📖 Lecture" : "📖 Reading";
     modeReadBtn.classList.toggle("active", isReadingMode);
     modeReadBtn.setAttribute("aria-pressed", isReadingMode ? "true" : "false");
   }
