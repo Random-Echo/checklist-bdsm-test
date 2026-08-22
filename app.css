@@ -7462,7 +7462,7 @@ body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-ico
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::before,
 body[data-view-mode="read"] .couple-before-tick:not(.is-done) .couple-result-icon-cross::after{height:1.45px!important;opacity:.94!important;box-shadow:0 .4px 0 rgba(255,255,255,.28)!important;}
 
-/* Reading category DA — canonical block (V1.1.217).
+/* Reading category DA — canonical block (V1.1.218).
    The collapsed Reading list deliberately reuses the exact Edit surfaces. */
 body[data-view-mode="read"] .couple-reader{
   width:min(1500px,calc(100% - 16px)) !important;
@@ -7604,7 +7604,7 @@ body[data-view-mode="read"] .couple-reader-category.is-collapsed .couple-reader-
 }
 
 
-/* V1.1.217 — Mode switch mirrors the name selector: white base, dominant-colour selection. */
+/* V1.1.218 — Mode switch mirrors the name selector: white base, dominant-colour selection. */
 header .mode-switch{
   background:#fff !important;
   border:1px solid color-mix(in srgb,var(--dominant-color) 26%,#d7d7d7 74%) !important;
@@ -7643,7 +7643,7 @@ header .mode-switch button::before{display:none !important;}
 }
 
 
-/* V1.1.217 — Mode selector uses the exact visual grammar of the name selector. */
+/* V1.1.218 — Mode selector uses the exact visual grammar of the name selector. */
 header .mode-switch{
   display:grid !important;
   grid-template-columns:1fr 1fr !important;
@@ -7698,7 +7698,7 @@ header .mode-switch button[aria-pressed="true"]{
 }
 
 
-/* V1.1.217 — Sticky reading headers have square top corners; Edit first card touches the category header. */
+/* V1.1.218 — Sticky reading headers have square top corners; Edit first card touches the category header. */
 body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head.is-stuck,
 body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head.is-stuck:hover,
 body[data-view-mode="read"] .couple-reader-category:not(.is-collapsed) .couple-reader-category-head.is-stuck:focus-visible{
@@ -7723,7 +7723,7 @@ body[data-view-mode="edit"] .individual-category-cards{
 }
 
 
-/* V1.1.217 — Expanded Edit categories connect to the first practice like Reading mode. */
+/* V1.1.218 — Expanded Edit categories connect to the first practice like Reading mode. */
 body[data-view-mode="edit"] .individual-category-head[aria-expanded="true"]{
   border-bottom-left-radius:0 !important;
   border-bottom-right-radius:0 !important;
@@ -7756,7 +7756,7 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
 }
 
 
-/* V1.1.217 — Clean mode switch: white outer frame with rounded corners like the name selector. */
+/* V1.1.218 — Clean mode switch: white outer frame with rounded corners like the name selector. */
 header .mode-switch{
   display:grid !important;
   grid-template-columns:1fr 1fr !important;
@@ -7814,7 +7814,7 @@ header .mode-switch #modeRead[aria-pressed="true"]{
 }
 
 
-/* V1.1.217 — Clean mode switch + Edit sticky category behavior aligned with Reading. */
+/* V1.1.218 — Clean mode switch + Edit sticky category behavior aligned with Reading. */
 header .mode-switch{
   display:grid !important;
   grid-template-columns:1fr 1fr !important;
@@ -7913,5 +7913,142 @@ body[data-view-mode="edit"] .individual-category-cards > .individual-practice-ca
   body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card:first-child{
     border-top-left-radius:0 !important;
     border-top-right-radius:0 !important;
+  }
+}
+
+
+/* V1.1.218 — Edit category frame aligned with Reading, and mode switch matches the name selector. */
+header .title-actions > .mode-switch,
+header .mode-switch{
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:0 !important;
+  padding:0 !important;
+  border:1px solid var(--border) !important;
+  border-radius:10px !important;
+  overflow:hidden !important;
+  background:#f8f4f0 !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.06) !important;
+}
+header .mode-switch::before{display:none !important;}
+header .mode-switch button,
+header .mode-switch #modeEdit,
+header .mode-switch #modeRead{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:38px !important;
+  height:38px !important;
+  margin:0 !important;
+  padding:0 12px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:rgba(255,251,247,.96) !important;
+  color:var(--contrast-ink-strong) !important;
+  font-weight:900 !important;
+  text-shadow:none !important;
+  box-shadow:none !important;
+}
+header .mode-switch button + button,
+header .mode-switch #modeRead{
+  border-left:1px solid var(--border) !important;
+}
+header .mode-switch button:hover,
+header .mode-switch #modeEdit:hover,
+header .mode-switch #modeRead:hover{
+  background:#fdfbf9 !important;
+}
+header .mode-switch button.active,
+header .mode-switch button[aria-pressed="true"],
+header .mode-switch #modeEdit.active,
+header .mode-switch #modeEdit[aria-pressed="true"],
+header .mode-switch #modeRead.active,
+header .mode-switch #modeRead[aria-pressed="true"]{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--dominant-color) 92%,#fff 8%) 0%,var(--dominant-color) 100%) !important;
+  color:#fff !important;
+  text-shadow:0 1px 1px rgba(0,0,0,.18) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12) !important;
+}
+header .mode-switch button span,
+header .mode-switch #modeEdit span,
+header .mode-switch #modeRead span{
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:8px !important;
+}
+
+body[data-view-mode="edit"] .individual-category{
+  border-radius:9px !important;
+  overflow:hidden !important;
+}
+body[data-view-mode="edit"] .individual-category-head{
+  width:100% !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+}
+body[data-view-mode="edit"] .individual-category-head[aria-expanded="true"]{
+  border-bottom-left-radius:0 !important;
+  border-bottom-right-radius:0 !important;
+}
+body[data-view-mode="edit"] .individual-category-head.is-stuck[aria-expanded="true"]{
+  border-top-left-radius:0 !important;
+  border-top-right-radius:0 !important;
+}
+body[data-view-mode="edit"] .individual-category-cards{
+  width:100% !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:0 !important;
+  padding:0 !important;
+  border-left:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-right:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-bottom:1px solid color-mix(in srgb,var(--dominant-color) 34%,#fff 66%) !important;
+  border-radius:0 0 8px 8px !important;
+  background:color-mix(in srgb,var(--dominant-soft) 84%,var(--dominant-color) 16%) !important;
+  box-shadow:0 2px 8px rgba(26,15,20,.08) !important;
+  overflow:hidden !important;
+}
+body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card,
+body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card[data-result-key]{
+  width:100% !important;
+  margin:0 !important;
+  border-left:0 !important;
+  border-right:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card:first-child,
+body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card[data-result-key]:first-child{
+  border-top-left-radius:0 !important;
+  border-top-right-radius:0 !important;
+}
+body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card:last-child,
+body[data-view-mode="edit"] .individual-category-cards > .individual-practice-card[data-result-key]:last-child{
+  border-bottom-left-radius:0 !important;
+  border-bottom-right-radius:0 !important;
+}
+@media (max-width:760px){
+  header .title-actions > .mode-switch,
+  header .mode-switch{
+    min-height:36px !important;
+    height:36px !important;
+    border-radius:10px !important;
+  }
+  header .mode-switch button,
+  header .mode-switch #modeEdit,
+  header .mode-switch #modeRead{
+    min-height:36px !important;
+    height:36px !important;
+    padding:0 10px !important;
+  }
+  body[data-view-mode="edit"] .individual-category-cards{
+    border-radius:0 0 7px 7px !important;
   }
 }
